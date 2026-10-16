@@ -119,7 +119,9 @@ export type ResultBlockType =
   | 'DENIAL_BANNER'
   | 'ACTION_RECEIPT'
   | 'TRUST_TRACE_GRAPH'
-  | 'PROTECTED_DOCUMENT_PREVIEW';
+  | 'PROTECTED_DOCUMENT_PREVIEW'
+  | 'DATA_TABLE'
+  | 'ORG_TREE';
 
 /**
  * Base envelope for any contextual result block returned by the server.

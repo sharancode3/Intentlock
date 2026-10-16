@@ -110,6 +110,7 @@ class ScopedAuthorizationService:
             timestamp=time.strftime("%I:%M %p", time.localtime()),
             isSensitive=False,
             payload={
+                "message": reason,
                 "reason": reason,
                 "target_requested": target_id or "Restricted Resource",
                 "policy": "Requires verified identity with self-viewing scope or direct reporting manager authorization.",
@@ -262,7 +263,7 @@ class ScopedAuthorizationService:
                             type="TICKET_LIST",
                             title=f"Ticket Not Found: {raw_tid}",
                             timestamp=time.strftime("%I:%M %p", time.localtime()),
-                            isSensitive=False,
+                            isSensitive=True,
                             payload={"title": f"Ticket {raw_tid} (Not Found)", "tickets": [], "total_count": 0},
                         ),
                     )
@@ -303,7 +304,7 @@ class ScopedAuthorizationService:
             type="TICKET_LIST",
             title=f"Authorized Tickets ({len(frontend_records)})",
             timestamp=time.strftime("%I:%M %p", time.localtime()),
-            isSensitive=False,
+            isSensitive=True,
             payload={
                 "title": f"Tickets ({len(frontend_records)})",
                 "tickets": frontend_records,

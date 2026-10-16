@@ -13,6 +13,7 @@ import { validateTeamMetricChartPayload } from './validation';
 import { MetricSummaryCards } from './MetricSummaryCards';
 import { MetricBarChart } from './MetricBarChart';
 import { MetricPieChart } from './MetricPieChart';
+import { MetricTimeChart } from './MetricTimeChart';
 
 /**
  * TeamMetricChartCard — Primary Renderer for TEAM_METRIC_CHART result blocks.
@@ -111,6 +112,9 @@ export const TeamMetricChartCard: React.FC<ResultRendererProps> = ({ block }) =>
         )}
         {chart_type === 'PIE' && (
           <MetricPieChart data={data} title={title} unit={unit} />
+        )}
+        {(chart_type === 'LINE' || chart_type === 'AREA') && (
+          <MetricTimeChart data={data} variant={chart_type} />
         )}
       </section>
 

@@ -127,7 +127,7 @@ export const ReadbackConfirmationCard: React.FC<ResultRendererProps> = ({ block 
               </p>
               {requiresVoice && (
                 <p className="mt-1.5 text-[11px] font-medium text-amber-900 dark:text-amber-300">
-                  Speak clearly into the microphone: <strong className="underline">"I confirm"</strong> to execute or <strong className="underline">"Cancel"</strong> to discard.
+                  Speak the full readback phrase shown above to confirm, or say <strong className="underline">"Cancel"</strong> to discard.
                 </p>
               )}
             </div>

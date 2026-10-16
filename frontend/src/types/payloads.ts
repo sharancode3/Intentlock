@@ -62,6 +62,22 @@ export interface EmployeeRecord {
   active_projects?: string[];
   /** Optional employment status if returned by backend, e.g. "Active", "On Leave" */
   status?: string;
+  skills?: string[];
+  manager_name?: string;
+}
+
+export interface DataTablePayload {
+  columns: Array<{ key: 'name' | 'title' | 'department'; label: string }>;
+  rows: Array<{ id: string; name: string; title: string; department: string }>;
+  total_count: number;
+}
+
+export interface OrgTreePayload {
+  root_id: string;
+  nodes: Array<{ id: string; name: string; title: string; direct_count: number }>;
+  edges: Array<{ source: string; target: string }>;
+  direct_count: number;
+  descendant_count: number;
 }
 
 export interface EmployeeProfilePayload {
@@ -74,7 +90,7 @@ export interface EmployeeProfilePayload {
 // ============================================================================
 
 export type TicketPriority = 'URGENT' | 'HIGH' | 'NORMAL' | 'LOW' | string;
-export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED' | string;
+export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'PENDING' | 'BLOCKED' | 'RESOLVED' | 'CLOSED' | string;
 
 /**
  * Genuine ticket transition or audit event recorded in backend event ledger.
@@ -184,7 +200,7 @@ export interface MetricKpiSummary {
 
 export interface TeamMetricChartPayload {
   /** Chart rendering format */
-  chart_type: 'BAR' | 'PIE';
+  chart_type: 'BAR' | 'PIE' | 'LINE' | 'AREA';
   /** Human-readable metric title */
   metric_name?: string;
   /** Compatible alias for metric_name */

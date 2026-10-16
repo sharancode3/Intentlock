@@ -37,6 +37,7 @@ class VoiceSessionRecord(BaseModel):
     team_id: Optional[str] = None
     account_alias: str = "primary_account"
     created_at: str
+    last_verified_at: Optional[str] = None
     expires_at: str
     is_revoked: bool = False
 
@@ -106,6 +107,7 @@ class IdentityMappingStore:
                     team_id TEXT,
                     account_alias TEXT NOT NULL,
                     created_at TEXT NOT NULL,
+                    last_verified_at TEXT,
                     expires_at TEXT NOT NULL,
                     is_revoked INTEGER NOT NULL DEFAULT 0,
                     FOREIGN KEY (employee_id) REFERENCES speaker_mappings(employee_id) ON DELETE CASCADE
@@ -122,6 +124,10 @@ class IdentityMappingStore:
                 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON voice_sessions(expires_at);
                 CREATE INDEX IF NOT EXISTS idx_mappings_speaker ON speaker_mappings(provider_speaker_id);
             """)
+            columns = {row[1] for row in conn.execute("PRAGMA table_info(voice_sessions)")}
+            if "last_verified_at" not in columns:
+                conn.execute("ALTER TABLE voice_sessions ADD COLUMN last_verified_at TEXT")
+                conn.execute("UPDATE voice_sessions SET last_verified_at=created_at WHERE last_verified_at IS NULL")
 
     # =========================================================================
     # Speaker Mappings API
@@ -251,8 +257,8 @@ class IdentityMappingStore:
                 """
                 INSERT OR REPLACE INTO voice_sessions (
                     session_id, employee_id, full_name, role, department,
-                    team_id, account_alias, created_at, expires_at, is_revoked
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                    team_id, account_alias, created_at, last_verified_at, expires_at, is_revoked
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
                 """,
                 (
                     session_id,
@@ -262,6 +268,7 @@ class IdentityMappingStore:
                     department,
                     team_id,
                     account_alias,
+                    now_str,
                     now_str,
                     exp_str,
                 ),
@@ -275,6 +282,7 @@ class IdentityMappingStore:
             team_id=team_id,
             account_alias=account_alias,
             created_at=now_str,
+            last_verified_at=now_str,
             expires_at=exp_str,
             is_revoked=False,
         )
@@ -295,12 +303,13 @@ class IdentityMappingStore:
                     team_id=row["team_id"],
                     account_alias=row["account_alias"],
                     created_at=row["created_at"],
+                    last_verified_at=row["last_verified_at"],
                     expires_at=row["expires_at"],
                     is_revoked=bool(row["is_revoked"]),
                 )
         return None
 
-    def refresh_session(self, session_id: str, ttl_seconds: Optional[int] = None) -> Optional[VoiceSessionRecord]:
+    def refresh_session(self, session_id: str, ttl_seconds: Optional[int] = None, verified: bool = True) -> Optional[VoiceSessionRecord]:
         ttl = ttl_seconds or settings.SESSION_TTL_SECONDS
         now = datetime.now(timezone.utc)
         expires = (now + timedelta(seconds=ttl)).isoformat()
@@ -308,10 +317,10 @@ class IdentityMappingStore:
             cur = conn.execute(
                 """
                 UPDATE voice_sessions
-                SET expires_at = ?
-                WHERE session_id = ? AND is_revoked = 0
+                SET expires_at = ?, last_verified_at = CASE WHEN ? THEN ? ELSE last_verified_at END
+                WHERE session_id = ? AND is_revoked = 0 AND expires_at > ?
                 """,
-                (expires, session_id),
+                (expires, int(verified), now.isoformat(), session_id, now.isoformat()),
             )
             if cur.rowcount > 0:
                 return self.get_session(session_id)
@@ -329,18 +338,26 @@ class IdentityMappingStore:
     # Idempotency Cache API
     # =========================================================================
 
-    def get_idempotency_record(self, operation_key: str) -> Optional[Dict[str, Any]]:
+    def get_idempotency_entry(self, operation_key: str) -> Optional[Dict[str, Any]]:
         with self._get_connection() as conn:
             row = conn.execute(
-                "SELECT response_json FROM idempotency_records WHERE operation_key = ?",
+                "SELECT audio_digest, employee_id, response_json, created_at FROM idempotency_records WHERE operation_key = ?",
                 (operation_key,),
             ).fetchone()
             if row:
                 try:
-                    return json.loads(row["response_json"])
+                    if datetime.fromisoformat(row["created_at"]) + timedelta(seconds=120) <= datetime.now(timezone.utc):
+                        return None
+                    return {"audio_digest": row["audio_digest"], "employee_id": row["employee_id"],
+                            "response": json.loads(row["response_json"])}
                 except Exception:
                     return None
         return None
+
+    def get_idempotency_record(self, operation_key: str) -> Optional[Dict[str, Any]]:
+        """Backward-compatible response lookup for existing callers."""
+        entry = self.get_idempotency_entry(operation_key)
+        return entry["response"] if entry else None
 
     def save_idempotency_record(
         self,

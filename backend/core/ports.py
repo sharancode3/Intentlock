@@ -18,6 +18,7 @@ class SpeechInputResult(BaseModel):
     confidence: Optional[float] = None
     latency_ms: Optional[float] = None
     error_message: Optional[str] = None
+    speech_duration_s: Optional[float] = None
 
 
 class SpeechOutputResult(BaseModel):

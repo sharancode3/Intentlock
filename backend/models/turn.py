@@ -4,7 +4,7 @@ Defines request metadata and response envelopes matching frontend types
 and Stage 1 unavailable specifications.
 """
 
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any, Literal, List
 from pydantic import BaseModel, Field
 from backend.models.errors import SafeErrorDetail
 
@@ -20,6 +20,8 @@ ResultBlockType = Literal[
     "ACTION_RECEIPT",
     "TRUST_TRACE_GRAPH",
     "PROTECTED_DOCUMENT_PREVIEW",
+    "DATA_TABLE",
+    "ORG_TREE",
 ]
 
 
@@ -49,6 +51,8 @@ class GenericResultBlock(BaseModel):
 
 
 class TrustEvidence(BaseModel):
+    freshness: Literal["fresh_this_turn", "reused_from_session", "not_required"] = "fresh_this_turn"
+    reason: Optional[str] = None
     speaker_decision: Optional[str] = None  # "match" | "no_match"
     similarity_score: Optional[float] = None
     similarity_threshold: Optional[float] = None
@@ -79,7 +83,7 @@ class VoiceTurnResponse(BaseModel):
     api_version: str = Field("1", description="Contract API version")
     request_id: str = Field(..., description="Server-assigned correlation identifier")
     client_turn_id: str = Field(..., description="Client correlation turn ID preserved across retries")
-    status: Literal["unavailable", "success", "error", "unverified", "denied"] = "unavailable"
+    status: Literal["unavailable", "success", "error", "unverified", "denied", "clarification"] = "unavailable"
     session: TurnSessionInfo = Field(default_factory=TurnSessionInfo)
     session_expires_at: Optional[str] = None
     transcript: Optional[str] = None
@@ -88,6 +92,8 @@ class VoiceTurnResponse(BaseModel):
     speech_audio: Optional[SpokenAudioPayload] = None
     speech_timings_ms: Optional[Dict[str, float]] = None
     result_block: Optional[GenericResultBlock] = None
+    result_blocks: List[GenericResultBlock] = Field(default_factory=list)
+    primary_result_id: Optional[str] = None
     trust_evidence: Optional[TrustEvidence] = None
     error: Optional[SafeErrorDetail] = None
 

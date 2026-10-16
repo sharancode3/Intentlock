@@ -9,10 +9,15 @@ Exercises actual inference for:
 """
 
 import io
+import os
 import time
 import wave
 import pytest
 import numpy as np
+pytestmark = pytest.mark.skipif(
+    os.getenv("INTENTLOCK_OFFLINE_TESTS") == "1",
+    reason="Real speech model tests are excluded from the deterministic offline suite.",
+)
 from starlette.testclient import TestClient
 
 from backend.main import app, get_speech_input_port, get_speech_output_port

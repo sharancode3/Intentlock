@@ -20,9 +20,8 @@ import { validateActionReceiptPayload } from './validation';
  * ActionReceiptCard — Primary Renderer for ACTION_RECEIPT blocks.
  *
  * Implements Stage 7 requirements:
- * - High-contrast cryptographic certificate presentation conforming to UI_UX.md Section 6.4.
- * - Displays verifiable PostgreSQL transaction ID, actor, action, and timestamp.
- * - Displays single-use ActionGrant SHA-256 parameter hash reference.
+ * - Displays the SQLite action operation ID, actor, action, and timestamp.
+ * - Displays the bound payload SHA-256 hash prefix for reference.
  * - Clear visual distinction between successful commits, failures, and policy denials.
  * - Zero client-side transaction fabrication or grant minting.
  * - Accessible read-only semantic markup.
@@ -120,7 +119,7 @@ export const ActionReceiptCard: React.FC<ResultRendererProps> = ({ block }) => {
 
         <h3 className="mt-2 text-base font-bold text-white tracking-tight flex items-center gap-2">
           <Database className="w-4 h-4 text-slate-400" aria-hidden="true" />
-          <span>Atomic PostgreSQL Commit Record</span>
+          <span>Committed Ticket Action</span>
         </h3>
         {payload.summary && (
           <p className="text-xs text-slate-300 mt-0.5">{payload.summary}</p>
@@ -132,7 +131,7 @@ export const ActionReceiptCard: React.FC<ResultRendererProps> = ({ block }) => {
         <div>
           <span className="text-[10px] uppercase font-bold text-slate-500 block mb-0.5 flex items-center gap-1">
             <Hash className="w-3 h-3" aria-hidden="true" />
-            DB Transaction ID
+            Operation ID
           </span>
           <span className="text-emerald-400 font-bold select-all break-all">{tx_id}</span>
         </div>
@@ -171,10 +170,10 @@ export const ActionReceiptCard: React.FC<ResultRendererProps> = ({ block }) => {
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-500 block mb-0.5 flex items-center gap-1">
               <KeyRound className="w-3 h-3" aria-hidden="true" />
-              Consumed Grant Hash
+              Bound Payload Hash
             </span>
             <span className="text-slate-300 select-all" title="SHA-256 Parameter Hash Prefix">
-              {grant_hash_prefix}... (1-use)
+              {grant_hash_prefix}...
             </span>
           </div>
         )}
@@ -200,8 +199,8 @@ export const ActionReceiptCard: React.FC<ResultRendererProps> = ({ block }) => {
 
       {/* Audit Footnote */}
       <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
-        <span>Immutable audit ledger event written to PostgreSQL.</span>
-        <span>Protected Executor Service</span>
+        <span>SQLite ticket event recorded at commit.</span>
+        <span>IntentLock action store</span>
       </div>
     </article>
   );

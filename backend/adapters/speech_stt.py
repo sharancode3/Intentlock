@@ -65,18 +65,18 @@ class FasterWhisperSTTAdapter(SpeechInputPort):
     def is_ready(self) -> bool:
         return self._is_ready
 
-    def _sync_transcribe(self, audio_bytes: bytes) -> tuple[Optional[str], Optional[str], Optional[float]]:
+    def _sync_transcribe(self, audio_bytes: bytes) -> tuple[Optional[str], Optional[str], Optional[float], Optional[float]]:
         """Synchronous CPU execution of decoding, VAD, and Whisper inference."""
         # Step 1: Decode audio
         try:
             audio_16k = AudioDecoder.decode_to_16k_mono(audio_bytes, max_duration_s=60.0, min_duration_s=0.1)
         except ValueError as ve:
-            return None, f"DECODE_ERROR: {str(ve)}", None
+            return None, f"DECODE_ERROR: {str(ve)}", None, None
 
         # Step 2: VAD verification
         vad_report: VADSpeechReport = self.vad_service.validate_speech(audio_16k)
         if not vad_report.has_speech:
-            return "", "NO_SPEECH_DETECTED", None
+            return "", "NO_SPEECH_DETECTED", None, vad_report.speech_duration_s
 
         # Step 3: Run Faster-Whisper
         try:
@@ -88,9 +88,9 @@ class FasterWhisperSTTAdapter(SpeechInputPort):
             )
             transcribed_chunks = [seg.text.strip() for seg in segments if seg.text.strip()]
             final_transcript = " ".join(transcribed_chunks).strip()
-            return final_transcript, None, getattr(info, "language_probability", None)
+            return final_transcript, None, getattr(info, "language_probability", None), vad_report.speech_duration_s
         except Exception as e:
-            return None, f"TRANSCRIPTION_ERROR: {str(e)}", None
+            return None, f"TRANSCRIPTION_ERROR: {str(e)}", None, vad_report.speech_duration_s
 
     async def transcribe(
         self,
@@ -107,7 +107,7 @@ class FasterWhisperSTTAdapter(SpeechInputPort):
         def run_serialized():
             with self._inference_lock:
                 return self._sync_transcribe(audio_bytes)
-        transcript, error_message, _lang_prob = await asyncio.to_thread(run_serialized)
+        transcript, error_message, _lang_prob, speech_duration_s = await asyncio.to_thread(run_serialized)
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
         if error_message:
@@ -139,6 +139,7 @@ class FasterWhisperSTTAdapter(SpeechInputPort):
             confidence=None,  # Do not mislabel language probability as transcription confidence
             latency_ms=round(latency_ms, 2),
             error_message=None,
+            speech_duration_s=speech_duration_s,
         )
 
     def cleanup(self) -> None:
