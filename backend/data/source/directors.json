@@ -1,0 +1,1141 @@
+[
+  {
+    "employee_id": "EMP-3001",
+    "identity": {
+      "full_name": "Vikram Malhotra",
+      "preferred_name": "Vikram",
+      "work_email": "vikram.malhotra@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Director of Engineering",
+      "department": "Engineering",
+      "sub_department": "Engineering Strategy & Delivery",
+      "organizational_level": "L4",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2017-03-05"
+    },
+    "reporting": {
+      "manager_id": "EMP-4001",
+      "manager_name": "Ananya Iyer",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 15.0,
+      "professional_summary": "Senior engineering leader accountable for engineering strategy, technical governance, multi-team delivery, leadership development and department-level resource decisions.",
+      "career_history": [
+        {
+          "organization": "Software Engineer",
+          "role": "> Senior Engineer",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.S. Computer Science; B.Tech Computer Engineering",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Enterprise architecture",
+        "cloud/platform engineering",
+        "API ecosystems",
+        "reliability",
+        "software delivery",
+        "secure engineering",
+        "technical governance."
+      ],
+      "management": [
+        "Portfolio prioritization",
+        "organizational design",
+        "capacity planning",
+        "executive communication",
+        "technology strategy",
+        "risk governance",
+        "investment trade-offs."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "API Replatforming",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Cloud Migration",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Developer Productivity",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Reliability Improvement",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Engineering Hiring Scale-up.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Coach managers",
+      "succession planning",
+      "leadership calibration",
+      "organizational design proposals",
+      "cross-team conflict resolution",
+      "department health and retention oversight."
+    ],
+    "achievements": [
+      "Established architecture governance",
+      "improved manager operating cadence",
+      "reduced delivery-risk surprises",
+      "led engineering modernization and leadership development."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Owns/controls approved engineering operating envelope for planning purposes; can reallocate approved resources within policy; material spend changes require executive/finance approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve many engineering hiring recommendations within delegated scope; senior/executive appointments require higher approval."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve selected promotions within engineering scope where policy delegates L4 authority; senior/executive promotions require L5/HR process."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can initiate/recommend termination and approve only where formal policy delegates; protected HR workflow and HR review remain mandatory."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Approve creation/closure of eligible engineering projects; change department priorities; reallocate resources across engineering teams."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private keys",
+        "provider secrets",
+        "unrelated protected investigations",
+        "information explicitly segregated by legal/security policy."
+      ],
+      "cannot_perform": [
+        "Grant self unrestricted admin",
+        "change own L4/L5 authority",
+        "delete audit history",
+        "disable IntentLock",
+        "bypass speaker verification",
+        "alter signed evidence",
+        "arbitrary database commands."
+      ],
+      "resource_scope": "Authorized engineering/QA/cloud workforce structure, performance summaries, project allocation, skills, staffing, operational metrics and approved compensation bands where policy permits.",
+      "self_elevation_restrictions": "Director authority cannot be used to promote self, widen own security scope or convert business authority into system-admin privileges."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved department resource allocation",
+        "eligible project status/ownership",
+        "selected manager assignments",
+        "ordinary departmental organizational fields",
+        "own permitted profile data."
+      ],
+      "can_approve_by_voice": [
+        "Eligible project creation/closure",
+        "manager requests",
+        "selected promotions/transfers",
+        "department resource changes, subject to verification and policy."
+      ],
+      "can_recommend_by_voice": [
+        "Senior promotions",
+        "executive appointments",
+        "major budget",
+        "headcount",
+        "reorganization",
+        "compensation exceptions",
+        "strategic investments."
+      ],
+      "requires_approval": [
+        "Executive roles",
+        "material budget increases",
+        "senior compensation",
+        "major reorganization",
+        "protected termination cases",
+        "company-wide policy changes."
+      ],
+      "allowed_commands": [
+        "Approve Priya's eligible resource reassignment",
+        "move approved capacity between engineering teams",
+        "approve an eligible engineering project",
+        "show department performance summary."
+      ],
+      "denied_commands": [
+        "Give me unrestricted administrator access",
+        "disable speaker verification",
+        "delete yesterday's security audit",
+        "promote me to COO",
+        "reveal signing keys."
+      ],
+      "high_risk_actions": [
+        "Promotion/transfer execution, privileged access, major resource changes and sensitive employee actions require step-up confirmation or additional approval."
+      ],
+      "security_policy": "Every protected Director-level voice request must pass required deepfake/authenticity checks, speaker verification, agent authentication, L4 permission, exact resource scope, parameter-integrity checks and a valid short-lived authorization. Director status never bypasses mandatory security controls."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct 2026 - approved resource shift",
+      "03 Oct - reviewed architecture risk",
+      "06 Oct - approved eligible promotion",
+      "09 Oct - escalated headcount request",
+      "12 Oct - reviewed manager calibration",
+      "14 Oct - approved project portfolio change."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L4_Director_Senior_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "directors"
+    }
+  },
+  {
+    "employee_id": "EMP-3002",
+    "identity": {
+      "full_name": "Karan Bhatia",
+      "preferred_name": "Karan",
+      "work_email": "karan.bhatia@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Director of Product & Analytics",
+      "department": "Product & Analytics",
+      "sub_department": "Product Strategy, Design & Analytics",
+      "organizational_level": "L4",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2016-07-14"
+    },
+    "reporting": {
+      "manager_id": "EMP-4001",
+      "manager_name": "Ananya Iyer",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 14.0,
+      "professional_summary": "Director responsible for product strategy, design/analytics alignment, portfolio outcomes, customer-experience programs and leadership of product/analytics managers.",
+      "career_history": [
+        {
+          "organization": "Business Analyst",
+          "role": "> Product Manager",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Product Strategy; B.Tech Information Technology",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Product strategy",
+        "analytics",
+        "experimentation",
+        "UX governance",
+        "customer research",
+        "roadmap planning",
+        "business metrics."
+      ],
+      "management": [
+        "Portfolio management",
+        "investment prioritization",
+        "executive storytelling",
+        "market/customer analysis",
+        "organizational leadership."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "Digital Onboarding",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Subscription Modernization",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Customer Insights Platform",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Product Metrics Standardization.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Coach managers",
+      "succession planning",
+      "portfolio conflict resolution",
+      "organization capability development",
+      "cross-functional executive alignment."
+    ],
+    "achievements": [
+      "Unified product/design/analytics planning",
+      "introduced outcome-based reviews",
+      "improved portfolio decision documentation",
+      "reduced roadmap churn."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Controls approved product/analytics planning envelope and can reprioritize delegated investment; major spend requires executive/finance approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve many manager/IC recommendations within scope; executive/senior director roles require L5."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve eligible promotions within delegated product/analytics scope; senior promotions require executive/HR approval."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can initiate protected HR process but cannot bypass HR/legal safeguards."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can create/close eligible initiatives, reprioritize roadmap, reallocate product/design/analytics resources within policy."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Unrestricted HR investigations",
+        "private security credentials",
+        "legally segregated data",
+        "unrelated executive confidential records."
+      ],
+      "cannot_perform": [
+        "Self-promote",
+        "grant self admin",
+        "bypass data governance",
+        "delete audits",
+        "disable IntentLock",
+        "arbitrary DB access."
+      ],
+      "resource_scope": "Authorized product/design/analytics workforce and portfolio data, performance summaries, project metrics, approved customer insight.",
+      "self_elevation_restrictions": "Cannot convert portfolio authority into executive, HR or system-security authority."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Portfolio priorities",
+        "eligible initiative ownership",
+        "approved resource allocations",
+        "selected manager assignments",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible product initiatives",
+        "selected promotions/transfers",
+        "manager requests",
+        "portfolio changes within delegated limits."
+      ],
+      "can_recommend_by_voice": [
+        "Major investment",
+        "senior hiring",
+        "compensation exceptions",
+        "company-level product strategy",
+        "reorganization."
+      ],
+      "requires_approval": [
+        "Material budgets, executive appointments, major reorg, senior compensation, protected terminations, company-wide data policy."
+      ],
+      "allowed_commands": [
+        "Approve an eligible product initiative",
+        "approve selected manager request",
+        "move approved analytics capacity",
+        "show portfolio allocation."
+      ],
+      "denied_commands": [
+        "Make me COO",
+        "show all employee salaries",
+        "bypass customer-data approval",
+        "delete authorization logs",
+        "disable speaker verification."
+      ],
+      "high_risk_actions": [
+        "Sensitive customer data, senior role changes, large resource reallocations and cross-department transfers require step-up controls."
+      ],
+      "security_policy": "Every protected Director-level voice request must pass required deepfake/authenticity checks, speaker verification, agent authentication, L4 permission, exact resource scope, parameter-integrity checks and a valid short-lived authorization. Director status never bypasses mandatory security controls."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct - reprioritized portfolio",
+      "05 Oct - approved eligible promotion",
+      "07 Oct - reviewed customer-data risk",
+      "10 Oct - approved resource move",
+      "12 Oct - escalated budget request",
+      "14 Oct - reviewed manager calibration."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L4_Director_Senior_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "directors"
+    }
+  },
+  {
+    "employee_id": "EMP-3003",
+    "identity": {
+      "full_name": "Nisha Gupta",
+      "preferred_name": "Nisha",
+      "work_email": "nisha.gupta@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Director of Human Resources",
+      "department": "Human Resources",
+      "sub_department": "People Operations & Workforce Governance",
+      "organizational_level": "L4",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2016-02-08"
+    },
+    "reporting": {
+      "manager_id": "EMP-4001",
+      "manager_name": "Ananya Iyer",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 16.0,
+      "professional_summary": "Senior HR leader responsible for workforce governance, talent systems, employee lifecycle controls and HR policy execution while preserving separation between business authority and immutable security controls.",
+      "career_history": [
+        {
+          "organization": "HR Generalist",
+          "role": "> HR Business Partner",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Human Resources; B.A. Psychology",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "HR operations",
+        "workforce analytics",
+        "talent management",
+        "employee relations",
+        "performance management",
+        "policy governance."
+      ],
+      "management": [
+        "Workforce planning",
+        "organizational design",
+        "executive advising",
+        "change management",
+        "people-risk management."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "Performance Framework Redesign",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Workforce Planning",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Manager Capability Program",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Employee Experience Modernization.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Coach HR managers",
+      "succession/talent planning",
+      "policy interpretation",
+      "sensitive employee-case oversight",
+      "leadership capability programs."
+    ],
+    "achievements": [
+      "Improved workforce planning",
+      "formalized promotion evidence",
+      "strengthened sensitive-case access controls",
+      "modernized manager training."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Controls approved HR program/resource envelope; major benefit/vendor/headcount changes require executive/finance approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve many HR process stages and senior hiring workflows within delegation; executive appointments require L5/board process."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve eligible promotions where HR and business approvals are satisfied; executive/senior protected changes require higher authority."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can manage/approve protected termination workflow within policy but cannot bypass legal/process requirements or delete evidence."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Owns HR transformation programs and workforce-process projects."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private cryptographic keys",
+        "provider secrets",
+        "security data unrelated to HR purpose",
+        "legally segregated information without authorization."
+      ],
+      "cannot_perform": [
+        "Delete audit history",
+        "bypass required business approval",
+        "impersonate approvers",
+        "disable IntentLock",
+        "self-promote",
+        "alter immutable evidence."
+      ],
+      "resource_scope": "Broad authorized HR records necessary for role, subject to purpose limitation and policy; sensitive investigations remain need-to-know.",
+      "self_elevation_restrictions": "HR authority cannot be used to grant self executive/system privileges or bypass required independent approval."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Eligible HR workflow states",
+        "approved transfer/promotion records after all required approvals",
+        "own permitted profile",
+        "selected HR program data."
+      ],
+      "can_approve_by_voice": [
+        "Eligible HR actions when all required business/HR approvals are present",
+        "sensitive actions may require explicit confirmation."
+      ],
+      "can_recommend_by_voice": [
+        "Executive workforce changes",
+        "policy updates",
+        "major reorganization",
+        "compensation frameworks",
+        "workforce investment."
+      ],
+      "requires_approval": [
+        "Executive compensation/appointments, major restructuring, material benefit/budget changes, legally sensitive cases as required."
+      ],
+      "allowed_commands": [
+        "Review pending promotion workflow",
+        "approve an eligible transfer with completed approvals",
+        "show workforce summary",
+        "review HR program status."
+      ],
+      "denied_commands": [
+        "Delete the audit trail for a termination",
+        "promote me to executive",
+        "reveal security private keys",
+        "bypass manager approval",
+        "disable verification."
+      ],
+      "high_risk_actions": [
+        "Promotion execution, termination, sensitive case changes and executive transfers require strong verification, confirmation and multi-party approval where policy demands."
+      ],
+      "security_policy": "Every protected Director-level voice request must pass required deepfake/authenticity checks, speaker verification, agent authentication, L4 permission, exact resource scope, parameter-integrity checks and a valid short-lived authorization. Director status never bypasses mandatory security controls."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - reviewed workforce plan",
+      "04 Oct - approved eligible transfer",
+      "06 Oct - reviewed promotion packet",
+      "09 Oct - escalated sensitive case",
+      "11 Oct - approved HR program milestone",
+      "14 Oct - reviewed manager calibration."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L4_Director_Senior_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "directors"
+    }
+  },
+  {
+    "employee_id": "EMP-3004",
+    "identity": {
+      "full_name": "Sameer Kulkarni",
+      "preferred_name": "Sameer",
+      "work_email": "sameer.kulkarni@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Director of Operations",
+      "department": "Operations",
+      "sub_department": "Business Operations & Process Governance",
+      "organizational_level": "L4",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2015-09-21"
+    },
+    "reporting": {
+      "manager_id": "EMP-4001",
+      "manager_name": "Ananya Iyer",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 17.0,
+      "professional_summary": "Operations director responsible for enterprise service delivery, process governance, operational performance, cross-functional programs and manager leadership.",
+      "career_history": [
+        {
+          "organization": "Operations Analyst",
+          "role": "> Operations Manager",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Operations; B.E. Industrial Engineering",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Operations management",
+        "process design",
+        "service delivery",
+        "automation governance",
+        "KPI management",
+        "business continuity."
+      ],
+      "management": [
+        "Operational strategy",
+        "process transformation",
+        "portfolio management",
+        "executive communication",
+        "resource planning",
+        "vendor governance."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "Service Delivery Redesign",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Operations Automation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Vendor Governance",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Business Continuity Improvement.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Coach managers",
+      "resolve cross-functional blockers",
+      "succession planning",
+      "capacity reviews",
+      "service performance governance."
+    ],
+    "achievements": [
+      "Improved service KPIs",
+      "reduced manual operational workflows",
+      "strengthened vendor governance",
+      "standardized operational reviews."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Manages approved operational program envelope and vendor/resource allocation; material spend requires Finance/Executive approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Approves delegated operational hiring recommendations; senior/executive roles require higher authority."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve selected promotions within operations where delegated; senior protected changes require executive/HR."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can initiate/recommend protected termination; formal HR/legal process cannot be bypassed."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Approve eligible operations programs; reprioritize resources; close or restructure ordinary initiatives within scope."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Security secrets",
+        "unrelated HR investigations",
+        "private keys",
+        "legally restricted information outside operational purpose."
+      ],
+      "cannot_perform": [
+        "Disable IntentLock",
+        "delete audits",
+        "self-elevate",
+        "grant system admin",
+        "bypass HR/finance approval",
+        "arbitrary database commands."
+      ],
+      "resource_scope": "Authorized operations workforce, service metrics, project/resource data, performance summaries and approved vendor information.",
+      "self_elevation_restrictions": "Cannot use operational authority to increase own executive/security privilege."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Eligible resource allocation",
+        "operational program ownership/status",
+        "selected manager assignments",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible operations initiatives",
+        "manager requests",
+        "selected promotions/transfers",
+        "ordinary resource changes."
+      ],
+      "can_recommend_by_voice": [
+        "Major budget",
+        "senior staffing",
+        "reorganization",
+        "strategic vendor changes",
+        "company process policy."
+      ],
+      "requires_approval": [
+        "Material budget/vendor commitments",
+        "executive roles",
+        "major reorganization",
+        "senior compensation",
+        "protected termination."
+      ],
+      "allowed_commands": [
+        "Approve an eligible operations resource change",
+        "show service performance",
+        "approve selected transfer",
+        "reprioritize an approved program."
+      ],
+      "denied_commands": [
+        "Make me system administrator",
+        "delete audit records",
+        "bypass finance approval",
+        "promote me to COO",
+        "disable verification."
+      ],
+      "high_risk_actions": [
+        "Major vendor/resource changes, senior transfers and business-continuity actions require step-up confirmation/approval."
+      ],
+      "security_policy": "Every protected Director-level voice request must pass required deepfake/authenticity checks, speaker verification, agent authentication, L4 permission, exact resource scope, parameter-integrity checks and a valid short-lived authorization. Director status never bypasses mandatory security controls."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct - approved resource change",
+      "05 Oct - reviewed service KPI",
+      "08 Oct - approved eligible transfer",
+      "10 Oct - escalated vendor spend",
+      "12 Oct - reviewed continuity risk",
+      "14 Oct - reprioritized program."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L4_Director_Senior_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "directors"
+    }
+  },
+  {
+    "employee_id": "EMP-3005",
+    "identity": {
+      "full_name": "Maya Krishnan",
+      "preferred_name": "Maya",
+      "work_email": "maya.krishnan@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Director of Information Security",
+      "department": "Information Security",
+      "sub_department": "Security Governance, Risk & Assurance",
+      "organizational_level": "L4",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2016-04-11"
+    },
+    "reporting": {
+      "manager_id": "EMP-4001",
+      "manager_name": "Ananya Iyer",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 15.0,
+      "professional_summary": "Information Security director responsible for security governance, identity and access oversight, risk assurance, incident readiness and security leadership, while remaining subject to immutable controls and separation of duties.",
+      "career_history": [
+        {
+          "organization": "Security Analyst",
+          "role": "> Security Engineer",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Tech Cybersecurity; B.Tech Computer Science",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "IAM",
+        "security architecture",
+        "incident response",
+        "threat/risk management",
+        "cloud security",
+        "application security",
+        "audit/assurance."
+      ],
+      "management": [
+        "Security strategy",
+        "risk governance",
+        "executive communication",
+        "control design",
+        "crisis leadership",
+        "assurance planning."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "IAM Modernization",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Security Monitoring Upgrade",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Vulnerability Governance",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Incident Response Maturity",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Zero-Trust Pilot.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Coach security leaders",
+      "security workforce planning",
+      "escalation decisions",
+      "incident leadership",
+      "executive risk communication",
+      "succession planning."
+    ],
+    "achievements": [
+      "Modernized IAM governance",
+      "strengthened incident exercises",
+      "improved audit evidence quality",
+      "introduced agent-security review standards."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Prioritizes approved security investment and tooling; material spend requires executive/finance approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve many security hires within delegation; senior/executive appointments require higher approval."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can approve selected security promotions within delegation; senior/executive changes require L5/HR."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Can initiate/recommend actions for serious security matters, but HR/legal due process remains mandatory."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT",
+        "description": "Approve eligible security projects, prioritize remediation and allocate security resources."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private signing keys unless separately authorized by key-management controls",
+        "raw secrets by default",
+        "unrelated HR/legal records."
+      ],
+      "cannot_perform": [
+        "Delete immutable audit history",
+        "disable mandatory verification for self",
+        "reveal private keys",
+        "self-grant unrestricted access",
+        "forge evidence",
+        "bypass separation of duties."
+      ],
+      "resource_scope": "Security events, risk reports, authorized identity/access metadata, department workforce data and approved audit summaries.",
+      "self_elevation_restrictions": "Security leadership does not permit bypassing controls protecting the security leader's own account or actions."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Eligible security workflow states",
+        "approved remediation ownership",
+        "selected risk records",
+        "department resource allocation",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible access/security requests within delegated policy",
+        "selected risk decisions",
+        "security project changes, often with step-up confirmation."
+      ],
+      "can_recommend_by_voice": [
+        "Major risk acceptance",
+        "strategic security investment",
+        "senior access exceptions",
+        "policy changes",
+        "executive security decisions."
+      ],
+      "requires_approval": [
+        "Material security spend",
+        "executive access exceptions",
+        "major risk acceptance",
+        "senior employment actions",
+        "company-wide policy exceptions as defined."
+      ],
+      "allowed_commands": [
+        "Review today's authorization summary",
+        "approve an eligible scoped access request",
+        "assign remediation owner",
+        "show security risk dashboard."
+      ],
+      "denied_commands": [
+        "Reveal the agent private key",
+        "delete failed authorization logs",
+        "disable my speaker verification",
+        "give me unrestricted super-admin",
+        "alter signed audit evidence."
+      ],
+      "high_risk_actions": [
+        "Privileged access, risk acceptance, security-control changes and incident containment actions require stronger authorization/confirmation."
+      ],
+      "security_policy": "Every protected Director-level voice request must pass required deepfake/authenticity checks, speaker verification, agent authentication, L4 permission, exact resource scope, parameter-integrity checks and a valid short-lived authorization. Director status never bypasses mandatory security controls."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - reviewed access-risk report",
+      "04 Oct - approved scoped request",
+      "07 Oct - ran incident readiness review",
+      "09 Oct - escalated risk acceptance",
+      "12 Oct - reviewed audit evidence",
+      "14 Oct - assigned remediation ownership."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L4_Director_Senior_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "directors"
+    }
+  }
+]

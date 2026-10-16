@@ -1,0 +1,258 @@
+[
+  {
+    "employee_id": "EXE-0001",
+    "identity": {
+      "full_name": "Ishaan Mehta",
+      "preferred_name": "Ishaan",
+      "work_email": "ishaan.mehta@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Chief Executive Officer (CEO)",
+      "department": "Executive Office",
+      "sub_department": "Enterprise Leadership & Corporate Governance",
+      "organizational_level": "L6",
+      "research_level": null,
+      "employment_type": "Full-Time Executive",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Executive Hybrid",
+      "date_of_joining": "2018-04-01"
+    },
+    "reporting": {
+      "manager_id": null,
+      "manager_name": "Board of Directors",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 25.0,
+      "professional_summary": "Chief executive accountable for enterprise strategy, performance, culture, capital allocation, executive leadership and execution of Board-approved direction.",
+      "career_history": [
+        {
+          "organization": "Software Engineer",
+          "role": "> Product/Business Leader",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Strategy & Finance",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": "B.Tech Computer Science"
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Technology delivery",
+        "product leadership",
+        "P&L management",
+        "organizational scaling",
+        "strategic partnerships",
+        "enterprise operations."
+      ],
+      "management": [
+        "Secure AI-agent strategy",
+        "sustainable growth",
+        "operational resilience",
+        "talent development",
+        "customer trust",
+        "governance maturity."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Secure AI-agent strategy",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "sustainable growth",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "operational resilience",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "talent development",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "customer trust",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "governance maturity.",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Enterprise Scale-Up",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Cloud/Product Transformation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "International Market Study",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Operating Model Redesign",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Governance Modernization.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [],
+    "achievements": [],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Approves annual management budget proposal and delegated changes; cannot bypass Board/Finance thresholds."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can appoint/approve many executives subject to governance; certain C-suite/Board roles require Board approval."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve eligible senior promotions after HR/governance requirements; cannot approve own role/compensation."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can initiate/approve senior employment actions where delegated; Board/HR/Legal process applies to protected/executive cases."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Raw private keys",
+        "API/provider secrets by default",
+        "credentials unrelated to CEO business purpose",
+        "legally segregated records without authorization."
+      ],
+      "cannot_perform": [
+        "Delete/alter immutable audit",
+        "forge Board approval",
+        "bypass speaker verification",
+        "reuse expired grants",
+        "self-approve compensation",
+        "arbitrary database/system commands."
+      ],
+      "resource_scope": "Assigned scope",
+      "self_elevation_restrictions": "Cannot alter own role, compensation, signing limits, system privileges or security exemptions through IntentLock."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved strategic priority metadata",
+        "eligible enterprise program ownership/status",
+        "selected executive workflow records",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible executive decisions within delegated limits after strong verification, explicit confirmation and any required co-approval."
+      ],
+      "can_recommend_by_voice": [
+        "Board-reserved transactions",
+        "major acquisitions",
+        "Board appointments",
+        "extraordinary capital actions",
+        "changes to governance."
+      ],
+      "requires_approval": [],
+      "allowed_commands": [
+        "Approve an eligible enterprise program change",
+        "approve delegated resource allocation",
+        "review executive risk summary",
+        "approve an authorized executive transfer."
+      ],
+      "denied_commands": [
+        "Increase my own compensation",
+        "delete the Board audit trail",
+        "reveal private signing keys",
+        "disable speaker verification",
+        "make my account unrestricted super-admin."
+      ],
+      "high_risk_actions": [
+        "Major restructuring",
+        "senior termination",
+        "material capital allocation",
+        "crisis activation",
+        "strategic transaction",
+        "exceptional access decision."
+      ],
+      "security_policy": "Every protected CEO request must still pass voice authenticity, speaker verification, trusted-agent authentication, exact action/resource authorization, parameter integrity, expiry/replay checks and required independent approvals."
+    },
+    "research": null,
+    "executive_authority": {
+      "board_relationship": "Primary management liaison to Board; presents strategy, risk, performance and major investment proposals.",
+      "financial_authority": "Broad delegated operating/capital authority within Board-approved plan and signing limits; Board-reserved thresholds remain mandatory.",
+      "budget_authority": "Approves annual management budget proposal and delegated changes; cannot bypass Board/Finance thresholds.",
+      "headcount_authority": "Can approve broad workforce plans within Board-approved operating plan; extraordinary restructuring follows Board/HR/Legal controls.",
+      "signing_authority": "Can sign commitments within formal limits after required Legal/Finance/Procurement reviews.",
+      "ma_authority": "Can sponsor/negotiate potential transactions within authorized process; cannot unilaterally close Board-reserved M&A.",
+      "crisis_authority": "Can activate defined enterprise crisis/continuity governance and direct business response within emergency policy.",
+      "risk_ownership": "Ultimate management accountability for enterprise strategic, operational, financial, people, technology and reputational risk subject to Board oversight.",
+      "technology_authority": null
+    },
+    "recent_activity": [
+      "01 Oct 2026 - reviewed enterprise performance",
+      "03 Oct - approved delegated investment",
+      "06 Oct - reviewed executive succession",
+      "09 Oct - escalated Board-reserved transaction",
+      "12 Oct - reviewed cyber-risk summary",
+      "14 Oct - approved enterprise program change."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_CEO_Detailed_Profile.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "ceo"
+    }
+  }
+]

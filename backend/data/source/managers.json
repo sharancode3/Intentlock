@@ -1,0 +1,1345 @@
+[
+  {
+    "employee_id": "EMP-2001",
+    "identity": {
+      "full_name": "Priya Sharma",
+      "preferred_name": "Priya",
+      "work_email": "priya.sharma@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Engineering Manager",
+      "department": "Engineering",
+      "sub_department": "Application & Platform Engineering",
+      "organizational_level": "L3",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2020-08-18"
+    },
+    "reporting": {
+      "manager_id": "EMP-3001",
+      "manager_name": "Vikram Malhotra",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 6.0,
+      "professional_summary": "Engineering manager accountable for delivery, staffing, technical quality and coordination across multiple engineering squads. Converts department goals into team plans while retaining hands-on architecture and delivery oversight.",
+      "career_history": [
+        {
+          "organization": "Engineer 2017",
+          "role": "19",
+          "start_date": "2017",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior Engineer 2019",
+          "role": "20",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Team Lead 2020",
+          "role": "22",
+          "start_date": "2020",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Engineering Manager 2022",
+          "role": "present",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Tech CSE",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "System architecture",
+        "FastAPI/Python ecosystems",
+        "PostgreSQL",
+        "API governance",
+        "distributed-system fundamentals",
+        "CI/CD",
+        "observability",
+        "secure development."
+      ],
+      "management": [
+        "Resource planning",
+        "performance coaching",
+        "stakeholder management",
+        "prioritization",
+        "conflict resolution",
+        "delivery governance",
+        "risk management",
+        "hiring interviews."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Platform Modernization",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Authentication Modernization",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Customer Support Portal",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Core API Replatforming",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Customer Identity Service",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Developer Productivity Initiative",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Service Reliability Improvement.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Quarter planning",
+      "staffing",
+      "lead coaching",
+      "delivery reviews",
+      "architecture escalation",
+      "cross-team dependency management",
+      "performance inputs",
+      "leave approval",
+      "project assignment",
+      "risk reporting."
+    ],
+    "achievements": [
+      "Improved cross-team planning cadence",
+      "standardized architecture reviews",
+      "strengthened lead mentoring",
+      "reduced delivery surprises through risk reviews."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can propose team resource allocation and project capacity; can approve ordinary allocation changes within engineering plan; major headcount/budget changes require Director approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can participate in interviews, recommend hire/no-hire and request openings; cannot independently create headcount or issue final employment offers."
+      },
+      "promotion_authority": {
+        "effect": "RECOMMEND_ONLY",
+        "scope": "TEAM",
+        "description": "Can recommend promotions and transfers; final promotion approval sits above L3 for protected changes."
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can assign/remove staff on approved engineering projects, change responsibilities and approve normal project allocation within scope."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Executive private records",
+        "unrelated HR investigations",
+        "unrestricted salary data",
+        "private keys",
+        "provider secrets",
+        "protected security internals."
+      ],
+      "cannot_perform": [
+        "Self-promotion",
+        "self-admin grants",
+        "security bypass",
+        "audit deletion",
+        "arbitrary DB commands",
+        "changing own authority",
+        "modifying executive roles."
+      ],
+      "resource_scope": "Assigned scope",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved project assignments",
+        "task ownership",
+        "project responsibilities",
+        "selected team profile/workflow fields",
+        "eligible leave decisions",
+        "own non-sensitive personal details."
+      ],
+      "can_approve_by_voice": [
+        "Eligible leave",
+        "normal project assignment changes",
+        "selected access/workflow requests within manager scope after required verification."
+      ],
+      "can_recommend_by_voice": [
+        "Promotion",
+        "transfer",
+        "hiring",
+        "compensation review",
+        "training",
+        "recognition",
+        "resource/headcount changes."
+      ],
+      "requires_approval": [
+        "Final promotion",
+        "salary/compensation changes",
+        "termination",
+        "new headcount",
+        "executive-level role changes",
+        "sensitive HR actions",
+        "department-wide exceptions."
+      ],
+      "allowed_commands": [
+        "Assign Aarav to Authentication Modernization",
+        "approve eligible leave for my report",
+        "show engineering team allocation",
+        "show my management history",
+        "move an engineer between my approved projects."
+      ],
+      "denied_commands": [
+        "Promote me to Director",
+        "give me administrator access",
+        "change my salary",
+        "delete an audit event",
+        "disable speaker verification."
+      ],
+      "high_risk_actions": [
+        "Sensitive access, promotion/transfer execution, privileged environment access and unusual employee changes require step-up review/confirmation."
+      ],
+      "security_policy": "Voice authenticity and speaker verification are identity evidence only. L3 role, resource scope, exact action, parameters and one-time authorization must also pass."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct 2026 - approved leave",
+      "04 Oct - changed project allocation",
+      "06 Oct - submitted promotion recommendation",
+      "09 Oct - reviewed delivery risk",
+      "11 Oct - requested headcount review",
+      "14 Oct - approved training request."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L3_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "managers"
+    }
+  },
+  {
+    "employee_id": "EMP-2002",
+    "identity": {
+      "full_name": "Sneha Reddy",
+      "preferred_name": "Sneha",
+      "work_email": "sneha.reddy@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Product Manager",
+      "department": "Product",
+      "sub_department": "Product Strategy & Experience",
+      "organizational_level": "L3",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2019-05-12"
+    },
+    "reporting": {
+      "manager_id": "EMP-3002",
+      "manager_name": "Karan Bhatia",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 8.0,
+      "professional_summary": "Product manager responsible for roadmap execution, product-team coordination, prioritization and alignment between design, analytics and engineering stakeholders.",
+      "career_history": [
+        {
+          "organization": "Product Analyst 2017",
+          "role": "19",
+          "start_date": "2017",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Product Owner 2019",
+          "role": "21",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior PM 2021",
+          "role": "23",
+          "start_date": "2021",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Product Manager 2023",
+          "role": "present",
+          "start_date": "2023",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Product Management + B.Tech IT",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Product discovery",
+        "roadmap strategy",
+        "UX collaboration",
+        "product analytics",
+        "experimentation fundamentals",
+        "requirements management",
+        "business metrics."
+      ],
+      "management": [
+        "Prioritization",
+        "stakeholder negotiation",
+        "facilitation",
+        "product leadership",
+        "coaching",
+        "decision documentation",
+        "risk management."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Mobile App Redesign",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Product Roadmap",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Customer Insights",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Self-Service Onboarding",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Subscription Experience",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Product Analytics Instrumentation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Customer Feedback Program.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Roadmap planning",
+      "initiative prioritization",
+      "lead coordination",
+      "product requirement approval",
+      "launch readiness",
+      "stakeholder alignment",
+      "resource requests",
+      "product-risk escalation."
+    ],
+    "achievements": [
+      "Improved roadmap prioritization",
+      "introduced decision records",
+      "strengthened design/analytics integration",
+      "reduced late requirement changes."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can prioritize approved product capacity and recommend investment; major budget/headcount decisions require Director/executive approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can interview and recommend product/design hires; cannot independently create positions or finalize offers."
+      },
+      "promotion_authority": {
+        "effect": "RECOMMEND_ONLY",
+        "scope": "TEAM",
+        "description": "Can recommend promotion/transfer and initiate workflow; cannot execute protected promotion alone."
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can approve normal roadmap/project assignments and priority changes within approved portfolio."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Unrestricted HR salary records",
+        "raw sensitive customer data without authorization",
+        "security secrets",
+        "unrelated executive records."
+      ],
+      "cannot_perform": [
+        "Self-elevation",
+        "admin grant",
+        "audit deletion",
+        "security bypass",
+        "arbitrary database access",
+        "final salary change."
+      ],
+      "resource_scope": "Assigned scope",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Project priorities",
+        "approved assignments",
+        "product workflow status",
+        "selected team responsibilities",
+        "own permitted profile data."
+      ],
+      "can_approve_by_voice": [
+        "Routine product/project assignments, eligible leave, selected project requests within scope."
+      ],
+      "can_recommend_by_voice": [
+        "Promotion, transfer, hiring, training, compensation review, resource changes."
+      ],
+      "requires_approval": [
+        "Final promotion, compensation, termination, headcount, major organizational changes and sensitive HR actions."
+      ],
+      "allowed_commands": [
+        "Move Kavya to the approved redesign initiative",
+        "approve eligible leave",
+        "show product roadmap allocation",
+        "show my career history",
+        "update initiative priority."
+      ],
+      "denied_commands": [
+        "Make me Product Director",
+        "increase my compensation",
+        "show all employee salaries",
+        "delete security logs",
+        "bypass customer-data approval."
+      ],
+      "high_risk_actions": [
+        "Sensitive customer-data access, cross-department transfers and protected employee changes require additional approval."
+      ],
+      "security_policy": "Product authority never overrides identity, resource or security controls; every protected action is bound to the verified requester and exact scope."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - reprioritized roadmap item",
+      "05 Oct - approved leave",
+      "07 Oct - submitted hiring recommendation",
+      "10 Oct - reviewed design allocation",
+      "12 Oct - recommended promotion",
+      "14 Oct - approved training."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L3_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "managers"
+    }
+  },
+  {
+    "employee_id": "EMP-2003",
+    "identity": {
+      "full_name": "Karthik Iyer",
+      "preferred_name": "Karthik",
+      "work_email": "karthik.iyer@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "QA Manager",
+      "department": "Quality Assurance",
+      "sub_department": "Quality Engineering",
+      "organizational_level": "L3",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2019-03-08"
+    },
+    "reporting": {
+      "manager_id": "EMP-3001",
+      "manager_name": "Vikram Malhotra",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 9.0,
+      "professional_summary": "QA manager accountable for quality strategy, release certification processes, automation investment and management of multiple QA workstreams.",
+      "career_history": [
+        {
+          "organization": "QA Engineer 2016",
+          "role": "18",
+          "start_date": "2016",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior QA 2018",
+          "role": "20",
+          "start_date": "2018",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "QA Lead 2020",
+          "role": "22",
+          "start_date": "2020",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "QA Manager 2022",
+          "role": "present",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Tech Software Engineering",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Test strategy",
+        "Selenium",
+        "PyTest",
+        "Postman",
+        "API testing",
+        "CI testing",
+        "release governance",
+        "risk-based testing",
+        "SQL validation."
+      ],
+      "management": [
+        "Quality governance",
+        "release decision support",
+        "mentoring",
+        "capacity planning",
+        "stakeholder communication",
+        "risk escalation."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Release Certification",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Regression Automation",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Quality Strategy",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Payments Regression Program",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "API Test Framework",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Mobile Release Quality",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Defect Triage Standardization.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Quality strategy",
+      "release-risk review",
+      "QA capacity planning",
+      "lead coaching",
+      "environment coordination",
+      "test-governance standards",
+      "escalation of release blockers."
+    ],
+    "achievements": [
+      "Expanded automation coverage",
+      "improved release evidence",
+      "reduced flaky tests",
+      "established risk-based release review."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can allocate approved QA capacity and recommend tooling/resources; major purchases/headcount require Director approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Interview/recommend QA hires; request openings; no unilateral final offer/headcount creation."
+      },
+      "promotion_authority": {
+        "effect": "RECOMMEND_ONLY",
+        "scope": "TEAM",
+        "description": "Recommend QA promotions/transfers; protected execution requires higher approval."
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Assign QA resources to approved projects; set testing priorities; approve normal QA responsibility changes."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Production secrets beyond authorization",
+        "confidential HR investigations",
+        "unrelated salary data",
+        "private keys",
+        "executive records."
+      ],
+      "cannot_perform": [
+        "Grant production admin",
+        "disable IntentLock",
+        "delete audit evidence",
+        "self-promote",
+        "alter historical release evidence improperly."
+      ],
+      "resource_scope": "Assigned scope",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "QA project allocation",
+        "testing responsibility",
+        "test priority",
+        "selected workflow status",
+        "eligible leave",
+        "own permitted profile fields."
+      ],
+      "can_approve_by_voice": [
+        "Routine QA assignments",
+        "eligible leave",
+        "selected environment/test requests that fall within manager policy."
+      ],
+      "can_recommend_by_voice": [
+        "Promotion",
+        "transfer",
+        "training",
+        "hiring",
+        "tool investment",
+        "compensation review."
+      ],
+      "requires_approval": [
+        "Final promotion/salary/termination/headcount",
+        "privileged production access",
+        "major policy exceptions."
+      ],
+      "allowed_commands": [
+        "Approve Rahul's QA project assignment",
+        "show release-quality status",
+        "assign QA capacity",
+        "approve eligible leave",
+        "show my QA management history."
+      ],
+      "denied_commands": [
+        "Give Rahul production admin",
+        "terminate an employee immediately",
+        "delete failed-test audit",
+        "promote me to Director",
+        "disable verification."
+      ],
+      "high_risk_actions": [
+        "Production access, release exceptions, sensitive test-data access and protected employee actions require step-up authorization."
+      ],
+      "security_policy": "A successful speaker match does not create production privileges; environment and action scope remain independently enforced."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "03 Oct - approved QA allocation",
+      "05 Oct - reviewed release risk",
+      "08 Oct - approved leave",
+      "10 Oct - recommended automation hire",
+      "12 Oct - submitted promotion recommendation",
+      "14 Oct - reviewed environment request."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L3_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "managers"
+    }
+  },
+  {
+    "employee_id": "EMP-2004",
+    "identity": {
+      "full_name": "Divya Shetty",
+      "preferred_name": "Divya",
+      "work_email": "divya.shetty@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Data Analytics Manager",
+      "department": "Data & Analytics",
+      "sub_department": "Business Intelligence & Analytics",
+      "organizational_level": "L3",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2018-10-22"
+    },
+    "reporting": {
+      "manager_id": "EMP-3002",
+      "manager_name": "Karan Bhatia",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 9.0,
+      "professional_summary": "Analytics manager responsible for BI strategy, data-quality governance, analytics staffing and controlled access to approved business datasets.",
+      "career_history": [
+        {
+          "organization": "Data Analyst 2015",
+          "role": "17",
+          "start_date": "2015",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior Analyst 2017",
+          "role": "19",
+          "start_date": "2017",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Analytics Lead 2019",
+          "role": "22",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Manager 2022",
+          "role": "present",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Sc Data Analytics",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "SQL",
+        "Python",
+        "Pandas",
+        "Power BI",
+        "BI architecture",
+        "data quality",
+        "KPI design",
+        "governance",
+        "descriptive analytics",
+        "ETL concepts."
+      ],
+      "management": [
+        "Analytics strategy",
+        "prioritization",
+        "mentoring",
+        "data-governance coordination",
+        "stakeholder management",
+        "resource planning."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Business Intelligence",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Customer Analytics",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "KPI Governance",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Executive KPI Dashboard",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Customer Segmentation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Operations Reporting Automation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Data Quality Scorecard.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Analytics roadmap",
+      "capacity planning",
+      "data-access escalation",
+      "KPI governance",
+      "dashboard quality",
+      "lead coaching",
+      "stakeholder prioritization."
+    ],
+    "achievements": [
+      "Standardized KPI catalog",
+      "improved dashboard peer review",
+      "reduced inconsistent reporting",
+      "strengthened dataset-access documentation."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can allocate approved analytics capacity and recommend tooling/data investment; major budget/headcount requires Director approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Interview and recommend analysts/data specialists; cannot finalize headcount or offers independently."
+      },
+      "promotion_authority": {
+        "effect": "RECOMMEND_ONLY",
+        "scope": "TEAM",
+        "description": "Recommend promotions/transfers; final protected change requires higher authorization."
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Assign analysts to approved analytics initiatives; approve dashboard ownership and ordinary resource changes."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Unapproved salary/HR data",
+        "private security data",
+        "secrets",
+        "unrelated executive confidential records."
+      ],
+      "cannot_perform": [
+        "Grant self DB admin",
+        "bypass data governance",
+        "self-promote",
+        "delete audit/access history",
+        "disable verification."
+      ],
+      "resource_scope": "Assigned scope",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Analytics assignments",
+        "approved dashboard ownership",
+        "selected dataset-request workflow",
+        "eligible leave",
+        "own permitted profile data."
+      ],
+      "can_approve_by_voice": [
+        "Routine project allocations",
+        "eligible leave",
+        "lower-risk approved dataset/workflow requests within policy."
+      ],
+      "can_recommend_by_voice": [
+        "Sensitive dataset access",
+        "promotion",
+        "transfer",
+        "hiring",
+        "training",
+        "compensation review",
+        "tool investment."
+      ],
+      "requires_approval": [
+        "Final promotion/salary/termination/headcount",
+        "sensitive cross-domain data",
+        "elevated DB roles",
+        "major governance exceptions."
+      ],
+      "allowed_commands": [
+        "Assign Isha to Customer Analytics",
+        "approve eligible leave",
+        "show analytics allocation",
+        "approve an ordinary dashboard ownership change",
+        "show my career history."
+      ],
+      "denied_commands": [
+        "Give me unrestricted HR database access",
+        "grant me DB admin",
+        "promote me to Director",
+        "delete access logs",
+        "reveal database credentials."
+      ],
+      "high_risk_actions": [
+        "Sensitive datasets, elevated DB privileges, cross-domain exports and protected employee changes require additional review."
+      ],
+      "security_policy": "Verified identity is followed by dataset/resource authorization. L3 manager status does not imply universal data access."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct - approved dashboard allocation",
+      "04 Oct - reviewed data quality",
+      "07 Oct - approved leave",
+      "09 Oct - escalated sensitive dataset request",
+      "12 Oct - recommended promotion",
+      "14 Oct - approved training."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L3_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "managers"
+    }
+  },
+  {
+    "employee_id": "EMP-2005",
+    "identity": {
+      "full_name": "Varun Singh",
+      "preferred_name": "Varun",
+      "work_email": "varun.singh@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Cloud Operations Manager",
+      "department": "Cloud Engineering",
+      "sub_department": "Cloud & Platform Operations",
+      "organizational_level": "L3",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2018-01-15"
+    },
+    "reporting": {
+      "manager_id": "EMP-3001",
+      "manager_name": "Vikram Malhotra",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 10.0,
+      "professional_summary": "Cloud operations manager responsible for platform reliability, operational governance, incident-management practices, cloud capacity and controlled infrastructure access.",
+      "career_history": [
+        {
+          "organization": "Systems Engineer 2014",
+          "role": "16",
+          "start_date": "2014",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "DevOps Engineer 2016",
+          "role": "18",
+          "start_date": "2016",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Platform Lead 2018",
+          "role": "21",
+          "start_date": "2018",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Manager 2021",
+          "role": "present",
+          "start_date": "2021",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Tech CSE",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Linux",
+        "Docker",
+        "Kubernetes",
+        "CI/CD",
+        "AWS concepts",
+        "observability",
+        "incident management",
+        "infrastructure automation",
+        "security-aware operations."
+      ],
+      "management": [
+        "Operational governance",
+        "incident leadership",
+        "resource planning",
+        "risk management",
+        "mentoring",
+        "change-management coordination."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Cloud Operations",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Infrastructure Reliability",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "CI/CD Modernization",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Cloud Migration",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "CI/CD Standardization",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Monitoring Consolidation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Disaster-Recovery Readiness.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Cloud/platform capacity",
+      "lead coaching",
+      "reliability review",
+      "incident governance",
+      "privileged-access escalation",
+      "infrastructure project planning",
+      "operational risk reporting."
+    ],
+    "achievements": [
+      "Improved deployment reliability",
+      "standardized incident reviews",
+      "strengthened runbooks",
+      "reduced repeated platform incidents."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Can allocate approved platform capacity and recommend cloud/tool spend; major budget/headcount requires Director/executive approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Interview/recommend platform hires and request positions; cannot finalize headcount/offers."
+      },
+      "promotion_authority": {
+        "effect": "RECOMMEND_ONLY",
+        "scope": "TEAM",
+        "description": "Recommend promotion/transfer; final execution requires higher authority."
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "TEAM",
+        "description": "Assign platform engineers to approved initiatives; approve normal non-production operational changes; coordinate incident ownership."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private keys",
+        "provider secrets",
+        "unrestricted production credentials",
+        "confidential HR investigations",
+        "unrelated executive records."
+      ],
+      "cannot_perform": [
+        "Grant self production admin",
+        "reveal secrets",
+        "disable security controls",
+        "delete audits",
+        "self-promote",
+        "execute arbitrary privileged DB/system commands."
+      ],
+      "resource_scope": "Assigned scope",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved project allocation",
+        "non-production responsibility",
+        "incident ownership",
+        "eligible leave",
+        "selected access-request workflow",
+        "own permitted profile data."
+      ],
+      "can_approve_by_voice": [
+        "Routine non-production access/work allocation and eligible leave where policy allows."
+      ],
+      "can_recommend_by_voice": [
+        "Production privileged access",
+        "promotion",
+        "transfer",
+        "hiring",
+        "cloud spend",
+        "training",
+        "compensation review."
+      ],
+      "requires_approval": [
+        "Production admin grants",
+        "final promotion/salary/termination/headcount",
+        "major infrastructure/security exceptions."
+      ],
+      "allowed_commands": [
+        "Assign Aditya to Monitoring Platform",
+        "approve staging access",
+        "show cloud team allocation",
+        "approve eligible leave",
+        "show my platform career history."
+      ],
+      "denied_commands": [
+        "Make me production super-admin",
+        "reveal private keys",
+        "delete security logs",
+        "disable IntentLock",
+        "promote me to Director."
+      ],
+      "high_risk_actions": [
+        "Production privileges, secrets, destructive infrastructure actions and security configuration require step-up/human approval."
+      ],
+      "security_policy": "Operational seniority does not bypass authentication or privileged-access controls. Exact environment/resource scope is mandatory."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - approved staging access",
+      "04 Oct - reviewed incident",
+      "06 Oct - changed platform allocation",
+      "09 Oct - approved leave",
+      "11 Oct - escalated production access",
+      "14 Oct - recommended Kubernetes training."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L3_Manager_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "managers"
+    }
+  }
+]

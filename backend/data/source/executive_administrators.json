@@ -1,0 +1,1173 @@
+[
+  {
+    "employee_id": "EMP-4001",
+    "identity": {
+      "full_name": "Ananya Iyer",
+      "preferred_name": "Ananya",
+      "work_email": "ananya.iyer@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Chief Operations Officer / Executive Administrator",
+      "department": "Executive Management",
+      "sub_department": "Enterprise Operations & Governance",
+      "organizational_level": "L5",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Executive",
+      "date_of_joining": "2015-01-12"
+    },
+    "reporting": {
+      "manager_id": "EXE-0001",
+      "manager_name": "Ishaan Mehta",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 20.0,
+      "professional_summary": "Enterprise executive responsible for organization-wide operations, executive approvals, cross-department coordination, operating governance and high-risk business decision oversight.",
+      "career_history": [
+        {
+          "organization": "Operations Analyst",
+          "role": "> Operations Manager",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Business Administration; B.E. Information Technology",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Operational analytics, process improvement, service delivery, program leadership, budget planning, executive operations and enterprise transformation."
+      ],
+      "management": [
+        "Enterprise operations",
+        "governance",
+        "transformation",
+        "organizational design",
+        "resource planning",
+        "risk management",
+        "executive leadership."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "Enterprise Process Redesign",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Shared Services Transformation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Business Continuity Modernization",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Operations Automation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Leadership Operating Cadence.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Enterprise operations",
+      "cross-department execution",
+      "executive decision forums",
+      "organizational change",
+      "operational risk",
+      "strategic resource coordination",
+      "high-risk approval review."
+    ],
+    "achievements": [
+      "Led operating-model transformation",
+      "improved executive governance",
+      "strengthened cross-department planning",
+      "improved continuity readiness."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve/reallocate significant operating resources within formally delegated limits; material commitments beyond threshold require CEO/Board/Finance approval."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve/recommend senior hires within delegation; CEO/Board appointments and certain executive compensation require Board process."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve eligible senior promotions after required HR/business approvals; cannot self-promote or bypass compensation/governance controls."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve protected senior employment actions where policy delegates, but HR/legal due process and evidence requirements remain mandatory."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can authorize major enterprise programs, reprioritize cross-functional resources and stop/redirect initiatives within delegated scope."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private signing keys",
+        "raw API secrets by default",
+        "legally segregated records without authorization",
+        "credentials unrelated to executive business purpose."
+      ],
+      "cannot_perform": [
+        "Disable IntentLock",
+        "bypass speaker verification",
+        "delete/alter immutable audits",
+        "forge approvals",
+        "reuse expired authorization",
+        "alter action after authorization",
+        "arbitrary database commands."
+      ],
+      "resource_scope": "Broad operational and organizational reporting needed for COO duties; access remains purpose-limited and does not automatically include raw secrets/private keys.",
+      "self_elevation_restrictions": "Cannot increase own role, system privilege, signing authority or security exemption through voice or ordinary workflow."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Eligible organizational records",
+        "approved resource allocation",
+        "selected executive workflow states",
+        "program ownership",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible senior transfers/promotions, major resource changes, approved organizational actions and selected high-risk business workflows after step-up verification."
+      ],
+      "can_recommend_by_voice": [
+        "Board-level changes",
+        "CEO appointments",
+        "extraordinary budget",
+        "major acquisitions/strategic commitments",
+        "company policy changes."
+      ],
+      "requires_approval": [
+        "Board-reserved matters",
+        "CEO appointment/removal",
+        "extraordinary financial commitments",
+        "material legal actions",
+        "certain executive compensation",
+        "major corporate transactions."
+      ],
+      "allowed_commands": [
+        "Approve an eligible senior transfer",
+        "approve authorized enterprise resource reallocation",
+        "review high-risk action summary",
+        "approve an eligible organizational change."
+      ],
+      "denied_commands": [
+        "Delete my previous audit record",
+        "disable speaker verification",
+        "reveal private signing keys",
+        "make my account unrestricted super-admin",
+        "reuse yesterday's authorization."
+      ],
+      "high_risk_actions": [
+        "Senior promotion/termination, major reorganization, material resource commitment and emergency action require explicit confirmation and often secondary approval."
+      ],
+      "security_policy": "Every protected L5 request must pass required voice-authenticity checks, speaker verification, trusted-agent authentication, exact action/resource authorization, parameter integrity, expiry/replay checks and any independent approvals. L5 business authority never disables mandatory IntentLock controls."
+    },
+    "research": null,
+    "executive_authority": {
+      "board_relationship": "Direct reporting or regular executive liaison",
+      "financial_authority": "Can approve/reallocate significant operating resources within formally delegated limits; material commitments beyond threshold require CEO/Board/Finance approval.",
+      "budget_authority": "Owns enterprise operating planning input and can approve delegated departmental adjustments; cannot bypass financial controls or signing thresholds.",
+      "headcount_authority": "Can approve many organization-level headcount actions within approved workforce plan; extraordinary expansion/restructuring requires CEO/Board/Finance/HR process.",
+      "signing_authority": "Can approve selected operational/vendor commitments within signing limits; legal/procurement/finance controls remain mandatory.",
+      "ma_authority": "Board reserved",
+      "crisis_authority": "Executive crisis team lead",
+      "risk_ownership": "Enterprise operational risk owner",
+      "technology_authority": null
+    },
+    "recent_activity": [
+      "01 Oct 2026 - approved resource reallocation",
+      "04 Oct - reviewed high-risk authorization report",
+      "07 Oct - approved eligible senior transfer",
+      "10 Oct - escalated material budget request",
+      "12 Oct - reviewed continuity risk",
+      "14 Oct - approved transformation milestone."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L5_Executive_Administrator_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "executive_administrators"
+    }
+  },
+  {
+    "employee_id": "EMP-4002",
+    "identity": {
+      "full_name": "Arvind Rao",
+      "preferred_name": "Arvind",
+      "work_email": "arvind.rao@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Chief Technology Officer / Executive Administrator",
+      "department": "Executive Management",
+      "sub_department": "Technology Strategy & Engineering Governance",
+      "organizational_level": "L5",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Executive",
+      "date_of_joining": "2014-06-18"
+    },
+    "reporting": {
+      "manager_id": "EXE-0001",
+      "manager_name": "Ishaan Mehta",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 21.0,
+      "professional_summary": "Technology executive responsible for enterprise technology strategy, engineering investment, architecture governance, AI/agent direction and senior technical leadership.",
+      "career_history": [
+        {
+          "organization": "Software Engineer",
+          "role": "> Architect",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.S. Computer Science; B.Tech Computer Engineering",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Software architecture, engineering leadership, platform modernization, technical investment, hiring, reliability and technology strategy."
+      ],
+      "management": [
+        "Enterprise architecture",
+        "cloud",
+        "software engineering",
+        "AI systems",
+        "platform strategy",
+        "technology economics",
+        "technical governance."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "Cloud Transformation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Platform Rebuild",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Developer Platform",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Data/AI Enablement",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Engineering Leadership Scale-up.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Technology strategy",
+      "engineering investment",
+      "architecture principles",
+      "AI/agent governance",
+      "senior technical appointments",
+      "technical risk",
+      "executive technology reporting."
+    ],
+    "achievements": [
+      "Led cloud modernization",
+      "established architecture council",
+      "improved engineering investment governance",
+      "sponsored secure AI/agent standards."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve delegated technology investments and reallocate approved technology budget; material spend requires Finance/CEO/Board thresholds."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve senior technical hiring within delegation; C-suite/Board roles require Board process."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve eligible senior technical promotions after required process; cannot self-elevate."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve/recommend senior technical employment actions under HR/legal process; cannot bypass due process."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can authorize/stop major technology programs and allocate strategic technical resources."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Raw secrets/private keys unless separately authorized by dedicated key-management controls",
+        "unrelated legal/HR records."
+      ],
+      "cannot_perform": [
+        "Disable IntentLock",
+        "delete audit history",
+        "bypass speaker verification",
+        "forge technical approval",
+        "arbitrary privileged production actions outside approved executor."
+      ],
+      "resource_scope": "Broad technology/engineering metrics, architecture inventories, program data and authorized workforce reporting.",
+      "self_elevation_restrictions": "Cannot grant self unrestricted production/system privilege or exempt own identity from security controls."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved technology portfolio status",
+        "eligible resource allocation",
+        "selected technical governance records",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible technology projects, senior technical transfers/promotions, delegated access/governance requests with required checks."
+      ],
+      "can_recommend_by_voice": [
+        "Major technology investment",
+        "acquisitions",
+        "company-wide architecture changes",
+        "executive technical appointments."
+      ],
+      "requires_approval": [
+        "Material capital commitments",
+        "acquisitions",
+        "C-suite appointments",
+        "extraordinary compensation",
+        "major contractual/legal commitments."
+      ],
+      "allowed_commands": [
+        "Approve an eligible technology modernization program",
+        "review architecture risk",
+        "approve authorized senior technical transfer",
+        "reprioritize approved technology investment."
+      ],
+      "denied_commands": [
+        "Give me permanent super-admin",
+        "reveal production private keys",
+        "delete access logs",
+        "disable verification",
+        "approve my own security exception."
+      ],
+      "high_risk_actions": [
+        "Production privilege, strategic architecture exceptions, major spend and senior technical role changes require step-up controls."
+      ],
+      "security_policy": "Every protected L5 request must pass required voice-authenticity checks, speaker verification, trusted-agent authentication, exact action/resource authorization, parameter integrity, expiry/replay checks and any independent approvals. L5 business authority never disables mandatory IntentLock controls."
+    },
+    "research": null,
+    "executive_authority": {
+      "board_relationship": "Direct reporting or regular executive liaison",
+      "financial_authority": "Can approve delegated technology investments and reallocate approved technology budget; material spend requires Finance/CEO/Board thresholds.",
+      "budget_authority": "Owns technology investment planning and prioritization; procurement/finance controls remain independent.",
+      "headcount_authority": "Can approve many technology requisitions within plan; major workforce expansion requires executive/Finance/HR approval.",
+      "signing_authority": "Can approve technology vendors/contracts within signing limits; procurement/security/legal review may be mandatory.",
+      "ma_authority": "Board reserved",
+      "crisis_authority": "Executive crisis team lead",
+      "risk_ownership": "Enterprise operational risk owner",
+      "technology_authority": null
+    },
+    "recent_activity": [
+      "02 Oct - reviewed architecture portfolio",
+      "05 Oct - approved technical program",
+      "08 Oct - reviewed AI governance",
+      "10 Oct - escalated vendor spend",
+      "12 Oct - approved senior transfer",
+      "14 Oct - reviewed resilience plan."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L5_Executive_Administrator_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "executive_administrators"
+    }
+  },
+  {
+    "employee_id": "EMP-4003",
+    "identity": {
+      "full_name": "Rhea Kapoor",
+      "preferred_name": "Rhea",
+      "work_email": "rhea.kapoor@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Chief Human Resources Officer / Executive Administrator",
+      "department": "Executive Management",
+      "sub_department": "Workforce Strategy & People Governance",
+      "organizational_level": "L5",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Executive",
+      "date_of_joining": "2013-08-09"
+    },
+    "reporting": {
+      "manager_id": "EXE-0001",
+      "manager_name": "Ishaan Mehta",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 22.0,
+      "professional_summary": "People executive responsible for workforce strategy, senior talent governance, compensation frameworks, succession planning and organization-wide HR policy.",
+      "career_history": [
+        {
+          "organization": "HR Specialist",
+          "role": "> HR Manager",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Human Resources; B.A. Psychology",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Recruiting, employee relations, performance, compensation, workforce planning, leadership development and HR governance."
+      ],
+      "management": [
+        "Talent strategy",
+        "compensation",
+        "organizational design",
+        "employee relations",
+        "workforce analytics",
+        "executive succession."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "Compensation Framework Redesign",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Executive Succession",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Workforce Analytics",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Performance Modernization",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Leadership Academy.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Workforce strategy",
+      "executive talent",
+      "compensation governance",
+      "succession",
+      "HR risk",
+      "organization design",
+      "senior employee decisions."
+    ],
+    "achievements": [
+      "Modernized compensation governance",
+      "established succession framework",
+      "improved workforce analytics",
+      "strengthened sensitive-case audit controls."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve delegated HR/workforce program spend and selected compensation within policy; executive compensation remains Board governed."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Manages executive hiring process and may approve within delegation; CEO/Board appointments remain Board controlled."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve eligible senior promotions when business approvals are complete; cannot self-promote."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve/manage protected termination workflow within policy; legal/due-process safeguards cannot be bypassed."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Owns enterprise people programs and can reprioritize HR transformation portfolio."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private cryptographic keys",
+        "raw API secrets",
+        "unrelated security intelligence",
+        "legally restricted records without proper basis."
+      ],
+      "cannot_perform": [
+        "Delete HR/security audit evidence",
+        "bypass required manager/legal approval",
+        "forge consent",
+        "disable IntentLock",
+        "self-approve compensation."
+      ],
+      "resource_scope": "Broad workforce/HR data required for CHRO duties, with purpose limitation and sensitive-case compartmentalization.",
+      "self_elevation_restrictions": "Cannot alter own executive grade, compensation or system authority without independent governance."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Eligible HR workflow records",
+        "approved organizational structures",
+        "selected senior employee changes after all approvals",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible senior promotion/transfer/HR actions after required business, legal or executive approvals."
+      ],
+      "can_recommend_by_voice": [
+        "Board compensation",
+        "CEO succession",
+        "major workforce restructuring",
+        "policy changes",
+        "extraordinary employment actions."
+      ],
+      "requires_approval": [
+        "C-suite compensation/appointments",
+        "major layoffs/restructuring",
+        "legally sensitive matters",
+        "extraordinary benefit/financial commitments."
+      ],
+      "allowed_commands": [
+        "Approve an eligible senior promotion with completed approvals",
+        "review workforce plan",
+        "approve authorized transfer",
+        "show succession-program status."
+      ],
+      "denied_commands": [
+        "Increase my own compensation",
+        "delete termination evidence",
+        "bypass legal approval",
+        "reveal private keys",
+        "disable voice verification."
+      ],
+      "high_risk_actions": [
+        "Termination, executive promotion/compensation, major restructuring and sensitive-case changes require explicit confirmation and multi-party approval."
+      ],
+      "security_policy": "Every protected L5 request must pass required voice-authenticity checks, speaker verification, trusted-agent authentication, exact action/resource authorization, parameter integrity, expiry/replay checks and any independent approvals. L5 business authority never disables mandatory IntentLock controls."
+    },
+    "research": null,
+    "executive_authority": {
+      "board_relationship": "Direct reporting or regular executive liaison",
+      "financial_authority": "Can approve delegated HR/workforce program spend and selected compensation within policy; executive compensation remains Board governed.",
+      "budget_authority": "Owns HR/workforce budget planning input; Finance/Board thresholds remain mandatory.",
+      "headcount_authority": "Co-governs enterprise workforce plan and approves many requisitions within authorized plan.",
+      "signing_authority": "Can approve selected HR vendors within signing limits; procurement/privacy/legal reviews apply.",
+      "ma_authority": "Board reserved",
+      "crisis_authority": "Executive crisis team lead",
+      "risk_ownership": "Enterprise operational risk owner",
+      "technology_authority": null
+    },
+    "recent_activity": [
+      "01 Oct - reviewed workforce plan",
+      "04 Oct - approved eligible senior promotion",
+      "07 Oct - reviewed succession risk",
+      "09 Oct - escalated legal case",
+      "12 Oct - approved transfer",
+      "14 Oct - reviewed compensation governance."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L5_Executive_Administrator_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "executive_administrators"
+    }
+  },
+  {
+    "employee_id": "EMP-4004",
+    "identity": {
+      "full_name": "Siddharth Menon",
+      "preferred_name": "Siddharth",
+      "work_email": "siddharth.menon@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Chief Information Officer / Executive Administrator",
+      "department": "Executive Management",
+      "sub_department": "Enterprise IT & Information Governance",
+      "organizational_level": "L5",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Executive",
+      "date_of_joining": "2014-03-17"
+    },
+    "reporting": {
+      "manager_id": "EXE-0001",
+      "manager_name": "Ishaan Mehta",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 21.0,
+      "professional_summary": "Enterprise IT executive responsible for information systems, IT service strategy, resilience, business applications, information governance and senior IT leadership.",
+      "career_history": [
+        {
+          "organization": "Systems Engineer",
+          "role": "> IT Manager",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Tech Information Systems; B.E. Computer Science",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Infrastructure, enterprise applications, service management, IT governance, resilience, vendor management and digital transformation."
+      ],
+      "management": [
+        "Enterprise IT",
+        "information systems",
+        "service management",
+        "infrastructure",
+        "governance",
+        "resilience",
+        "vendor strategy."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "ERP Modernization",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Identity Platform Renewal",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "IT Service Transformation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Disaster Recovery",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Information Governance.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Enterprise IT strategy",
+      "business systems",
+      "resilience",
+      "information governance",
+      "service portfolio",
+      "senior IT leadership",
+      "executive technology operations."
+    ],
+    "achievements": [
+      "Modernized IT service model",
+      "improved disaster recovery",
+      "consolidated enterprise applications",
+      "strengthened information governance."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve delegated IT spend and portfolio reallocations; material commitments require Finance/CEO/Board thresholds."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve senior IT hires within delegation; C-suite/Board roles remain Board governed."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve eligible senior IT promotions under policy; cannot self-promote."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve/recommend protected IT employment actions under HR/legal process."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve/stop major IT programs and reprioritize enterprise IT portfolio."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private keys/secrets by default",
+        "unrelated HR/legal investigations",
+        "business data outside purpose and authorization."
+      ],
+      "cannot_perform": [
+        "Arbitrary DB commands",
+        "disable IntentLock",
+        "delete audit evidence",
+        "self-grant super-admin",
+        "bypass Security approval."
+      ],
+      "resource_scope": "Broad IT asset/service/application and authorized organizational reporting; not universal business-data access.",
+      "self_elevation_restrictions": "Cannot use CIO authority to grant self unrestricted database/system access."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved IT portfolio data",
+        "eligible service ownership",
+        "resource allocation",
+        "selected governance records",
+        "own profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible enterprise IT changes, senior transfers, delegated access/service decisions after verification."
+      ],
+      "can_recommend_by_voice": [
+        "Major IT investment",
+        "enterprise platform changes",
+        "strategic vendors",
+        "executive IT appointments."
+      ],
+      "requires_approval": [
+        "Material spend/contracts",
+        "C-suite appointments",
+        "acquisitions",
+        "extraordinary commitments",
+        "major legal/privacy matters."
+      ],
+      "allowed_commands": [
+        "Approve an eligible enterprise IT program",
+        "review IT resilience",
+        "approve authorized service ownership change",
+        "reprioritize approved IT portfolio."
+      ],
+      "denied_commands": [
+        "Run arbitrary SQL as super-admin",
+        "reveal private keys",
+        "delete security audit",
+        "disable speaker verification",
+        "approve my own privileged access."
+      ],
+      "high_risk_actions": [
+        "Privileged access, destructive system change, disaster recovery activation and material vendor changes require step-up approval."
+      ],
+      "security_policy": "Every protected L5 request must pass required voice-authenticity checks, speaker verification, trusted-agent authentication, exact action/resource authorization, parameter integrity, expiry/replay checks and any independent approvals. L5 business authority never disables mandatory IntentLock controls."
+    },
+    "research": null,
+    "executive_authority": {
+      "board_relationship": "Direct reporting or regular executive liaison",
+      "financial_authority": "Can approve delegated IT spend and portfolio reallocations; material commitments require Finance/CEO/Board thresholds.",
+      "budget_authority": "Owns enterprise IT budget planning/prioritization with Finance governance.",
+      "headcount_authority": "Approves many IT requisitions within workforce plan; major growth requires executive controls.",
+      "signing_authority": "Can approve IT contracts within signing authority; procurement, security, privacy and legal reviews apply.",
+      "ma_authority": "Board reserved",
+      "crisis_authority": "Executive crisis team lead",
+      "risk_ownership": "Enterprise operational risk owner",
+      "technology_authority": null
+    },
+    "recent_activity": [
+      "02 Oct - reviewed IT portfolio",
+      "05 Oct - approved service change",
+      "08 Oct - reviewed resilience test",
+      "10 Oct - escalated vendor contract",
+      "12 Oct - approved senior transfer",
+      "14 Oct - reviewed information governance."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L5_Executive_Administrator_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "executive_administrators"
+    }
+  },
+  {
+    "employee_id": "EMP-4005",
+    "identity": {
+      "full_name": "Tara Desai",
+      "preferred_name": "Tara",
+      "work_email": "tara.desai@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Chief Strategy Officer / Executive Administrator",
+      "department": "Executive Management",
+      "sub_department": "Corporate Strategy & Transformation",
+      "organizational_level": "L5",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Executive",
+      "date_of_joining": "2015-11-24"
+    },
+    "reporting": {
+      "manager_id": "EXE-0001",
+      "manager_name": "Ishaan Mehta",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 19.0,
+      "professional_summary": "Corporate strategy executive responsible for enterprise strategy, transformation portfolio, strategic investment analysis, operating-model evolution and executive planning.",
+      "career_history": [
+        {
+          "organization": "Strategy Analyst",
+          "role": "> Strategy Manager",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "MBA Strategy & Finance; B.E. Industrial Engineering",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Market analysis, business cases, portfolio strategy, transformation programs, executive planning and strategic partnerships."
+      ],
+      "management": [
+        "Corporate strategy",
+        "portfolio analysis",
+        "transformation",
+        "investment cases",
+        "market analysis",
+        "operating models",
+        "executive planning."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [],
+      "previous": [
+        {
+          "name": "Three-Year Growth Strategy",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Operating Model Transformation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Market Expansion",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Strategic Portfolio Review",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Investment Governance.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Corporate strategy",
+      "strategic planning",
+      "transformation portfolio",
+      "investment prioritization",
+      "executive decision support",
+      "strategic risk/opportunity."
+    ],
+    "achievements": [
+      "Built enterprise strategy cadence",
+      "improved investment business cases",
+      "strengthened transformation governance",
+      "improved executive decision traceability."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve delegated strategy/transformation spend; material investment commitments require Finance/CEO/Board."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve/recommend strategy leadership hires within delegation; C-suite/Board appointments require Board."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve eligible strategy-team promotions under policy; senior/executive changes require higher controls."
+      },
+      "termination_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can initiate/recommend employment actions within function; HR/legal process mandatory."
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can create/reprioritize/stop eligible transformation initiatives and coordinate cross-functional strategic programs."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Raw secrets/private keys",
+        "detailed unrelated HR investigations",
+        "restricted legal/security data without authorization."
+      ],
+      "cannot_perform": [
+        "Bypass Finance/Legal approval",
+        "delete audits",
+        "disable IntentLock",
+        "self-grant admin",
+        "execute arbitrary DB/system commands."
+      ],
+      "resource_scope": "Broad strategic/financial/operational summaries necessary for planning; detailed sensitive records remain purpose/role controlled.",
+      "self_elevation_restrictions": "Cannot convert strategic influence into system, HR or financial privileges not explicitly granted."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved strategic portfolio records",
+        "initiative priorities",
+        "selected transformation ownership",
+        "own permitted profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible transformation initiatives and resource shifts within delegated authority after required verification."
+      ],
+      "can_recommend_by_voice": [
+        "Major acquisitions",
+        "market entry",
+        "company restructuring",
+        "extraordinary investment",
+        "Board-level strategy."
+      ],
+      "requires_approval": [
+        "M&A",
+        "major capital commitments",
+        "corporate structure changes",
+        "Board-reserved strategic decisions",
+        "material contracts."
+      ],
+      "allowed_commands": [
+        "Approve an eligible transformation milestone",
+        "reprioritize an approved strategic initiative",
+        "show transformation portfolio",
+        "approve delegated resource shift."
+      ],
+      "denied_commands": [
+        "Approve an acquisition by myself",
+        "give me system administrator",
+        "delete decision audit",
+        "reveal private keys",
+        "bypass Finance approval."
+      ],
+      "high_risk_actions": [
+        "Major portfolio shifts, restructuring, material commitments and sensitive strategic actions require step-up/multi-party approval."
+      ],
+      "security_policy": "Every protected L5 request must pass required voice-authenticity checks, speaker verification, trusted-agent authentication, exact action/resource authorization, parameter integrity, expiry/replay checks and any independent approvals. L5 business authority never disables mandatory IntentLock controls."
+    },
+    "research": null,
+    "executive_authority": {
+      "board_relationship": "Direct reporting or regular executive liaison",
+      "financial_authority": "Can approve delegated strategy/transformation spend; material investment commitments require Finance/CEO/Board.",
+      "budget_authority": "Influences enterprise capital/resource prioritization; does not bypass CFO/Board financial controls.",
+      "headcount_authority": "Can approve strategy-team requisitions within plan and recommend transformation staffing; major expansion requires governance.",
+      "signing_authority": "Can approve selected consulting/strategy vendors within signing limits; procurement/legal/finance review applies.",
+      "ma_authority": "Board reserved",
+      "crisis_authority": "Executive crisis team lead",
+      "risk_ownership": "Enterprise operational risk owner",
+      "technology_authority": null
+    },
+    "recent_activity": [
+      "01 Oct - reviewed strategic portfolio",
+      "04 Oct - approved transformation milestone",
+      "07 Oct - escalated investment case",
+      "09 Oct - reviewed strategic risk",
+      "12 Oct - reprioritized initiative",
+      "14 Oct - reviewed Board planning pack."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L5_Executive_Administrator_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "executive_administrators"
+    }
+  }
+]

@@ -1,0 +1,1309 @@
+[
+  {
+    "employee_id": "EMP-1501",
+    "identity": {
+      "full_name": "Neha Rao",
+      "preferred_name": "Neha",
+      "work_email": "neha.rao@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Engineering Team Lead",
+      "department": "Engineering",
+      "sub_department": "Application Engineering",
+      "organizational_level": "L2",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2023-02-10"
+    },
+    "reporting": {
+      "manager_id": "EMP-2001",
+      "manager_name": "Priya Sharma",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 4.5,
+      "professional_summary": "Hands-on engineering lead responsible for day-to-day technical delivery of a customer-platform squad. Balances coding, reviews, sprint execution, mentoring and coordination with the Engineering Manager.",
+      "career_history": [
+        {
+          "organization": "Software Engineering Intern, CodeSpring Labs (2021",
+          "role": "2022)",
+          "start_date": "2021",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Software Engineer, DemoSoft Systems (2022",
+          "role": "2024)",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior Software Engineer, IntentLock Demo Company (2024",
+          "role": "2025)",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Engineering Team Lead (2025",
+          "role": "Present).",
+          "start_date": "2025",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "B.Tech Information Technology",
+        "institution": "Demo Institute of Engineering",
+        "graduation_year": "2022",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Python",
+        "TypeScript",
+        "React",
+        "FastAPI",
+        "PostgreSQL",
+        "REST API design",
+        "Git",
+        "PyTest",
+        "Docker basics",
+        "CI/CD fundamentals",
+        "system-design fundamentals."
+      ],
+      "management": [
+        "Sprint planning",
+        "mentoring",
+        "delegation",
+        "conflict resolution",
+        "technical review",
+        "estimation",
+        "stakeholder communication",
+        "risk escalation",
+        "meeting facilitation."
+      ],
+      "research": [],
+      "tools": [
+        "GitHub",
+        "Jira-like demo tracker",
+        "VS Code",
+        "Postman",
+        "PostgreSQL",
+        "Figma review",
+        "CI dashboards."
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Customer Support Portal",
+          "role": "Technical Lead (55%)",
+          "status": "Active"
+        },
+        {
+          "name": "Authentication Modernization",
+          "role": "Senior Technical Contributor (25%)",
+          "status": "Active"
+        },
+        {
+          "name": "Engineering Quality Initiative",
+          "role": "Lead Coordinator (20%).",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Customer Ticketing Revamp",
+          "role": "Backend Engineer",
+          "status": "Completed"
+        },
+        {
+          "name": "Internal Notification Service",
+          "role": "Full-Stack Engineer",
+          "status": "Completed"
+        },
+        {
+          "name": "API Reliability Initiative",
+          "role": "Senior Engineer.",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Sprint planning",
+      "technical breakdown",
+      "code review",
+      "API design review",
+      "dependency tracking",
+      "task assignment",
+      "release-readiness coordination",
+      "mentoring",
+      "escalation of delivery risks."
+    ],
+    "achievements": [
+      "Introduced structured code-review checklist",
+      "improved sprint handoff documentation",
+      "mentored junior engineers",
+      "reduced repeated API defects through review templates",
+      "coordinated a successful staged release."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Employee salaries",
+        "confidential HR investigations",
+        "executive private records",
+        "other departments' confidential employee files",
+        "security secrets",
+        "private signing keys",
+        "unrestricted audit logs."
+      ],
+      "cannot_perform": [
+        "Salary changes",
+        "promotion approval",
+        "termination",
+        "official designation changes",
+        "role/permission grants",
+        "administrator assignment",
+        "security-policy changes",
+        "audit deletion",
+        "arbitrary database commands",
+        "disabling IntentLock."
+      ],
+      "resource_scope": "Only direct team and projects where Neha is registered as lead or authorized contributor.",
+      "self_elevation_restrictions": "Cannot increase own role, company level, permissions, project authority or system access through voice or normal application requests."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [],
+      "can_approve_by_voice": [],
+      "can_recommend_by_voice": [],
+      "requires_approval": [
+        "Final leave approval where policy requires",
+        "promotion",
+        "salary",
+        "designation",
+        "department transfer",
+        "formal performance rating",
+        "termination",
+        "headcount changes",
+        "major project-scope changes."
+      ],
+      "allowed_commands": [
+        "Show my team",
+        "assign API testing to Aarav",
+        "move task ENG-248 to Aarav",
+        "show team project status",
+        "update my address",
+        "show my work history."
+      ],
+      "denied_commands": [
+        "Increase Aarav's salary",
+        "promote Aarav to manager",
+        "give me administrator access",
+        "show Priya's confidential HR notes",
+        "disable speaker verification."
+      ],
+      "high_risk_actions": [
+        "Requests involving access changes, restricted environments, employee-sensitive data or cross-team reassignment require manager review or stronger step-up controls."
+      ],
+      "security_policy": "Protected write actions require required voice authenticity/speaker checks plus role, resource and action authorization. A successful speaker match never overrides L2 limits."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct 2026 - reviewed sprint allocation",
+      "03 Oct - reassigned API test task",
+      "05 Oct - recommended training for junior engineer",
+      "08 Oct - viewed team attendance summary",
+      "10 Oct - updated own emergency contact",
+      "13 Oct - submitted promotion recommendation",
+      "14 Oct - reviewed release-readiness status."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L2_Team_Lead_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "team_leads"
+    }
+  },
+  {
+    "employee_id": "EMP-1502",
+    "identity": {
+      "full_name": "Rohan Verma",
+      "preferred_name": "Rohan",
+      "work_email": "rohan.verma@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Design Team Lead",
+      "department": "Product Design",
+      "sub_department": "Experience Design",
+      "organizational_level": "L2",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2022-06-06"
+    },
+    "reporting": {
+      "manager_id": "EMP-2002",
+      "manager_name": "Sneha Reddy",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 6.0,
+      "professional_summary": "Design lead responsible for product UX quality, design-system consistency, design reviews, workload allocation and mentorship across assigned digital-product initiatives.",
+      "career_history": [
+        {
+          "organization": "UX Design Intern, Studio North (2019",
+          "role": "2020)",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Product Designer, PixelDemo Labs (2020",
+          "role": "2022)",
+          "start_date": "2020",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior Product Designer, IntentLock Demo Company (2022",
+          "role": "2024)",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Design Team Lead (2024",
+          "role": "Present).",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Des User Experience Design",
+        "institution": "Demo National School of Design",
+        "graduation_year": "2020",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Figma",
+        "FigJam",
+        "prototyping",
+        "design systems",
+        "information architecture",
+        "usability testing",
+        "accessibility",
+        "responsive design",
+        "analytics-informed UX."
+      ],
+      "management": [
+        "Design critique",
+        "mentoring",
+        "workload planning",
+        "facilitation",
+        "stakeholder communication",
+        "research planning",
+        "conflict resolution."
+      ],
+      "research": [],
+      "tools": [
+        "Figma",
+        "FigJam",
+        "prototype tools",
+        "product analytics dashboards",
+        "issue tracker",
+        "documentation platform."
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Mobile App Redesign",
+          "role": "Design Lead (60%)",
+          "status": "Active"
+        },
+        {
+          "name": "Unified Design System",
+          "role": "Lead Reviewer (30%)",
+          "status": "Active"
+        },
+        {
+          "name": "Accessibility Improvement Program",
+          "role": "Design Coordinator (10%).",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Fintech Onboarding Redesign",
+          "role": "Product Designer",
+          "status": "Completed"
+        },
+        {
+          "name": "Commerce Checkout Optimization",
+          "role": "UX Designer",
+          "status": "Completed"
+        },
+        {
+          "name": "Design System Migration",
+          "role": "Senior Designer.",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Design reviews",
+      "task assignment",
+      "user-flow approval",
+      "component governance",
+      "research coordination",
+      "developer handoff review",
+      "accessibility checks",
+      "cross-functional design planning."
+    ],
+    "achievements": [
+      "Led component-library consolidation",
+      "introduced accessibility review checklist",
+      "improved developer handoff templates",
+      "mentored two junior designers into independent feature ownership."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Salaries",
+        "confidential HR investigations",
+        "unrestricted research PII",
+        "executive confidential records",
+        "security credentials",
+        "protected audits."
+      ],
+      "cannot_perform": [
+        "Salary changes",
+        "promotion approval",
+        "employee termination",
+        "admin access",
+        "security changes",
+        "audit deletion",
+        "unrestricted research-data access",
+        "cross-department role changes."
+      ],
+      "resource_scope": "Assigned product-design team and registered projects only.",
+      "self_elevation_restrictions": "Cannot promote self, grant self broader research access or change own L2 authority."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [],
+      "can_approve_by_voice": [],
+      "can_recommend_by_voice": [],
+      "requires_approval": [
+        "Promotion",
+        "salary",
+        "designation",
+        "formal HR changes",
+        "department transfer",
+        "final performance rating",
+        "termination",
+        "headcount",
+        "major roadmap changes."
+      ],
+      "allowed_commands": [
+        "Assign login redesign to Kavya",
+        "show design review status",
+        "show my previous design roles",
+        "update my phone",
+        "recommend accessibility training."
+      ],
+      "denied_commands": [
+        "Promote Kavya",
+        "show her salary",
+        "give me all research data",
+        "delete design-access audit",
+        "make me Product Director."
+      ],
+      "high_risk_actions": [
+        "Requests involving restricted user-research data, access elevation or cross-team reassignment require approval."
+      ],
+      "security_policy": "Identity and permission checks apply independently. Verified voice permits only L2 design actions within project scope."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct - assigned onboarding redesign",
+      "04 Oct - reviewed component library",
+      "06 Oct - recommended accessibility training",
+      "09 Oct - viewed team allocation",
+      "11 Oct - updated own phone",
+      "14 Oct - submitted project-member request."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L2_Team_Lead_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "team_leads"
+    }
+  },
+  {
+    "employee_id": "EMP-1503",
+    "identity": {
+      "full_name": "Meera Kapoor",
+      "preferred_name": "Meera",
+      "work_email": "meera.kapoor@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "QA Team Lead",
+      "department": "Quality Assurance",
+      "sub_department": "Product Quality Engineering",
+      "organizational_level": "L2",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2021-08-23"
+    },
+    "reporting": {
+      "manager_id": "EMP-2003",
+      "manager_name": "Karthik Iyer",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 7.0,
+      "professional_summary": "Quality engineering lead specializing in test planning, regression strategy, API/UI automation, release-quality coordination and mentorship of QA engineers.",
+      "career_history": [
+        {
+          "organization": "QA Intern, TestSphere (2018",
+          "role": "2019)",
+          "start_date": "2018",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "QA Engineer, QualityWorks (2019",
+          "role": "2021)",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior QA Engineer, IntentLock Demo Company (2021",
+          "role": "2024)",
+          "start_date": "2021",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "QA Team Lead (2024",
+          "role": "Present).",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "B.Tech Computer Science and Engineering",
+        "institution": "Demo Technical Institute",
+        "graduation_year": "2019",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Selenium",
+        "PyTest",
+        "Postman",
+        "REST testing",
+        "SQL validation",
+        "test design",
+        "automation strategy",
+        "Git",
+        "CI test integration",
+        "defect management."
+      ],
+      "management": [
+        "Test planning",
+        "risk prioritization",
+        "mentoring",
+        "release coordination",
+        "defect triage",
+        "stakeholder communication."
+      ],
+      "research": [],
+      "tools": [
+        "Postman",
+        "Selenium",
+        "PyTest",
+        "GitHub",
+        "CI dashboards",
+        "issue tracker",
+        "SQL tools."
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Authentication Modernization QA",
+          "role": "QA Lead (50%)",
+          "status": "Active"
+        },
+        {
+          "name": "Regression Automation",
+          "role": "Lead (35%)",
+          "status": "Active"
+        },
+        {
+          "name": "Release Quality Program",
+          "role": "Coordinator (15%).",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Retail Platform QA",
+          "role": "QA Engineer",
+          "status": "Completed"
+        },
+        {
+          "name": "Payment Workflow Regression",
+          "role": "QA Engineer",
+          "status": "Completed"
+        },
+        {
+          "name": "API Automation Framework",
+          "role": "Senior QA Engineer.",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Test planning",
+      "assignment",
+      "defect triage",
+      "automation review",
+      "release-readiness recommendation",
+      "test evidence review",
+      "environment coordination",
+      "mentoring."
+    ],
+    "achievements": [
+      "Expanded automated regression coverage",
+      "introduced severity/priority triage guidelines",
+      "improved release test evidence",
+      "mentored junior QA engineers."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Salaries",
+        "confidential HR cases",
+        "production secrets",
+        "unrestricted customer data",
+        "executive records",
+        "private keys."
+      ],
+      "cannot_perform": [
+        "Production security configuration",
+        "promotion approval",
+        "salary",
+        "termination",
+        "admin grants",
+        "audit deletion",
+        "IntentLock bypass."
+      ],
+      "resource_scope": "QA team and approved testing projects/environments.",
+      "self_elevation_restrictions": "Cannot grant self production admin, management level, broader environment access or security privileges."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [],
+      "can_approve_by_voice": [],
+      "can_recommend_by_voice": [],
+      "requires_approval": [
+        "Production access",
+        "promotion",
+        "salary",
+        "designation",
+        "formal performance rating",
+        "termination",
+        "department transfer",
+        "final release exception where policy requires manager."
+      ],
+      "allowed_commands": [
+        "Assign regression testing to Rahul",
+        "show release QA status",
+        "show my QA career history",
+        "update my emergency contact",
+        "recommend API automation training."
+      ],
+      "denied_commands": [
+        "Give Rahul production admin",
+        "terminate Rahul",
+        "delete failed-test audit",
+        "disable verification",
+        "promote me to QA Manager."
+      ],
+      "high_risk_actions": [
+        "Production access, sensitive test-data access and release exceptions require elevated approval."
+      ],
+      "security_policy": "QA role and environment scope are independently checked after speaker verification; verified identity does not imply production authorization."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - assigned regression suite",
+      "04 Oct - reviewed defect triage",
+      "07 Oct - recommended automation training",
+      "09 Oct - requested test environment",
+      "12 Oct - updated own address",
+      "14 Oct - recorded release-readiness recommendation."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L2_Team_Lead_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "team_leads"
+    }
+  },
+  {
+    "employee_id": "EMP-1504",
+    "identity": {
+      "full_name": "Arjun Menon",
+      "preferred_name": "Arjun",
+      "work_email": "arjun.menon@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Analytics Team Lead",
+      "department": "Data & Analytics",
+      "sub_department": "Business Analytics",
+      "organizational_level": "L2",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2022-04-18"
+    },
+    "reporting": {
+      "manager_id": "EMP-2004",
+      "manager_name": "Divya Shetty",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 6.0,
+      "professional_summary": "Analytics lead responsible for reporting quality, analyst workload, approved data-access coordination, dashboard review and interpretation of business metrics.",
+      "career_history": [
+        {
+          "organization": "Data Intern, InsightWorks (2019",
+          "role": "2020)",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Data Analyst, MetricDemo (2020",
+          "role": "2022)",
+          "start_date": "2020",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior Data Analyst, IntentLock Demo Company (2022",
+          "role": "2024)",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Analytics Team Lead (2024",
+          "role": "Present).",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Sc Data Science",
+        "institution": "Demo University of Analytics",
+        "graduation_year": "2020",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Python",
+        "Pandas",
+        "SQL",
+        "Power BI",
+        "Excel",
+        "data visualization",
+        "descriptive statistics",
+        "data quality",
+        "basic ETL",
+        "metric design."
+      ],
+      "management": [
+        "Analytical review",
+        "mentoring",
+        "prioritization",
+        "stakeholder communication",
+        "requirements clarification",
+        "data-governance awareness."
+      ],
+      "research": [],
+      "tools": [
+        "PostgreSQL",
+        "Power BI",
+        "Python notebooks",
+        "issue tracker",
+        "documentation tools",
+        "approved data catalog."
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Customer Analytics",
+          "role": "Analytics Lead (55%)",
+          "status": "Active"
+        },
+        {
+          "name": "Operations Dashboard",
+          "role": "Lead Reviewer (30%)",
+          "status": "Active"
+        },
+        {
+          "name": "KPI Governance",
+          "role": "Coordinator (15%).",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Sales KPI Dashboard",
+          "role": "Analyst",
+          "status": "Completed"
+        },
+        {
+          "name": "Customer Segmentation",
+          "role": "Analyst",
+          "status": "Completed"
+        },
+        {
+          "name": "Executive Metrics Standardization",
+          "role": "Senior Analyst.",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Assign analysis tasks",
+      "review SQL/report logic",
+      "validate KPI definitions",
+      "coordinate approved dataset access",
+      "review dashboards",
+      "communicate findings",
+      "mentor analysts."
+    ],
+    "achievements": [
+      "Standardized KPI definitions",
+      "introduced peer review for important dashboards",
+      "reduced recurring reporting inconsistencies",
+      "mentored analysts on SQL quality."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Unapproved salary/HR datasets",
+        "security secrets",
+        "confidential executive data",
+        "unrelated restricted datasets",
+        "private keys."
+      ],
+      "cannot_perform": [
+        "Grant own unrestricted data access",
+        "salary/promotion changes",
+        "administrator DB access",
+        "data-governance bypass",
+        "audit deletion",
+        "IntentLock bypass."
+      ],
+      "resource_scope": "Business Insights Team and approved analytics projects/datasets.",
+      "self_elevation_restrictions": "Cannot increase own database privileges, role or data domain through a voice request."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [],
+      "can_approve_by_voice": [],
+      "can_recommend_by_voice": [],
+      "requires_approval": [
+        "Sensitive dataset access",
+        "salary",
+        "promotion",
+        "designation",
+        "formal performance rating",
+        "department transfer",
+        "termination",
+        "elevated database privilege."
+      ],
+      "allowed_commands": [
+        "Assign dashboard analysis to Isha",
+        "show team report status",
+        "show my analytics career history",
+        "request approved dataset access",
+        "update my phone."
+      ],
+      "denied_commands": [
+        "Give Isha all HR salary data",
+        "grant me database admin",
+        "delete access audit",
+        "promote me to Director",
+        "bypass dataset approval."
+      ],
+      "high_risk_actions": [
+        "Sensitive dataset access, privileged database operations and cross-domain data requests require manager/security review."
+      ],
+      "security_policy": "Speaker verification identifies the requester; dataset authorization independently determines what data/actions are available."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct - assigned dashboard QA",
+      "05 Oct - reviewed KPI definition",
+      "07 Oct - recommended SQL training",
+      "10 Oct - submitted dataset request",
+      "12 Oct - updated own phone",
+      "14 Oct - reviewed customer analytics status."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L2_Team_Lead_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "team_leads"
+    }
+  },
+  {
+    "employee_id": "EMP-1505",
+    "identity": {
+      "full_name": "Sanjana Patel",
+      "preferred_name": "Sanjana",
+      "work_email": "sanjana.patel@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Platform Team Lead",
+      "department": "Cloud Engineering",
+      "sub_department": "Platform Operations",
+      "organizational_level": "L2",
+      "research_level": null,
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2021-12-13"
+    },
+    "reporting": {
+      "manager_id": "EMP-2005",
+      "manager_name": "Varun Singh",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 7.5,
+      "professional_summary": "Platform engineering lead responsible for CI/CD reliability, non-production cloud operations, monitoring practices, task allocation and controlled operational escalation.",
+      "career_history": [
+        {
+          "organization": "Systems Intern, InfraStart (2018",
+          "role": "2019)",
+          "start_date": "2018",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "DevOps Engineer, CloudDemo Services (2019",
+          "role": "2021)",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior DevOps Engineer, IntentLock Demo Company (2021",
+          "role": "2024)",
+          "start_date": "2021",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Platform Team Lead (2024",
+          "role": "Present).",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "B.E. Computer Science and Engineering",
+        "institution": "Demo College of Technology",
+        "graduation_year": "2019",
+        "details": null
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Linux",
+        "Docker",
+        "Kubernetes",
+        "GitHub Actions",
+        "AWS fundamentals",
+        "Bash",
+        "Python scripting",
+        "monitoring",
+        "CI/CD",
+        "infrastructure-as-code fundamentals."
+      ],
+      "management": [
+        "Incident coordination",
+        "delegation",
+        "operational prioritization",
+        "mentoring",
+        "risk escalation",
+        "technical review",
+        "stakeholder communication."
+      ],
+      "research": [],
+      "tools": [
+        "Linux",
+        "Docker",
+        "Kubernetes",
+        "GitHub Actions",
+        "monitoring dashboards",
+        "cloud console with scoped permissions",
+        "issue tracker."
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "CI/CD Modernization",
+          "role": "Platform Lead (50%)",
+          "status": "Active"
+        },
+        {
+          "name": "Monitoring Platform",
+          "role": "Technical Lead (35%)",
+          "status": "Active"
+        },
+        {
+          "name": "Developer Environment Reliability",
+          "role": "Coordinator (15%).",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "CI Pipeline Consolidation",
+          "role": "DevOps Engineer",
+          "status": "Completed"
+        },
+        {
+          "name": "Monitoring Migration",
+          "role": "DevOps Engineer",
+          "status": "Completed"
+        },
+        {
+          "name": "Developer Environment Standardization",
+          "role": "Senior DevOps Engineer.",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Assign platform tasks",
+      "review pipeline changes",
+      "coordinate non-production deployments",
+      "monitor operational issues",
+      "review runbooks",
+      "mentor engineers",
+      "escalate production-sensitive changes."
+    ],
+    "achievements": [
+      "Standardized pipeline templates",
+      "improved runbook quality",
+      "reduced repeated deployment errors",
+      "introduced post-incident review checklist",
+      "mentored platform engineers."
+    ],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DIRECT_REPORTS"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private signing keys",
+        "provider/API secrets",
+        "unrestricted production credentials",
+        "confidential HR records",
+        "executive records",
+        "protected security internals."
+      ],
+      "cannot_perform": [
+        "Grant production admin",
+        "reveal secrets",
+        "disable authentication",
+        "modify security policy",
+        "delete audit history",
+        "salary/promotion changes",
+        "arbitrary privileged production commands."
+      ],
+      "resource_scope": "Cloud Platform Team and approved non-production/platform projects.",
+      "self_elevation_restrictions": "Cannot grant self production privileges, secrets access, higher company role or expanded authorization."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [],
+      "can_approve_by_voice": [],
+      "can_recommend_by_voice": [],
+      "requires_approval": [
+        "Production privileged access",
+        "secrets access",
+        "salary",
+        "promotion",
+        "designation",
+        "formal rating",
+        "termination",
+        "department transfer",
+        "major infrastructure changes."
+      ],
+      "allowed_commands": [
+        "Assign monitoring task to Aditya",
+        "show CI/CD project status",
+        "show my DevOps history",
+        "request staging access",
+        "update my address."
+      ],
+      "denied_commands": [
+        "Make Aditya production admin",
+        "reveal API secrets",
+        "disable IntentLock",
+        "delete security logs",
+        "promote me to Director."
+      ],
+      "high_risk_actions": [
+        "Production access, secrets, privileged infrastructure changes and security configuration always require elevated approval."
+      ],
+      "security_policy": "Operational voice actions require speaker verification plus resource/permission checks; high-risk infrastructure actions require step-up approval."
+    },
+    "research": null,
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - assigned monitoring task",
+      "04 Oct - reviewed pipeline change",
+      "06 Oct - recommended Kubernetes training",
+      "09 Oct - requested staging access",
+      "11 Oct - updated own address",
+      "14 Oct - reviewed incident follow-up."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_L2_Team_Lead_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "team_leads"
+    }
+  }
+]
