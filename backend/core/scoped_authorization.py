@@ -16,6 +16,7 @@ from typing import Optional, Dict, Any, List, Tuple
 from pydantic import BaseModel
 
 from backend.services.employee_knowledge_service import EmployeeKnowledgeService
+from backend.services.ticket_knowledge_service import TicketKnowledgeService
 from backend.models.turn import GenericResultBlock
 
 logger = logging.getLogger("intentlock.scoped_authorization")
@@ -32,8 +33,13 @@ class ScopedProfileResult(BaseModel):
 class ScopedAuthorizationService:
     _instance: Optional["ScopedAuthorizationService"] = None
 
-    def __init__(self, knowledge_service: Optional[EmployeeKnowledgeService] = None):
+    def __init__(
+        self,
+        knowledge_service: Optional[EmployeeKnowledgeService] = None,
+        ticket_service: Optional[TicketKnowledgeService] = None,
+    ):
         self.knowledge = knowledge_service or EmployeeKnowledgeService.get_instance()
+        self.ticket_service = ticket_service or TicketKnowledgeService.get_instance()
 
     @classmethod
     def get_instance(cls) -> "ScopedAuthorizationService":
@@ -211,6 +217,107 @@ class ScopedAuthorizationService:
             "direct_reports": reports,
         }
 
+    def evaluate_and_get_tickets(
+        self,
+        actor_id: str,
+        query: Optional[str] = None,
+    ) -> ScopedProfileResult:
+        """
+        Authoritative evaluation of ticket read scope.
+        Returns a ScopedProfileResult containing GenericResultBlock of type TICKET_LIST.
+        """
+        actor_emp = self.knowledge.get_employee_by_id(actor_id)
+        if not actor_emp:
+            return ScopedProfileResult(
+                is_authorized=False,
+                status_code=404,
+                spoken_summary="Employee record not found in system directory.",
+                denial_reason="RECORD_NOT_FOUND",
+            )
+
+        rep_ids = actor_emp.get("reporting", {}).get("direct_report_ids", [])
+        is_exec = bool(actor_emp.get("executive_authority"))
+
+        scoped_tickets = self.ticket_service.get_scoped_tickets_for_actor(
+            actor_id=actor_id,
+            direct_report_ids=rep_ids,
+            is_executive=is_exec,
+        )
+
+        # Check for specific ticket inquiry
+        if query:
+            import re
+            m = re.search(r"\b(TKT[-_]?\d{4}[-_]?\d{3}|TKT[-_]?\d{4})\b", query, re.IGNORECASE)
+            if m:
+                raw_tid = m.group(1).upper().replace("_", "-")
+                found = self.ticket_service.get_ticket_by_id(raw_tid)
+                if not found:
+                    spoken = f"Ticket {raw_tid} was not found in the system directory."
+                    return ScopedProfileResult(
+                        is_authorized=True,
+                        status_code=200,
+                        spoken_summary=spoken,
+                        result_block=GenericResultBlock(
+                            id=f"blk_ticket_empty_{int(time.time())}",
+                            type="TICKET_LIST",
+                            title=f"Ticket Not Found: {raw_tid}",
+                            timestamp=time.strftime("%I:%M %p", time.localtime()),
+                            isSensitive=False,
+                            payload={"title": f"Ticket {raw_tid} (Not Found)", "tickets": [], "total_count": 0},
+                        ),
+                    )
+                # Check if authorized to view this ticket
+                is_authorized_for_ticket = any(t["ticket_id"] == raw_tid for t in scoped_tickets)
+                if not is_authorized_for_ticket:
+                    denial_reason = f"UNAUTHORIZED_TICKET: You are not authorized to view ticket {raw_tid}."
+                    spoken = f"Access denied. Ticket {raw_tid} is restricted and outside your authorized role scope."
+                    return ScopedProfileResult(
+                        is_authorized=False,
+                        status_code=403,
+                        spoken_summary=spoken,
+                        result_block=self.build_denial_result_block(denial_reason, raw_tid),
+                        denial_reason=denial_reason,
+                    )
+                filtered_tickets = [found]
+            else:
+                filtered_tickets = self.ticket_service.filter_tickets_for_query(scoped_tickets, query)
+        else:
+            filtered_tickets = scoped_tickets
+
+        frontend_records = [
+            self.ticket_service.map_ticket_to_frontend_record(t)
+            for t in filtered_tickets
+        ]
+
+        if not frontend_records:
+            spoken = f"You have no tickets matching that criteria."
+        elif len(frontend_records) == 1:
+            t = frontend_records[0]
+            spoken = f"Showing ticket {t['ticket_id']}: {t['title']} ({t['priority']} priority, {t['status']})."
+        else:
+            count = len(frontend_records)
+            spoken = f"Displaying {count} authorized tickets matching your request."
+
+        result_block = GenericResultBlock(
+            id=f"blk_tickets_{actor_id}_{int(time.time())}",
+            type="TICKET_LIST",
+            title=f"Authorized Tickets ({len(frontend_records)})",
+            timestamp=time.strftime("%I:%M %p", time.localtime()),
+            isSensitive=False,
+            payload={
+                "title": f"Tickets ({len(frontend_records)})",
+                "tickets": frontend_records,
+                "total_count": len(frontend_records),
+            },
+        )
+
+        return ScopedProfileResult(
+            is_authorized=True,
+            status_code=200,
+            spoken_summary=spoken,
+            result_block=result_block,
+        )
+
     def build_authorized_context_for_llm(
         self,
         actor_id: str,
@@ -269,6 +376,77 @@ class ScopedAuthorizationService:
                     "status": "DENIED",
                     "reason": "You are not authorized to view this colleague's private personnel record.",
                 }
+
+        # Scoped ticket retrieval and pre-LLM filtering
+        scoped_tickets = self.ticket_service.get_scoped_tickets_for_actor(
+            actor_id=actor_id,
+            direct_report_ids=rep_ids,
+            is_executive=bool(exec_auth),
+        )
+
+        # Check for specific ticket inquiry (e.g. TKT-2026-001 or TKT-9999)
+        if query:
+            m_tkt = re.search(r"\b(TKT[-_]?\d{4}[-_]?\d{3}|TKT[-_]?\d{4})\b", query, re.IGNORECASE)
+            if m_tkt:
+                raw_tid = m_tkt.group(1).upper().replace("_", "-")
+                found_tkt = self.ticket_service.get_ticket_by_id(raw_tid)
+                if not found_tkt:
+                    context["ticket_query_result"] = {
+                        "ticket_id": raw_tid,
+                        "exists": False,
+                        "status": "NOT_FOUND",
+                        "message": f"Ticket {raw_tid} does not exist in the system directory.",
+                    }
+                else:
+                    is_auth = any(t["ticket_id"] == raw_tid for t in scoped_tickets)
+                    if is_auth:
+                        context["inspected_ticket"] = found_tkt
+                    else:
+                        context["ticket_query_result"] = {
+                            "ticket_id": raw_tid,
+                            "exists": True,
+                            "status": "ACCESS_DENIED",
+                            "message": f"User {actor_id} is not authorized to access ticket {raw_tid}.",
+                        }
+
+        # Filter tickets relevant to query or supply small authorized subset
+        if query:
+            matching_tickets = self.ticket_service.filter_tickets_for_query(scoped_tickets, query)
+        else:
+            matching_tickets = scoped_tickets
+
+        # Clean, bounded subset for LLM context (up to 8 tickets)
+        context["authorized_tickets"] = [
+            {
+                "ticket_id": t["ticket_id"],
+                "title": t["title"],
+                "description": t["description"],
+                "status": t["status"],
+                "priority": t["priority"],
+                "severity": t["severity"],
+                "project": t["project"],
+                "category": t["category"],
+                "assignee_id": t.get("assignee_id"),
+                "requester_id": t.get("requester_id"),
+                "created_by": t.get("created_by"),
+                "due_date": t.get("due_date"),
+                "sla": t.get("sla"),
+                "escalation": t.get("escalation"),
+                "approval": t.get("approval"),
+                "comments": t.get("comments", [])[-3:],
+                "activity_history": t.get("activity_history", [])[-4:],
+                "resolution": t.get("resolution") if t.get("status") in ("Resolved", "Closed") else None,
+            }
+            for t in matching_tickets[:8]
+        ]
+        context["ticket_summary"] = {
+            "total_authorized_tickets": len(scoped_tickets),
+            "matching_tickets_count": len(matching_tickets),
+            "open_tickets_count": sum(1 for t in scoped_tickets if t.get("status") in ("Open", "In Progress", "Pending", "Blocked")),
+            "resolved_tickets_count": sum(1 for t in scoped_tickets if t.get("status") in ("Resolved", "Closed")),
+            "at_risk_sla_count": sum(1 for t in scoped_tickets if t.get("sla", {}).get("resolution_status") == "At Risk"),
+            "critical_tickets_count": sum(1 for t in scoped_tickets if t.get("priority") == "Critical"),
+        }
 
         return context
 

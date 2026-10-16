@@ -60,6 +60,7 @@ from backend.voice_preview import register_voice_preview
 from backend.adapters.identity_mapping_store import IdentityMappingStore
 from backend.core.scoped_authorization import ScopedAuthorizationService
 from backend.services.employee_knowledge_service import EmployeeKnowledgeService
+from backend.services.ticket_knowledge_service import TicketKnowledgeService
 from backend.services.employee_visibility_service import EmployeeVisibilityService
 from backend.services.ollama_knowledge_service import OllamaKnowledgeService
 from backend.models.knowledge import (
@@ -138,9 +139,11 @@ def set_answer_port(port: AnswerGenerationPort):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global knowledge_service, ollama_service, speech_vad_service, speech_input_port, speech_output_port
+    global knowledge_service, ollama_service, speech_vad_service, speech_input_port, speech_output_port, ticket_service
     logger.info("Initializing IntentLock Employee Knowledge Base...")
     knowledge_service = EmployeeKnowledgeService.get_instance(data_path=settings.DATA_PATH)
+    logger.info("Initializing IntentLock Ticket Knowledge Base...")
+    ticket_service = TicketKnowledgeService.get_instance()
     ollama_service = OllamaKnowledgeService(
         knowledge_service=knowledge_service,
         base_url=settings.OLLAMA_BASE_URL,
@@ -148,7 +151,7 @@ async def lifespan(app: FastAPI):
         timeout=settings.OLLAMA_TIMEOUT_SECONDS,
     )
     logger.info(
-        f"Backend startup complete. {len(knowledge_service.list_all_employees())} employees loaded in memory."
+        f"Backend startup complete. {len(knowledge_service.list_all_employees())} employees and {len(ticket_service.list_all_tickets())} tickets loaded in memory."
     )
 
     # Initialize real speech pipeline if configured and not running in offline test mode
@@ -769,7 +772,18 @@ async def process_voice_turn(
                     ttl_seconds=settings.SESSION_TTL_SECONDS,
                 )
 
-            scoped_res = scoped_auth.evaluate_and_get_profile(actor_id=claimed_id)
+            transcript_text = stt_result.transcript or ""
+            t_lower = transcript_text.lower()
+            ticket_indicators = [
+                "ticket", "tickets", "tkt", "issue", "issues", "bug", "bugs",
+                "task", "tasks", "incident", "incidents", "sla", "approval",
+                "approvals", "escalat", "workload", "overdue", "assigned", "blocker"
+            ]
+            if any(ind in t_lower for ind in ticket_indicators):
+                scoped_res = scoped_auth.evaluate_and_get_tickets(actor_id=claimed_id, query=transcript_text)
+            else:
+                scoped_res = scoped_auth.evaluate_and_get_profile(actor_id=claimed_id)
+
             turn_status = "success"
             turn_session = TurnSessionInfo(
                 state="VERIFIED",
@@ -1040,6 +1054,42 @@ def get_employee_reporting_tree(
 ):
     """Retrieve employee reporting tree. Protected: requires active verified session."""
     return {}
+
+
+# =============================================================================
+# Direct Ticket Endpoints (Protected & Gated)
+# =============================================================================
+
+@app.get(f"{settings.API_V1_PREFIX}/tickets", tags=["Tickets"])
+def list_scoped_tickets(
+    status: Optional[str] = Query(None, description="Filter by status"),
+    priority: Optional[str] = Query(None, description="Filter by priority"),
+    q: Optional[str] = Query(None, description="Freeform query keyword"),
+    _auth: Dict[str, Any] = Depends(require_verified_session),
+):
+    """Retrieve tickets authorized for the active authenticated session."""
+    scoped_service = ScopedAuthorizationService.get_instance()
+    query_str = q or status or priority
+    res = scoped_service.evaluate_and_get_tickets(actor_id=_auth["employee_id"], query=query_str)
+    if not res.is_authorized or not res.result_block:
+        raise HTTPException(status_code=res.status_code, detail=res.denial_reason)
+    return res.result_block.payload
+
+
+@app.get(f"{settings.API_V1_PREFIX}/tickets/{{ticket_id}}", tags=["Tickets"])
+def get_scoped_ticket(
+    ticket_id: str,
+    _auth: Dict[str, Any] = Depends(require_verified_session),
+):
+    """Retrieve single ticket with authoritative scope verification."""
+    scoped_service = ScopedAuthorizationService.get_instance()
+    res = scoped_service.evaluate_and_get_tickets(actor_id=_auth["employee_id"], query=ticket_id)
+    if not res.is_authorized:
+        return JSONResponse(
+            status_code=res.status_code,
+            content=res.result_block.model_dump() if res.result_block else {"error": res.denial_reason},
+        )
+    return res.result_block.payload
 
 
 if __name__ == "__main__":

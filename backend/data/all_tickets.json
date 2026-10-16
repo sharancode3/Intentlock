@@ -1,0 +1,3938 @@
+[
+  {
+    "ticket_id": "TKT-2026-001",
+    "title": "Customer Support Portal authentication session timeout after token refresh",
+    "description": "Users report sudden logouts in Customer Support Portal during active chat sessions. Initial trace indicates refresh token rotation causes race condition when concurrent requests hit /api/auth/refresh.",
+    "ticket_type": "Bug",
+    "category": "Authentication",
+    "subcategory": "Session Management",
+    "status": "In Progress",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-10T09:30:00",
+    "updated_at": "2026-10-16T11:20:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 2,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "At Risk"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "Authentication Service",
+      "Redis Session Store"
+    ],
+    "tags": [
+      "authentication",
+      "session",
+      "token-refresh",
+      "customer-portal",
+      "p0-candidate"
+    ],
+    "dependencies": [
+      "Authentication Service lock implementation"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-12T14:00:00",
+      "reason": "Affecting tier-1 customer support agents during peak hours"
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-001-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-10T11:15:00",
+        "comment": "Reproduced locally. When two browser tabs trigger silent refresh at the same second, the second call invalidates the first grant."
+      },
+      {
+        "comment_id": "COM-001-02",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-12T14:30:00",
+        "comment": "Raising attention on this. If this continues into weekend shifts we will need an emergency token reuse grace window."
+      },
+      {
+        "comment_id": "COM-001-03",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-16T11:20:00",
+        "comment": "Drafting PR with 15-second grace window for refresh tokens. Coordinating test rollout with Neha."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-10T09:30:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-10T09:35:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-1001",
+        "description": "Self-assigned to Aarav Mehta",
+        "old_value": null,
+        "new_value": "EMP-1001"
+      },
+      {
+        "timestamp": "2026-10-10T10:00:00",
+        "type": "STATUS_CHANGED",
+        "actor": "EMP-1001",
+        "description": "Status moved to In Progress",
+        "old_value": "Open",
+        "new_value": "In Progress"
+      },
+      {
+        "timestamp": "2026-10-12T14:00:00",
+        "type": "ESCALATED",
+        "actor": "EMP-1001",
+        "description": "Escalated to Engineering Manager Priya Sharma",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-002",
+    "title": "Customer Support Portal API validation error on multi-line addresses",
+    "description": "Form submission endpoint rejects valid international customer postal addresses containing newline characters due to over-strict regex pattern.",
+    "ticket_type": "Bug",
+    "category": "API",
+    "subcategory": "Input Validation",
+    "status": "Resolved",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-11T10:15:00",
+    "updated_at": "2026-10-13T16:45:00",
+    "due_date": "2026-10-14",
+    "resolved_at": "2026-10-13T16:45:00",
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 72,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "Customer Profile API"
+    ],
+    "tags": [
+      "api",
+      "validation",
+      "customer-portal",
+      "bugfix"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-002-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-13T16:00:00",
+        "comment": "Sanitized regex to support multiline address strings with standard RFC whitespace normalization."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-11T10:15:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-13T16:45:00",
+        "type": "RESOLVED",
+        "actor": "EMP-1001",
+        "description": "Issue resolved and validated in staging",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      }
+    ],
+    "resolution": {
+      "summary": "Updated Pydantic address field validator with regex multiline flag and added unit tests.",
+      "root_cause": "Strict single-line regex ^[a-zA-Z0-9 ]+$ rejected newline characters in address lines.",
+      "resolution_action": "Merged PR #138 and deployed hotfix to staging.",
+      "resolved_by": "EMP-1001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-003",
+    "title": "Internal Analytics Dashboard API integration for employee KPI tracking",
+    "description": "Connect frontend metric cards to the aggregated analytics service endpoint /api/v1/metrics/kpi-summary.",
+    "ticket_type": "Feature",
+    "category": "API",
+    "subcategory": "Frontend Integration",
+    "status": "In Progress",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-1501",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1501",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Internal Analytics Dashboard",
+    "created_at": "2026-10-11T14:00:00",
+    "updated_at": "2026-10-15T17:00:00",
+    "due_date": "2026-10-19",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 120,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Internal Analytics Dashboard",
+      "Metric Aggregator"
+    ],
+    "tags": [
+      "dashboard",
+      "kpi",
+      "api",
+      "frontend"
+    ],
+    "dependencies": [
+      "Metric Aggregator schema finalization"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-003-01",
+        "author_id": "EMP-1501",
+        "author_name": "Neha Rao",
+        "created_at": "2026-10-11T14:10:00",
+        "comment": "Aarav, please implement the client adapter matching the MetricKpiSummary interface in payloads.ts."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-11T14:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1501",
+        "description": "Ticket created by Neha Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-11T14:05:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-1501",
+        "description": "Assigned to Aarav Mehta",
+        "old_value": null,
+        "new_value": "EMP-1001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-004",
+    "title": "Login session cookie security flag defect on legacy webview",
+    "description": "Legacy Android webview client dropped session cookies because SameSite=Strict was configured without partitioned attribute on embedded iframe.",
+    "ticket_type": "Bug",
+    "category": "Authentication",
+    "subcategory": "Cookie Policy",
+    "status": "Closed",
+    "priority": "Low",
+    "severity": "S4",
+    "requester_id": "EMP-1003",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1003",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-10T11:00:00",
+    "updated_at": "2026-10-12T18:00:00",
+    "due_date": "2026-10-15",
+    "resolved_at": "2026-10-12T16:30:00",
+    "closed_at": "2026-10-12T18:00:00",
+    "sla": {
+      "response_target_hours": 12,
+      "resolution_target_hours": 96,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "Webview Wrapper"
+    ],
+    "tags": [
+      "cookies",
+      "authentication",
+      "webview",
+      "closed"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-004-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-12T16:20:00",
+        "comment": "Set SameSite=Lax for webview endpoints while maintaining SameSite=Strict for main portal."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-10T11:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1003",
+        "description": "Ticket created by Rahul Desai",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-12T16:30:00",
+        "type": "RESOLVED",
+        "actor": "EMP-1001",
+        "description": "Resolved by Aarav Mehta",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      },
+      {
+        "timestamp": "2026-10-12T18:00:00",
+        "type": "CLOSED",
+        "actor": "EMP-1003",
+        "description": "Verified and closed by QA Rahul Desai",
+        "old_value": "Resolved",
+        "new_value": "Closed"
+      }
+    ],
+    "resolution": {
+      "summary": "Cookie configuration relaxed to Lax on isolated webview path.",
+      "root_cause": "Embedded webviews enforce third-party cookie restrictions under Strict mode.",
+      "resolution_action": "Configured path-specific cookie serializer in backend.",
+      "resolved_by": "EMP-1001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-005",
+    "title": "WebSocket connection drops during speech audio streaming on edge kiosks",
+    "description": "Audio chunks streamed from kiosk microphones intermittently terminate with code 1006. Needs keepalive ping intervals and graceful reconnection logic.",
+    "ticket_type": "Bug",
+    "category": "Infrastructure",
+    "subcategory": "WebSockets",
+    "status": "Open",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-1003",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1003",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-14T08:45:00",
+    "updated_at": "2026-10-16T10:15:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Voice Gateway",
+      "Browser Audio Streamer"
+    ],
+    "tags": [
+      "websocket",
+      "streaming",
+      "audio",
+      "intentlock"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-005-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-15T09:30:00",
+        "comment": "Reproducing on kiosk emulator. Investigating whether proxy idle timeout at 30 seconds triggers drop."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T08:45:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1003",
+        "description": "Ticket created by Rahul Desai",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T08:50:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-1501",
+        "description": "Assigned to Aarav Mehta",
+        "old_value": null,
+        "new_value": "EMP-1001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-006",
+    "title": "Implement local Speech-to-Intent automated test harness for IntentLock kiosk",
+    "description": "Develop automated integration test suite verifying audio waveform ingestion, Silero VAD segmentation, and transcript generation without incurring external cloud charges.",
+    "ticket_type": "Feature",
+    "category": "AI/ML",
+    "subcategory": "Speech Pipeline",
+    "status": "In Progress",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-12T11:00:00",
+    "updated_at": "2026-10-16T12:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 96,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "IntentLock Voice Gateway",
+      "Offline Test Harness"
+    ],
+    "tags": [
+      "intentlock",
+      "speech",
+      "testing",
+      "vad",
+      "story-4"
+    ],
+    "dependencies": [
+      "Silero VAD local ONNX weight cache"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-006-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-12T11:05:00",
+        "comment": "Ensure all tests run strictly with INTENTLOCK_OFFLINE_TESTS=1 so we burn zero Detectif credits during CI runs."
+      },
+      {
+        "comment_id": "COM-006-02",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-16T12:00:00",
+        "comment": "Added 13 tests in test_speech_integration.py covering synthetic WAV generator and VAD iterator."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-12T11:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-12T11:05:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-2001",
+        "description": "Assigned to Aarav Mehta",
+        "old_value": null,
+        "new_value": "EMP-1001"
+      },
+      {
+        "timestamp": "2026-10-12T11:30:00",
+        "type": "STATUS_CHANGED",
+        "actor": "EMP-1001",
+        "description": "Status moved to In Progress",
+        "old_value": "Open",
+        "new_value": "In Progress"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-007",
+    "title": "Database slow query optimization on employee directory indexes",
+    "description": "Query latency on /api/v1/employees exceeds 450ms under concurrent kiosk lookups. Sequential scan observed on skills and sub_department filters.",
+    "ticket_type": "Incident",
+    "category": "Database",
+    "subcategory": "Performance",
+    "status": "In Progress",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Core Database Sharding",
+    "created_at": "2026-10-13T08:00:00",
+    "updated_at": "2026-10-16T14:30:00",
+    "due_date": "2026-10-16",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 2,
+      "resolution_target_hours": 24,
+      "response_met": true,
+      "resolution_status": "At Risk"
+    },
+    "affected_systems": [
+      "PostgreSQL Employee DB",
+      "Employee Knowledge Service"
+    ],
+    "tags": [
+      "database",
+      "postgresql",
+      "indexing",
+      "performance",
+      "sla-risk",
+      "story-5"
+    ],
+    "dependencies": [
+      "Production database maintenance window"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-15T16:00:00",
+      "reason": "SLA resolution window at risk; requires manager approval for compound GIN index."
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-2001",
+      "approved_at": null,
+      "reason": "Index creation on production table requires manager sign-off."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-007-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-13T10:00:00",
+        "comment": "EXPLAIN ANALYZE shows sequential scan on JSONB skills array. Proposing GIN index on skills->'technical'."
+      },
+      {
+        "comment_id": "COM-007-02",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-15T16:30:00",
+        "comment": "Reviewing execution plan. This connects with the sharding review Arvind is leading in TKT-2026-038."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-13T08:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-13T08:15:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-2001",
+        "description": "Assigned to Aarav Mehta",
+        "old_value": null,
+        "new_value": "EMP-1001"
+      },
+      {
+        "timestamp": "2026-10-15T16:00:00",
+        "type": "ESCALATED",
+        "actor": "EMP-1001",
+        "description": "Escalated to Priya Sharma due to impending SLA breach",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      },
+      {
+        "timestamp": "2026-10-15T16:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-1001",
+        "description": "Approval requested from Priya Sharma for index migration",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-008",
+    "title": "Staging CI/CD pipeline failure on database migration dry-run check",
+    "description": "Staging deployment pipeline halted on step 4 'alembic check'. Migration script 0021_add_grant_hash contains syntax incompatible with PostgreSQL 15 strict schema validation.",
+    "ticket_type": "Incident",
+    "category": "CI/CD",
+    "subcategory": "Pipeline Failure",
+    "status": "In Progress",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-14T15:00:00",
+    "updated_at": "2026-10-16T15:00:00",
+    "due_date": "2026-10-16",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 1,
+      "resolution_target_hours": 12,
+      "response_met": true,
+      "resolution_status": "At Risk"
+    },
+    "affected_systems": [
+      "GitHub Actions Runner",
+      "Staging Kubernetes Cluster"
+    ],
+    "tags": [
+      "ci-cd",
+      "deployment",
+      "alembic",
+      "critical",
+      "sla-risk",
+      "story-2"
+    ],
+    "dependencies": [
+      "PostgreSQL migration syntax patch"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-14T15:30:00",
+      "reason": "Blocks all staging feature verification ahead of production deployment."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-008-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-14T15:15:00",
+        "comment": "Found the bug: alembic migration was using SQLite PRAGMA in down_revision check. Fixing for PostgreSQL."
+      },
+      {
+        "comment_id": "COM-008-02",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-14T15:45:00",
+        "comment": "Priya acknowledged escalation. Linked this with TKT-2026-019 emergency rollback review."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T15:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T15:30:00",
+        "type": "ESCALATED",
+        "actor": "EMP-1001",
+        "description": "Escalated to Priya Sharma",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-009",
+    "title": "CI/CD problem: Docker image caching failure on self-hosted runners",
+    "description": "Self-hosted GitHub Actions runner cache disk filled up, causing build jobs to download 4GB base images from scratch on every commit.",
+    "ticket_type": "Maintenance",
+    "category": "CI/CD",
+    "subcategory": "Runner Infrastructure",
+    "status": "Resolved",
+    "priority": "Low",
+    "severity": "S4",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-11T16:00:00",
+    "updated_at": "2026-10-12T11:00:00",
+    "due_date": "2026-10-15",
+    "resolved_at": "2026-10-12T11:00:00",
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 12,
+      "resolution_target_hours": 72,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "GitHub Actions Self-Hosted Runners"
+    ],
+    "tags": [
+      "ci-cd",
+      "docker",
+      "caching",
+      "resolved"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-009-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-12T10:45:00",
+        "comment": "Pruned orphaned Docker build containers and set up nightly cron for docker system prune -af."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-11T16:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-12T11:00:00",
+        "type": "RESOLVED",
+        "actor": "EMP-1001",
+        "description": "Disk cleanup cron installed and runner cache freed",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      }
+    ],
+    "resolution": {
+      "summary": "Automated Docker cache pruning cron installed on self-hosted runners.",
+      "root_cause": "Dangling layer cache consumed 95% of /var/lib/docker volume.",
+      "resolution_action": "Configured nightly prune job and expanded runner disk quota to 100GB.",
+      "resolved_by": "EMP-1001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-010",
+    "title": "Access request: Read-only staging database replica credentials for debugging",
+    "description": "Requesting read-only credentials to PostgreSQL staging replica to inspect slow query execution plans and verify session record schema.",
+    "ticket_type": "Access Request",
+    "category": "Access Control",
+    "subcategory": "Database Credentials",
+    "status": "Pending",
+    "priority": "Low",
+    "severity": "S4",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-15T09:00:00",
+    "updated_at": "2026-10-15T09:05:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "PostgreSQL Staging Cluster"
+    ],
+    "tags": [
+      "access-request",
+      "database",
+      "staging",
+      "approval-required"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-2001",
+      "approved_at": null,
+      "reason": "Requires manager approval per IT security policy."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-010-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-15T09:05:00",
+        "comment": "Priya, this is needed to complete the query optimization for TKT-2026-007."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T09:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T09:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-1001",
+        "description": "Approval requested from manager Priya Sharma",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-011",
+    "title": "Code review/task: Refactor authentication error envelopes for uniform client parsing",
+    "description": "Review and harmonize API error response schemas across /api/v1/auth and /api/v1/voice/turn to ensure SafeErrorDetail schema conformance.",
+    "ticket_type": "Maintenance",
+    "category": "API",
+    "subcategory": "Error Handling",
+    "status": "Closed",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-1501",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1501",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-11T13:00:00",
+    "updated_at": "2026-10-13T17:00:00",
+    "due_date": "2026-10-14",
+    "resolved_at": "2026-10-13T15:00:00",
+    "closed_at": "2026-10-13T17:00:00",
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "API Gateway",
+      "Frontend Error Boundary"
+    ],
+    "tags": [
+      "code-review",
+      "api",
+      "schemas",
+      "closed"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-011-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-13T14:30:00",
+        "comment": "Completed review of PR #142. Standardized error envelope with error_code, safe_summary, and retryable flags."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-11T13:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1501",
+        "description": "Ticket created by Neha Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-13T15:00:00",
+        "type": "RESOLVED",
+        "actor": "EMP-1001",
+        "description": "PR merged and deployed",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      },
+      {
+        "timestamp": "2026-10-13T17:00:00",
+        "type": "CLOSED",
+        "actor": "EMP-1501",
+        "description": "Closed by Neha Rao",
+        "old_value": "Resolved",
+        "new_value": "Closed"
+      }
+    ],
+    "resolution": {
+      "summary": "Merged uniform error serializer for all public and authenticated endpoints.",
+      "root_cause": "Inconsistent error format between FastAPI HTTPException and custom exception handlers.",
+      "resolution_action": "Centralized global exception handler in backend/main.py.",
+      "resolved_by": "EMP-1001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-012",
+    "title": "Performance issue: Memory leak in event bus subscriber during sustained load test",
+    "description": "Subscriber process RSS memory grows at 45MB/hour during sustained 50 RPS load test. Unacknowledged event references retain full JSON payloads in memory heap.",
+    "ticket_type": "Bug",
+    "category": "Infrastructure",
+    "subcategory": "Memory Management",
+    "status": "Blocked",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-13T14:00:00",
+    "updated_at": "2026-10-16T10:00:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 72,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "IntentLock Event Ledger",
+      "Redis Stream Worker"
+    ],
+    "tags": [
+      "memory-leak",
+      "performance",
+      "blocked",
+      "event-bus"
+    ],
+    "dependencies": [
+      "Upstream py-redis stream consumer patch v5.1.2"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-15T11:00:00",
+      "reason": "Blocked on upstream library release; requires architecture consultation for temporary worker recycle workaround."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-012-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-15T10:30:00",
+        "comment": "Isolated leak to cyclic references in callback closures. Marked as Blocked pending upstream release or worker restart cron."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-13T14:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T10:35:00",
+        "type": "STATUS_CHANGED",
+        "actor": "EMP-1001",
+        "description": "Status moved to Blocked",
+        "old_value": "In Progress",
+        "new_value": "Blocked"
+      },
+      {
+        "timestamp": "2026-10-15T11:00:00",
+        "type": "ESCALATED",
+        "actor": "EMP-1001",
+        "description": "Escalated to Priya Sharma",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-013",
+    "title": "Monitoring issue: Prometheus alert rule false positives on transient 401s",
+    "description": "Prometheus alert HighAuthFailureRate fires whenever users mistype passwords twice, triggering PagerDuty alerts for on-call engineers. Need rate window smoothing.",
+    "ticket_type": "Maintenance",
+    "category": "Infrastructure",
+    "subcategory": "Observability",
+    "status": "Open",
+    "priority": "Low",
+    "severity": "S4",
+    "requester_id": "EMP-1005",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1005",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-14T11:00:00",
+    "updated_at": "2026-10-15T09:30:00",
+    "due_date": "2026-10-21",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 24,
+      "resolution_target_hours": 168,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Prometheus Alertmanager",
+      "Grafana On-Call"
+    ],
+    "tags": [
+      "monitoring",
+      "prometheus",
+      "alerts",
+      "low-priority"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-013-01",
+        "author_id": "EMP-1005",
+        "author_name": "Aditya Joshi",
+        "created_at": "2026-10-14T11:15:00",
+        "comment": "Aarav, please update alert expr to use 5m moving average and threshold > 15 failures/min."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T11:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1005",
+        "description": "Ticket created by Aditya Joshi",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T11:10:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-1501",
+        "description": "Assigned to Aarav Mehta",
+        "old_value": null,
+        "new_value": "EMP-1001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-014",
+    "title": "Customer Support Portal critical authentication session drop under concurrent load",
+    "description": "Severe incident: 25% of support agent browser sessions invalidated simultaneously when background redis token replication lagged by 800ms. Escalated through Priya to Arvind for emergency architectural waiver.",
+    "ticket_type": "Incident",
+    "category": "Authentication",
+    "subcategory": "Production Incident",
+    "status": "Resolved",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-12T08:15:00",
+    "updated_at": "2026-10-13T19:30:00",
+    "due_date": "2026-10-13",
+    "resolved_at": "2026-10-13T18:45:00",
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 0.5,
+      "resolution_target_hours": 12,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "Redis Sentinel Cluster",
+      "Auth Gateway"
+    ],
+    "tags": [
+      "authentication",
+      "incident",
+      "critical",
+      "s1",
+      "story-1",
+      "resolved"
+    ],
+    "dependencies": [
+      "CTO Architecture Waiver",
+      "Redis sync config patch"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-12T09:30:00",
+      "reason": "Production outage affecting active customer calls; required CTO approval for Redis read-from-primary failover policy."
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-12T10:15:00",
+      "reason": "Arvind Rao approved emergency configuration change to read session tokens strictly from primary node."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-014-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-12T08:30:00",
+        "comment": "Identified root cause: Read replicas were returning stale TTLs, triggering premature session purge in auth gateway."
+      },
+      {
+        "comment_id": "COM-014-02",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-12T09:00:00",
+        "comment": "Escalated immediately to Arvind Rao. Production impact is critical across support floor."
+      },
+      {
+        "comment_id": "COM-014-03",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-12T10:15:00",
+        "comment": "Approved emergency architecture waiver. Force session verification directly to primary node until replica lag is fixed."
+      },
+      {
+        "comment_id": "COM-014-04",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-13T18:45:00",
+        "comment": "Deployed primary-routing hotfix. Monitored for 6 hours with 0 session drops. Marked resolved."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-12T08:15:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-12T09:00:00",
+        "type": "ESCALATED",
+        "actor": "EMP-2001",
+        "description": "Escalated by Priya Sharma to CTO Arvind Rao",
+        "old_value": "EMP-2001",
+        "new_value": "EMP-4002"
+      },
+      {
+        "timestamp": "2026-10-12T09:15:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-2001",
+        "description": "Emergency architectural waiver requested from Arvind Rao",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      },
+      {
+        "timestamp": "2026-10-12T10:15:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by CTO Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      },
+      {
+        "timestamp": "2026-10-13T18:45:00",
+        "type": "RESOLVED",
+        "actor": "EMP-1001",
+        "description": "Resolved by Aarav Mehta after hotfix deployment",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      }
+    ],
+    "resolution": {
+      "summary": "Rerouted all auth token validations strictly to Redis primary node, eliminating replica lag race condition.",
+      "root_cause": "Asynchronous replication lag between primary and read replica caused auth service to read expired token state.",
+      "resolution_action": "Updated connection pool to enforce write_and_read_primary=True for auth service session checks.",
+      "resolved_by": "EMP-1001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-015",
+    "title": "Blocked engineering task: Redis sentinel failover automated integration test suite",
+    "description": "Automated Chaos Mesh test for Sentinel failover hangs indefinitely on staging runner due to missing Docker socket bind mount.",
+    "ticket_type": "Bug",
+    "category": "CI/CD",
+    "subcategory": "Test Automation",
+    "status": "Blocked",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-1001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-14T10:00:00",
+    "updated_at": "2026-10-16T09:00:00",
+    "due_date": "2026-10-19",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 96,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Chaos Testbed",
+      "Redis Sentinel"
+    ],
+    "tags": [
+      "testing",
+      "redis",
+      "blocked",
+      "chaos-engineering"
+    ],
+    "dependencies": [
+      "DevOps Docker daemon security policy review"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-15T14:00:00",
+      "reason": "Requires manager intervention with DevOps team (EMP-2005) for runner privileges."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-015-01",
+        "author_id": "EMP-1001",
+        "author_name": "Aarav Mehta",
+        "created_at": "2026-10-15T13:45:00",
+        "comment": "DevOps runner security policy disallows /var/run/docker.sock mounting. Escalating to Priya to coordinate secure test sandbox."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T10:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T13:50:00",
+        "type": "STATUS_CHANGED",
+        "actor": "EMP-1001",
+        "description": "Status set to Blocked",
+        "old_value": "In Progress",
+        "new_value": "Blocked"
+      },
+      {
+        "timestamp": "2026-10-15T14:00:00",
+        "type": "ESCALATED",
+        "actor": "EMP-1001",
+        "description": "Escalated to Priya Sharma",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-016",
+    "title": "Engineering production incident: Customer Support Portal elevated 5xx error rate",
+    "description": "Priya leading Sev-1 incident investigation into gateway 502/504 errors on /api/v1/tickets during morning peak traffic.",
+    "ticket_type": "Incident",
+    "category": "API",
+    "subcategory": "Production Outage",
+    "status": "Open",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-16T08:00:00",
+    "updated_at": "2026-10-16T14:00:00",
+    "due_date": "2026-10-16",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 0.5,
+      "resolution_target_hours": 6,
+      "response_met": true,
+      "resolution_status": "At Risk"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "API Gateway",
+      "Kubernetes Ingress"
+    ],
+    "tags": [
+      "incident",
+      "production",
+      "critical",
+      "s1",
+      "sla-risk",
+      "priya-active"
+    ],
+    "dependencies": [
+      "Ingress controller scaling patch"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-3001",
+      "escalation_level": "L2 - Director of Engineering",
+      "escalated_at": "2026-10-16T09:30:00",
+      "reason": "Error rate exceeded 2% threshold for 15 minutes."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-016-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-16T08:30:00",
+        "comment": "Incident bridge opened. Neha and Aarav triaging upstream pod health. Ingress controller seeing connection queue backlog."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-16T08:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-16T09:30:00",
+        "type": "ESCALATED",
+        "actor": "EMP-2001",
+        "description": "Escalated to Director Vikram Malhotra",
+        "old_value": null,
+        "new_value": "EMP-3001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-017",
+    "title": "Customer Support Portal escalation: Urgent customer session persistence failure",
+    "description": "Customer Operations lead escalated persistent session dropouts affecting key enterprise account agents in Mumbai office.",
+    "ticket_type": "Incident",
+    "category": "Authentication",
+    "subcategory": "Customer Escalation",
+    "status": "In Progress",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-3004",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-3004",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-14T09:00:00",
+    "updated_at": "2026-10-16T11:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 2,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "Session Store"
+    ],
+    "tags": [
+      "escalation",
+      "customer-operations",
+      "priya-lead"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-14T09:00:00",
+      "reason": "Escalated from Operations Director Sameer Kulkarni"
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-017-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-14T10:00:00",
+        "comment": "Assigned Neha and Aarav to cross-reference with the token rotation bug in TKT-2026-001."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T09:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-3004",
+        "description": "Ticket created and escalated by Sameer Kulkarni",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T09:15:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-2001",
+        "description": "Claimed by Priya Sharma",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-018",
+    "title": "Team access approval: Production bastion host access for engineering leads",
+    "description": "Requesting production SSH bastion access for Neha Rao (EMP-1501) and emergency access for Aarav Mehta (EMP-1001) for incident on-call rotation.",
+    "ticket_type": "Access Request",
+    "category": "Access Control",
+    "subcategory": "Production Bastion",
+    "status": "Pending",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-3005",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-15T11:00:00",
+    "updated_at": "2026-10-15T11:30:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Production Bastion",
+      "Teleport Access Gateway"
+    ],
+    "tags": [
+      "access-request",
+      "security",
+      "bastion",
+      "pending-approval"
+    ],
+    "dependencies": [
+      "Information Security compliance check"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-3005",
+      "approved_at": null,
+      "reason": "Requires sign-off from Director of Information Security Maya Krishnan."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-018-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-15T11:15:00",
+        "comment": "Maya, both engineers have completed Q4 security refresher training. Needed for upcoming kiosk rollout."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T11:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T11:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-2001",
+        "description": "Approval requested from Maya Krishnan",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-019",
+    "title": "Deployment approval & Rollback: Emergency production rollback of release v2.4.2",
+    "description": "Production release v2.4.2 caused immediate elevated 502 Bad Gateway responses due to unmigrated database columns. Priya authorized emergency rollback to v2.4.1.",
+    "ticket_type": "Incident",
+    "category": "CI/CD",
+    "subcategory": "Production Rollback",
+    "status": "Closed",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-14T17:00:00",
+    "updated_at": "2026-10-14T20:30:00",
+    "due_date": "2026-10-14",
+    "resolved_at": "2026-10-14T18:30:00",
+    "closed_at": "2026-10-14T20:30:00",
+    "sla": {
+      "response_target_hours": 0.25,
+      "resolution_target_hours": 2,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "Kubernetes Production Deployment"
+    ],
+    "tags": [
+      "rollback",
+      "deployment",
+      "critical",
+      "s1",
+      "story-2",
+      "closed"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-3001",
+      "escalation_level": "L2 - Director of Engineering",
+      "escalated_at": "2026-10-14T17:10:00",
+      "reason": "Immediate production traffic rollback required."
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-2001",
+      "approved_at": "2026-10-14T17:15:00",
+      "reason": "Priya Sharma authorized emergency rollback to restore customer uptime."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-019-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-14T17:15:00",
+        "comment": "Rollback approved. Aditya Joshi running helm rollback customer-portal-prod 18."
+      },
+      {
+        "comment_id": "COM-019-02",
+        "author_id": "EMP-1005",
+        "author_name": "Aditya Joshi",
+        "created_at": "2026-10-14T17:40:00",
+        "comment": "Rollback completed. All 12 pods healthy on v2.4.1. Error rate back to 0.01%."
+      },
+      {
+        "comment_id": "COM-019-03",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-14T20:30:00",
+        "comment": "Post-mortem completed. Assigned Aarav Mehta in TKT-2026-008 to enforce schema dry-run checks in pipeline."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T17:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T17:15:00",
+        "type": "APPROVED",
+        "actor": "EMP-2001",
+        "description": "Rollback approved by Priya Sharma",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      },
+      {
+        "timestamp": "2026-10-14T18:30:00",
+        "type": "RESOLVED",
+        "actor": "EMP-2001",
+        "description": "Production restored on v2.4.1",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      },
+      {
+        "timestamp": "2026-10-14T20:30:00",
+        "type": "CLOSED",
+        "actor": "EMP-2001",
+        "description": "Post-mortem closed by Priya Sharma",
+        "old_value": "Resolved",
+        "new_value": "Closed"
+      }
+    ],
+    "resolution": {
+      "summary": "Rolled back production deployment to v2.4.1, resolving 502 errors.",
+      "root_cause": "Migration script did not run prior to application pod startup, causing ORM query crashes.",
+      "resolution_action": "Executed helm rollback and mandated pre-install migration helm hook for future releases.",
+      "resolved_by": "EMP-2001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-020",
+    "title": "Engineering resource request: Cloud GPU compute quota for local speech inference testing",
+    "description": "Requesting 2x NVIDIA A10G cloud compute instance quota for offline Kokoro TTS and Whisper model evaluation during load tests.",
+    "ticket_type": "Access Request",
+    "category": "Infrastructure",
+    "subcategory": "Cloud Quota",
+    "status": "Pending",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-15T14:00:00",
+    "updated_at": "2026-10-16T10:00:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 72,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "AWS Cloud Infrastructure",
+      "Speech Evaluation Cluster"
+    ],
+    "tags": [
+      "cloud-quota",
+      "gpu",
+      "speech-models",
+      "pending-approval"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-4002",
+      "approved_at": null,
+      "reason": "Requires CTO budget sign-off for GPU compute reservations."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-020-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-15T14:15:00",
+        "comment": "Arvind, this will support Aarav and Dr. Aditi in benchmark testing sub-300ms speech turnaround."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T14:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T14:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-2001",
+        "description": "Approval requested from Arvind Rao",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-021",
+    "title": "Critical bug escalation: Distributed lock timeout causing double-booking deadlocks",
+    "description": "Critical concurrency defect in distributed scheduling queue. Lock release heartbeat fails under network jitter, exceeding SLA.",
+    "ticket_type": "Incident",
+    "category": "Infrastructure",
+    "subcategory": "Distributed Locking",
+    "status": "In Progress",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-1501",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-1501",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-13T10:00:00",
+    "updated_at": "2026-10-16T15:30:00",
+    "due_date": "2026-10-15",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 1,
+      "resolution_target_hours": 24,
+      "response_met": true,
+      "resolution_status": "Breached"
+    },
+    "affected_systems": [
+      "Distributed Lock Manager",
+      "PostgreSQL Advisory Locks"
+    ],
+    "tags": [
+      "deadlock",
+      "critical",
+      "sla-breached",
+      "priya-escalation"
+    ],
+    "dependencies": [
+      "Redlock cluster configuration overhaul"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-13T10:30:00",
+      "reason": "Escalated by Neha Rao after 3 consecutive deadlocks in staging cluster."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-021-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-15T18:00:00",
+        "comment": "SLA breached. Priya actively pairing with Neha to replace Redlock with PostgreSQL SELECT FOR UPDATE row-level locks."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-13T10:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1501",
+        "description": "Ticket created by Neha Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-13T10:30:00",
+        "type": "ESCALATED",
+        "actor": "EMP-1501",
+        "description": "Escalated to Priya Sharma",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-022",
+    "title": "Architecture review request: IntentLock kiosk voice-gateway integration and dual-verification rollout",
+    "description": "Formal architecture submission for IntentLock Track 3 UNCLONE kiosk: incorporates Silero VAD, Faster-Whisper, Kokoro TTS, and Detectif dual verification.",
+    "ticket_type": "Architecture Review",
+    "category": "AI/ML",
+    "subcategory": "Architecture Review",
+    "status": "Open",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-14T14:00:00",
+    "updated_at": "2026-10-16T12:00:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 96,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "IntentLock Voice Gateway",
+      "Detectif Biometrics Adapter"
+    ],
+    "tags": [
+      "intentlock",
+      "architecture",
+      "unclone",
+      "story-4"
+    ],
+    "dependencies": [
+      "Detectif API credential onboarding"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-14T14:05:00",
+      "reason": "Requires CTO review for unclone voice biometrics boundary."
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-4002",
+      "approved_at": null,
+      "reason": "CTO approval required for Option B execution boundary."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-022-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-14T14:15:00",
+        "comment": "Arvind, documentation and test harness (TKT-2026-006) are prepared. Ready for your review."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T14:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T14:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-2001",
+        "description": "Submitted to CTO Arvind Rao for sign-off",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-023",
+    "title": "Team member blocker: Aarav Mehta blocked on staging environment network partition",
+    "description": "Priya unblocking Aarav: staging network policy restricted communication between kiosk worker pod and redis cluster.",
+    "ticket_type": "Maintenance",
+    "category": "Infrastructure",
+    "subcategory": "Network Policy",
+    "status": "Resolved",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-1001",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-1001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-15T09:30:00",
+    "updated_at": "2026-10-15T15:00:00",
+    "due_date": "2026-10-16",
+    "resolved_at": "2026-10-15T14:45:00",
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 2,
+      "resolution_target_hours": 24,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Kubernetes Calico CNI",
+      "Staging Redis"
+    ],
+    "tags": [
+      "blocker",
+      "unblocked",
+      "priya-resolved",
+      "networking"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-15T09:30:00",
+      "reason": "Engineering team member completely blocked."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-023-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-15T14:30:00",
+        "comment": "Coordinated with Sanjana Patel (EMP-1505). Applied Calico NetworkPolicy allowing namespace ingress on port 6379."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T09:30:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1001",
+        "description": "Ticket created and escalated by Aarav Mehta",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T14:45:00",
+        "type": "RESOLVED",
+        "actor": "EMP-2001",
+        "description": "Resolved by Priya Sharma",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      }
+    ],
+    "resolution": {
+      "summary": "Updated Calico network policy in staging namespace to permit Redis traffic from kiosk pods.",
+      "root_cause": "Default-deny ingress network policy omitted port 6379 selector.",
+      "resolution_action": "Patched networkpolicy.yaml in gitops repository.",
+      "resolved_by": "EMP-2001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-024",
+    "title": "Release approval: Q4 Customer Portal feature release v2.5.0 changelog sign-off",
+    "description": "Formal release gate approval for v2.5.0 containing improved chat rendering cards, employee profiles, and scoped authorization.",
+    "ticket_type": "Feature",
+    "category": "CI/CD",
+    "subcategory": "Release Management",
+    "status": "Pending",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-1501",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-1501",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-16T10:00:00",
+    "updated_at": "2026-10-16T11:00:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Customer Support Portal"
+    ],
+    "tags": [
+      "release-gate",
+      "v2.5.0",
+      "approval-pending"
+    ],
+    "dependencies": [
+      "QA smoke test report from Rahul Desai"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-2001",
+      "approved_at": null,
+      "reason": "Requires Engineering Manager sign-off prior to production rollout."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-024-01",
+        "author_id": "EMP-1501",
+        "author_name": "Neha Rao",
+        "created_at": "2026-10-16T10:30:00",
+        "comment": "Priya, QA test suite passed 84/84 tests. Awaiting your release sign-off."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-16T10:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1501",
+        "description": "Ticket created by Neha Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-16T10:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-1501",
+        "description": "Approval requested from Priya Sharma",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-025",
+    "title": "Security remediation task: Cryptographically bind session tokens to client TLS fingerprint",
+    "description": "Information Security audit finding SEC-2026-09 requires session tokens to be cryptographically bound to client TLS JA3 fingerprint and User-Agent hash to prevent token replay.",
+    "ticket_type": "Security Task",
+    "category": "Security",
+    "subcategory": "Session Hardening",
+    "status": "In Progress",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-3005",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-3005",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Session Security Modernization",
+    "created_at": "2026-10-13T11:00:00",
+    "updated_at": "2026-10-16T14:00:00",
+    "due_date": "2026-10-20",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 168,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Session Store",
+      "Gateway Security Middleware"
+    ],
+    "tags": [
+      "security",
+      "audit",
+      "session-hardening",
+      "story-3"
+    ],
+    "dependencies": [
+      "CTO Architecture Review in TKT-2026-037"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-14T11:00:00",
+      "reason": "Requires enterprise architecture policy update from CTO Arvind Rao."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-025-01",
+        "author_id": "EMP-3005",
+        "author_name": "Maya Krishnan",
+        "created_at": "2026-10-13T11:15:00",
+        "comment": "Priya, this remediation is needed before the external SOC-2 surveillance audit next month."
+      },
+      {
+        "comment_id": "COM-025-02",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-14T11:00:00",
+        "comment": "Escalated to Arvind for architectural alignment with the IntentLock voice session store."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-13T11:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-3005",
+        "description": "Ticket created by Maya Krishnan",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T11:00:00",
+        "type": "ESCALATED",
+        "actor": "EMP-2001",
+        "description": "Escalated to CTO Arvind Rao",
+        "old_value": null,
+        "new_value": "EMP-4002"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-026",
+    "title": "Performance degradation incident: Database connection pool exhaustion during peak morning load",
+    "description": "PgBouncer pool utilization reached 98% with 120 queued clients during morning kiosk login burst. Priya escalating to Arvind for read-replica expansion.",
+    "ticket_type": "Incident",
+    "category": "Database",
+    "subcategory": "Connection Pooling",
+    "status": "In Progress",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Core Database Sharding",
+    "created_at": "2026-10-15T08:30:00",
+    "updated_at": "2026-10-16T15:00:00",
+    "due_date": "2026-10-16",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 0.5,
+      "resolution_target_hours": 12,
+      "response_met": true,
+      "resolution_status": "At Risk"
+    },
+    "affected_systems": [
+      "PgBouncer Pool",
+      "PostgreSQL Primary",
+      "Kiosk Voice Gateway"
+    ],
+    "tags": [
+      "database",
+      "incident",
+      "critical",
+      "s1",
+      "sla-risk",
+      "story-5"
+    ],
+    "dependencies": [
+      "CTO Read-Replica Sharding Approval in TKT-2026-038"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-15T09:00:00",
+      "reason": "Requires CTO infrastructure capital authorization for additional AWS Aurora read replicas."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-026-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-15T09:00:00",
+        "comment": "Escalated to Arvind Rao. Aarav's indexing fix (TKT-2026-007) will reduce query time, but we also need read-replica traffic splitting."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T08:30:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T09:00:00",
+        "type": "ESCALATED",
+        "actor": "EMP-2001",
+        "description": "Escalated to CTO Arvind Rao",
+        "old_value": null,
+        "new_value": "EMP-4002"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-027",
+    "title": "Database migration change request: Schema migration for employee security scopes and role hierarchy",
+    "description": "Migration request for new columns on employees table: security_scope, voice_authority, and organizational_level.",
+    "ticket_type": "Maintenance",
+    "category": "Database",
+    "subcategory": "Schema Change",
+    "status": "Pending",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-15T15:00:00",
+    "updated_at": "2026-10-16T11:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "PostgreSQL Employee Table",
+      "Alembic Migrations"
+    ],
+    "tags": [
+      "database",
+      "schema-migration",
+      "security-scopes",
+      "pending-approval"
+    ],
+    "dependencies": [
+      "Aarav's migration verification in TKT-2026-008"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-4002",
+      "approved_at": null,
+      "reason": "Requires CTO approval for schema changes on core employee directory."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-027-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-15T15:15:00",
+        "comment": "Arvind, this adds JSONB columns supporting scoped authorization for the IntentLock kiosk."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T15:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T15:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-2001",
+        "description": "Approval requested from Arvind Rao",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-028",
+    "title": "Engineering environment access: Staging cluster VPN profile provisioning for contractors",
+    "description": "Request and provisioning of time-bounded WireGuard VPN profiles for 2 QA contractors supporting sprint 14 regression testing.",
+    "ticket_type": "Access Request",
+    "category": "Access Control",
+    "subcategory": "VPN Access",
+    "status": "Closed",
+    "priority": "Low",
+    "severity": "S4",
+    "requester_id": "EMP-2003",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-2003",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-11T09:00:00",
+    "updated_at": "2026-10-12T15:00:00",
+    "due_date": "2026-10-14",
+    "resolved_at": "2026-10-12T14:00:00",
+    "closed_at": "2026-10-12T15:00:00",
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Corporate WireGuard VPN",
+      "Staging Kubernetes Cluster"
+    ],
+    "tags": [
+      "vpn",
+      "access-request",
+      "contractor",
+      "closed"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-2001",
+      "approved_at": "2026-10-11T14:00:00",
+      "reason": "Priya Sharma approved contractor access for QA testing."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-028-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-11T14:00:00",
+        "comment": "Approved with 14-day expiry TTL and staging-only IP restriction."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-11T09:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2003",
+        "description": "Ticket created by Karthik Iyer",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-11T14:00:00",
+        "type": "APPROVED",
+        "actor": "EMP-2001",
+        "description": "Approved by Priya Sharma",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      },
+      {
+        "timestamp": "2026-10-12T14:00:00",
+        "type": "RESOLVED",
+        "actor": "EMP-2001",
+        "description": "VPN profiles generated and distributed",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      },
+      {
+        "timestamp": "2026-10-12T15:00:00",
+        "type": "CLOSED",
+        "actor": "EMP-2003",
+        "description": "Closed by Karthik Iyer",
+        "old_value": "Resolved",
+        "new_value": "Closed"
+      }
+    ],
+    "resolution": {
+      "summary": "Generated time-bounded VPN profiles restricted to staging CIDR range.",
+      "root_cause": "Contractors required staging network access for mobile device test runs.",
+      "resolution_action": "Enrolled profiles with 14-day auto-expiry in WireGuard manager.",
+      "resolved_by": "EMP-2001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-029",
+    "title": "Project delivery risk: IntentLock milestone schedule risk due to speech model latency",
+    "description": "Priya flagging milestone schedule risk: Kokoro TTS CPU synthesis takes 750ms on edge hardware, threatening sub-1.2s total turn turnaround target.",
+    "ticket_type": "Maintenance",
+    "category": "AI/ML",
+    "subcategory": "Latency Optimization",
+    "status": "Open",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-2001",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-16T11:00:00",
+    "updated_at": "2026-10-16T14:30:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Kokoro TTS Engine",
+      "Turn Orchestrator"
+    ],
+    "tags": [
+      "project-risk",
+      "intentlock",
+      "speech",
+      "latency"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-3001",
+      "escalation_level": "L2 - Director of Engineering",
+      "escalated_at": "2026-10-16T11:30:00",
+      "reason": "Notified Director Vikram Malhotra of turn latency constraint."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-029-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-16T12:00:00",
+        "comment": "Exploring sentence-chunked streaming TTS to deliver the first audio packet within 250ms."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-16T11:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-16T11:30:00",
+        "type": "ESCALATED",
+        "actor": "EMP-2001",
+        "description": "Escalated to Director Vikram Malhotra",
+        "old_value": null,
+        "new_value": "EMP-3001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-030",
+    "title": "Resolved engineering escalation: Cross-team API contract mismatch between Web and Mobile endpoints",
+    "description": "Priya resolved breaking contract discrepancy where mobile app expected ISO timestamps in UTC while web endpoints returned localized strings.",
+    "ticket_type": "Bug",
+    "category": "API",
+    "subcategory": "Contract Harmonization",
+    "status": "Resolved",
+    "priority": "Medium",
+    "severity": "S3",
+    "requester_id": "EMP-1502",
+    "assignee_id": "EMP-2001",
+    "created_by": "EMP-1502",
+    "owner_team": "Application Engineering",
+    "department": "Engineering",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-12T10:00:00",
+    "updated_at": "2026-10-13T17:00:00",
+    "due_date": "2026-10-14",
+    "resolved_at": "2026-10-13T16:30:00",
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Customer Support Portal API",
+      "Mobile App Backend"
+    ],
+    "tags": [
+      "api-contracts",
+      "mobile",
+      "web",
+      "resolved"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-2001",
+      "escalation_level": "L2 - Engineering Manager",
+      "escalated_at": "2026-10-12T10:15:00",
+      "reason": "Cross-team blocker between Mobile and Web engineering leads."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-030-01",
+        "author_id": "EMP-2001",
+        "author_name": "Priya Sharma",
+        "created_at": "2026-10-13T16:00:00",
+        "comment": "Enforced strict UTC ISO-8601 formatting across all Pydantic serialization models via custom datetime encoder."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-12T10:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-1502",
+        "description": "Ticket created by Rohan Verma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-12T10:15:00",
+        "type": "ESCALATED",
+        "actor": "EMP-1502",
+        "description": "Escalated to Priya Sharma",
+        "old_value": null,
+        "new_value": "EMP-2001"
+      },
+      {
+        "timestamp": "2026-10-13T16:30:00",
+        "type": "RESOLVED",
+        "actor": "EMP-2001",
+        "description": "Resolved by Priya Sharma",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      }
+    ],
+    "resolution": {
+      "summary": "Standardized all datetime serialization across public and internal API endpoints to UTC ISO-8601.",
+      "root_cause": "Different serialization middlewares in web vs mobile gateways.",
+      "resolution_action": "Centralized timestamp serializer in shared base model.",
+      "resolved_by": "EMP-2001"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-031",
+    "title": "Critical technology incident: Enterprise SSO identity provider automated failover failure",
+    "description": "Primary Okta SAML connector experienced regional outage. Automated failover to secondary provider stalled on mutual TLS certificate mismatch.",
+    "ticket_type": "Incident",
+    "category": "Security",
+    "subcategory": "Identity Provider",
+    "status": "In Progress",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-3005",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-3005",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "Identity & Security Architecture",
+    "created_at": "2026-10-16T07:30:00",
+    "updated_at": "2026-10-16T15:00:00",
+    "due_date": "2026-10-16",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 0.5,
+      "resolution_target_hours": 4,
+      "response_met": true,
+      "resolution_status": "At Risk"
+    },
+    "affected_systems": [
+      "Corporate SSO Gateway",
+      "SAML IdP Connector"
+    ],
+    "tags": [
+      "sso",
+      "security",
+      "incident",
+      "critical",
+      "s1",
+      "sla-risk",
+      "arvind-lead"
+    ],
+    "dependencies": [
+      "Certificate authority re-issuance"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-16T07:45:00",
+      "reason": "Enterprise-wide corporate login disruption escalated directly to CTO."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-031-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-16T08:15:00",
+        "comment": "Directing executive response. Approved emergency certificate rotation for backup SAML federation endpoint."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-16T07:30:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-3005",
+        "description": "Ticket created by Maya Krishnan",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-16T07:45:00",
+        "type": "ESCALATED",
+        "actor": "EMP-3005",
+        "description": "Escalated to CTO Arvind Rao",
+        "old_value": null,
+        "new_value": "EMP-4002"
+      },
+      {
+        "timestamp": "2026-10-16T08:00:00",
+        "type": "STATUS_CHANGED",
+        "actor": "EMP-4002",
+        "description": "Status moved to In Progress by Arvind Rao",
+        "old_value": "Open",
+        "new_value": "In Progress"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-032",
+    "title": "Architecture approval: Enterprise zero-trust voice gateway architecture sign-off for IntentLock",
+    "description": "CTO evaluation and sign-off on IntentLock Track 3 UNCLONE architecture: ensures zero-trust credential isolation and strict Option B execution boundary.",
+    "ticket_type": "Architecture Review",
+    "category": "AI/ML",
+    "subcategory": "Security Architecture",
+    "status": "Open",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2001",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-15T10:00:00",
+    "updated_at": "2026-10-16T12:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "IntentLock Voice Gateway",
+      "Detectif Adapter",
+      "Policy Engine"
+    ],
+    "tags": [
+      "architecture-approval",
+      "zero-trust",
+      "intentlock",
+      "cto-approval"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-15T10:05:00",
+      "reason": "Requires highest technology authority approval."
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-4002",
+      "approved_at": null,
+      "reason": "CTO sign-off required for zero-trust voice gateway architecture."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-032-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-16T09:30:00",
+        "comment": "Reviewed the boundary design. Option B logical separation inside FastAPI is sound for the hackathon baseline. Reviewing cryptographic grant hashing."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T10:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T10:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-2001",
+        "description": "Submitted to Arvind Rao for sign-off",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-033",
+    "title": "Infrastructure modernization: Core API gateway migration to Kubernetes multi-cluster mesh",
+    "description": "Executive sponsorship of multi-region Kubernetes service mesh migration to eliminate single-point-of-failure bottlenecks.",
+    "ticket_type": "Feature",
+    "category": "Infrastructure",
+    "subcategory": "Service Mesh",
+    "status": "In Progress",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-4002",
+    "assignee_id": "EMP-1505",
+    "created_by": "EMP-4002",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "Cloud Infrastructure Modernization",
+    "created_at": "2026-10-11T09:00:00",
+    "updated_at": "2026-10-15T16:00:00",
+    "due_date": "2026-10-25",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 12,
+      "resolution_target_hours": 240,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Kubernetes Multi-Cluster",
+      "Istio Service Mesh"
+    ],
+    "tags": [
+      "infrastructure",
+      "service-mesh",
+      "arvind-sponsor",
+      "in-progress"
+    ],
+    "dependencies": [
+      "VPC peering across Mumbai and Bengaluru regions"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-11T10:00:00",
+      "reason": "Arvind Rao approved Q4 infrastructure initiative."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-033-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-11T10:00:00",
+        "comment": "Sanjana, please ensure zero disruption to live support portal traffic during canary mesh testing."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-11T09:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-4002",
+        "description": "Ticket created by Arvind Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-11T10:00:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-034",
+    "title": "Emergency security escalation: Customer Support Portal authentication architecture emergency approval",
+    "description": "CTO executive review and emergency approval of Redis primary routing waiver during Sev-1 authentication outage (escalated from Aarav TKT-2026-001/014 and Priya TKT-2026-016).",
+    "ticket_type": "Incident",
+    "category": "Authentication",
+    "subcategory": "Executive Waiver",
+    "status": "Closed",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2001",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "Customer Support Portal",
+    "created_at": "2026-10-12T09:15:00",
+    "updated_at": "2026-10-13T20:00:00",
+    "due_date": "2026-10-12",
+    "resolved_at": "2026-10-12T10:15:00",
+    "closed_at": "2026-10-13T20:00:00",
+    "sla": {
+      "response_target_hours": 0.5,
+      "resolution_target_hours": 2,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Customer Support Portal",
+      "Redis Primary Cluster"
+    ],
+    "tags": [
+      "cto-approval",
+      "emergency-waiver",
+      "critical",
+      "s1",
+      "story-1",
+      "closed"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-12T09:15:00",
+      "reason": "Production auth failure affecting customer operations."
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-12T10:15:00",
+      "reason": "Arvind Rao authorized emergency primary read routing."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-034-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-12T10:15:00",
+        "comment": "Reviewed technical analysis from Aarav Mehta and Priya Sharma. Authorized temporary primary-only routing. Verified that primary node has 4x headroom."
+      },
+      {
+        "comment_id": "COM-034-02",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-13T20:00:00",
+        "comment": "Post-incident review complete. Signed off on permanent connection sharding in TKT-2026-038."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-12T09:15:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created and escalated by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-12T10:15:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by CTO Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      },
+      {
+        "timestamp": "2026-10-12T10:15:00",
+        "type": "RESOLVED",
+        "actor": "EMP-4002",
+        "description": "Waiver granted and deployed",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      },
+      {
+        "timestamp": "2026-10-13T20:00:00",
+        "type": "CLOSED",
+        "actor": "EMP-4002",
+        "description": "Closed by Arvind Rao",
+        "old_value": "Resolved",
+        "new_value": "Closed"
+      }
+    ],
+    "resolution": {
+      "summary": "Granted executive waiver to route session validation queries to Redis primary, resolving customer outage.",
+      "root_cause": "Asynchronous replication delay caused stale session reads.",
+      "resolution_action": "Authorized Redis configuration patch and scheduled long-term sharding.",
+      "resolved_by": "EMP-4002"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-035",
+    "title": "AI-agent platform review: Approval of Track 3 UNCLONE multi-agent governance and voice biometrics",
+    "description": "CTO strategic review of Track 3 UNCLONE compliance: enforces dual-check biometric verification (Detectif deepfake detection + 1:1 speaker verification) and immutable audit ledger.",
+    "ticket_type": "Architecture Review",
+    "category": "AI/ML",
+    "subcategory": "Agent Governance",
+    "status": "In Progress",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-4002",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-4002",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-14T09:00:00",
+    "updated_at": "2026-10-16T14:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "IntentLock Platform",
+      "Detectif Adapter",
+      "Ollama LLM"
+    ],
+    "tags": [
+      "ai-agents",
+      "unclone",
+      "governance",
+      "biometrics",
+      "story-4"
+    ],
+    "dependencies": [
+      "Detectif API keys setup"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-14T16:00:00",
+      "reason": "Arvind Rao approved UNCLONE Track 3 compliance framework."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-035-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-14T16:00:00",
+        "comment": "Confirmed Track 3 requirements: the LLM must never execute mutations directly. The backend must enforce deterministic verification before action grants are minted."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T09:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-4002",
+        "description": "Ticket created by Arvind Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T16:00:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-036",
+    "title": "IntentLock architecture decision: Authoritative execution boundary isolation (Option B) sign-off",
+    "description": "Architecture Decision Record (ADR-04) authoring and approval by CTO Arvind Rao: locking Option B (FastAPI logical boundary) to avoid network overhead under hackathon constraints.",
+    "ticket_type": "Architecture Review",
+    "category": "Security",
+    "subcategory": "Architecture Decision",
+    "status": "Closed",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-4002",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-4002",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-13T10:00:00",
+    "updated_at": "2026-10-14T11:00:00",
+    "due_date": "2026-10-14",
+    "resolved_at": "2026-10-14T10:30:00",
+    "closed_at": "2026-10-14T11:00:00",
+    "sla": {
+      "response_target_hours": 8,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "FastAPI Core",
+      "Protected Executor Boundary"
+    ],
+    "tags": [
+      "adr",
+      "architecture",
+      "option-b",
+      "closed"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-14T10:30:00",
+      "reason": "Arvind Rao approved ADR-04 Option B boundary."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-036-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-14T10:30:00",
+        "comment": "Option B is locked. Logical separation inside FastAPI guarantees single-origin safety and eliminates extra inter-process RPC latency."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-13T10:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-4002",
+        "description": "Ticket created by Arvind Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-14T10:30:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      },
+      {
+        "timestamp": "2026-10-14T11:00:00",
+        "type": "CLOSED",
+        "actor": "EMP-4002",
+        "description": "Closed by Arvind Rao",
+        "old_value": "Resolved",
+        "new_value": "Closed"
+      }
+    ],
+    "resolution": {
+      "summary": "Formally published ADR-04 selecting Option B logical boundary for IntentLock.",
+      "root_cause": "Need to prevent microservice failure modes during Day 1 demonstration.",
+      "resolution_action": "Documented in System_Architecture.md and approved.",
+      "resolved_by": "EMP-4002"
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-037",
+    "title": "Identity/security architecture: Enterprise session token hardening and zero-trust revocation policy",
+    "description": "CTO policy sign-off on enterprise session management: requires cryptographically bound HttpOnly session cookies, 90-second voice turn TTL, and immediate server-side revocation on mismatch.",
+    "ticket_type": "Security Task",
+    "category": "Security",
+    "subcategory": "Zero Trust Policy",
+    "status": "In Progress",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2001",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "Session Security Modernization",
+    "created_at": "2026-10-14T11:30:00",
+    "updated_at": "2026-10-16T13:00:00",
+    "due_date": "2026-10-18",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 48,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Corporate Identity Gateway",
+      "IntentLock Session Store"
+    ],
+    "tags": [
+      "zero-trust",
+      "session-security",
+      "cto-policy",
+      "story-3"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-14T11:30:00",
+      "reason": "Escalated from Priya Sharma following audit recommendation SEC-2026-09."
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-15T15:00:00",
+      "reason": "Arvind Rao approved zero-trust session token policy."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-037-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-15T15:00:00",
+        "comment": "Approved. The 90-second session TTL is the correct security balance for public kiosk deployments."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-14T11:30:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created and escalated by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T15:00:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-038",
+    "title": "Cloud infrastructure change: Multi-tenant database read-replica auto-scaling and connection sharding policy",
+    "description": "CTO authorization for provisioning 3 AWS Aurora read replicas and enabling PgBouncer transaction-level connection pooling to resolve morning congestion (escalated from TKT-2026-026).",
+    "ticket_type": "Maintenance",
+    "category": "Infrastructure",
+    "subcategory": "Database Scaling",
+    "status": "In Progress",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2001",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2001",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "Core Database Sharding",
+    "created_at": "2026-10-15T09:30:00",
+    "updated_at": "2026-10-16T14:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 2,
+      "resolution_target_hours": 24,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "AWS Aurora PostgreSQL",
+      "PgBouncer Cluster"
+    ],
+    "tags": [
+      "cloud-infrastructure",
+      "aurora",
+      "sharding",
+      "cto-approved",
+      "story-5"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-15T09:30:00",
+      "reason": "Escalated from Priya Sharma regarding morning pool exhaustion."
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-15T10:30:00",
+      "reason": "Arvind Rao authorized capital budget for Aurora replica expansion."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-038-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-15T10:30:00",
+        "comment": "Authorized provision of 2 Aurora replicas immediately. Varun Singh (EMP-2005) to execute Terraform apply."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T09:30:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created and escalated by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T10:30:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-039",
+    "title": "High-risk production change: Live database schema migration on production tenant table",
+    "description": "High-risk change gate: Altering live tenants table to add biometric_policy_enforced column with default=True. Requires CTO change-board authorization.",
+    "ticket_type": "Maintenance",
+    "category": "Database",
+    "subcategory": "Production Change",
+    "status": "Pending",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-2005",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-2005",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "Cloud Infrastructure Modernization",
+    "created_at": "2026-10-16T09:00:00",
+    "updated_at": "2026-10-16T11:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 24,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Production PostgreSQL Cluster"
+    ],
+    "tags": [
+      "change-board",
+      "production-change",
+      "pending-approval",
+      "critical"
+    ],
+    "dependencies": [
+      "Zero-downtime pg_repack validation"
+    ],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-4002",
+      "approved_at": null,
+      "reason": "High-risk production change gate requires CTO approval."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-039-01",
+        "author_id": "EMP-2005",
+        "author_name": "Varun Singh",
+        "created_at": "2026-10-16T09:30:00",
+        "comment": "Arvind, change plan verified in staging with 0 table locks. Scheduled for tonight 02:00 IST."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-16T09:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2005",
+        "description": "Ticket created by Varun Singh",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-16T09:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-2005",
+        "description": "Approval requested from CTO Arvind Rao",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-040",
+    "title": "Technology investment/resource request: Enterprise DetectifAI production tier subscription",
+    "description": "Procurement authorization for enterprise DetectifAI API tier with dedicated 99.95% uptime SLA and 100 concurrent voice streams.",
+    "ticket_type": "Feature",
+    "category": "AI/ML",
+    "subcategory": "Vendor Procurement",
+    "status": "Open",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-4002",
+    "assignee_id": "EMP-4001",
+    "created_by": "EMP-4002",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-15T16:00:00",
+    "updated_at": "2026-10-16T10:00:00",
+    "due_date": "2026-10-22",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 24,
+      "resolution_target_hours": 168,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Detectif Cloud API"
+    ],
+    "tags": [
+      "procurement",
+      "detectifai",
+      "vendor",
+      "arvind-sponsor"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Pending",
+      "approver_id": "EMP-4001",
+      "approved_at": null,
+      "reason": "Requires COO Ananya Iyer procurement co-signature."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-040-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-15T16:15:00",
+        "comment": "Ananya, vendor SLA terms look solid. Please review vendor MSA agreement."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T16:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-4002",
+        "description": "Ticket created by Arvind Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T16:05:00",
+        "type": "APPROVAL_REQUESTED",
+        "actor": "EMP-4002",
+        "description": "Procurement approval requested from Ananya Iyer",
+        "old_value": "Not Required",
+        "new_value": "Pending"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-041",
+    "title": "Engineering escalation: Critical latency degradation in real-time speech synthesis cluster",
+    "description": "Executive escalation: Speech synthesis P99 latency exceeded 1200ms during kiosk stress test. Arvind directing R&D team on model quantization.",
+    "ticket_type": "Incident",
+    "category": "AI/ML",
+    "subcategory": "Speech Synthesis",
+    "status": "In Progress",
+    "priority": "High",
+    "severity": "S2",
+    "requester_id": "EMP-2001",
+    "assignee_id": "RND-5001",
+    "created_by": "EMP-2001",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "IntentLock Platform",
+    "created_at": "2026-10-15T13:00:00",
+    "updated_at": "2026-10-16T14:00:00",
+    "due_date": "2026-10-17",
+    "resolved_at": null,
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 2,
+      "resolution_target_hours": 24,
+      "response_met": true,
+      "resolution_status": "Within SLA"
+    },
+    "affected_systems": [
+      "Kokoro TTS Service",
+      "Audio Inference Workers"
+    ],
+    "tags": [
+      "speech-synthesis",
+      "latency",
+      "quantization",
+      "arvind-assigned"
+    ],
+    "dependencies": [
+      "ONNX INT8 quantization benchmark"
+    ],
+    "escalation": {
+      "is_escalated": true,
+      "escalated_to": "EMP-4002",
+      "escalation_level": "L3 - CTO",
+      "escalated_at": "2026-10-15T13:15:00",
+      "reason": "Threatens overall kiosk demo turn turnaround target."
+    },
+    "approval": {
+      "required": false,
+      "status": "Not Required",
+      "approver_id": null,
+      "approved_at": null,
+      "reason": null
+    },
+    "comments": [
+      {
+        "comment_id": "COM-041-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-15T13:30:00",
+        "comment": "Assigned Dr. Aditi Narayan (RND-5001) to evaluate ONNX INT8 weights. That should drop latency by 45% without audio quality loss."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-15T13:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-2001",
+        "description": "Ticket created and escalated by Priya Sharma",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-15T13:30:00",
+        "type": "ASSIGNED",
+        "actor": "EMP-4002",
+        "description": "Reassigned by Arvind Rao to Dr. Aditi Narayan",
+        "old_value": "EMP-4002",
+        "new_value": "RND-5001"
+      }
+    ],
+    "resolution": {
+      "summary": null,
+      "root_cause": null,
+      "resolution_action": null,
+      "resolved_by": null
+    }
+  },
+  {
+    "ticket_id": "TKT-2026-042",
+    "title": "Resolved executive technology issue: Cross-region data residency compliance for voice biometrics",
+    "description": "Arvind finalized enterprise compliance review ensuring all Detectif voice verification payloads remain within local jurisdiction boundaries.",
+    "ticket_type": "Security Task",
+    "category": "Security",
+    "subcategory": "Data Residency",
+    "status": "Resolved",
+    "priority": "Critical",
+    "severity": "S1",
+    "requester_id": "EMP-4002",
+    "assignee_id": "EMP-4002",
+    "created_by": "EMP-4002",
+    "owner_team": "Executive Technology",
+    "department": "Executive Management / Technology",
+    "project": "Identity & Security Architecture",
+    "created_at": "2026-10-10T14:00:00",
+    "updated_at": "2026-10-12T16:00:00",
+    "due_date": "2026-10-13",
+    "resolved_at": "2026-10-12T15:30:00",
+    "closed_at": null,
+    "sla": {
+      "response_target_hours": 4,
+      "resolution_target_hours": 72,
+      "response_met": true,
+      "resolution_status": "Met"
+    },
+    "affected_systems": [
+      "Voice Gateway",
+      "Detectif Cloud Ingestion"
+    ],
+    "tags": [
+      "compliance",
+      "data-residency",
+      "biometrics",
+      "resolved",
+      "executive"
+    ],
+    "dependencies": [],
+    "escalation": {
+      "is_escalated": false,
+      "escalated_to": null,
+      "escalation_level": null,
+      "escalated_at": null,
+      "reason": null
+    },
+    "approval": {
+      "required": true,
+      "status": "Approved",
+      "approver_id": "EMP-4002",
+      "approved_at": "2026-10-12T15:00:00",
+      "reason": "Arvind Rao approved data residency compliance architecture."
+    },
+    "comments": [
+      {
+        "comment_id": "COM-042-01",
+        "author_id": "EMP-4002",
+        "author_name": "Arvind Rao",
+        "created_at": "2026-10-12T15:00:00",
+        "comment": "Confirmed Detectif India region routing endpoint. Zero biometric waveforms leave domestic cloud availability zones."
+      }
+    ],
+    "activity_history": [
+      {
+        "timestamp": "2026-10-10T14:00:00",
+        "type": "TICKET_CREATED",
+        "actor": "EMP-4002",
+        "description": "Ticket created by Arvind Rao",
+        "old_value": null,
+        "new_value": "Open"
+      },
+      {
+        "timestamp": "2026-10-12T15:00:00",
+        "type": "APPROVED",
+        "actor": "EMP-4002",
+        "description": "Approved by Arvind Rao",
+        "old_value": "Pending",
+        "new_value": "Approved"
+      },
+      {
+        "timestamp": "2026-10-12T15:30:00",
+        "type": "RESOLVED",
+        "actor": "EMP-4002",
+        "description": "Resolved by Arvind Rao",
+        "old_value": "In Progress",
+        "new_value": "Resolved"
+      }
+    ],
+    "resolution": {
+      "summary": "Configured regional Detectif endpoint ensuring in-country processing of voice waveforms.",
+      "root_cause": "Initial SDK configuration defaulted to global multi-tenant endpoint.",
+      "resolution_action": "Bound DETECTIF_API_ENDPOINT in backend/core/config.py to regional sovereign gateway.",
+      "resolved_by": "EMP-4002"
+    }
+  }
+]
