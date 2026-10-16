@@ -746,12 +746,21 @@ async def process_voice_turn(
         tts_result = await tts_port.synthesize(public_text, clean_turn_id)
         audio_payload = None
         if tts_result.audio_bytes:
-            audio_payload = SpokenAudioPayload(byte_count=len(tts_result.audio_bytes),
-                                               base64_audio=base64.b64encode(tts_result.audio_bytes).decode("ascii"))
+            dur_ms = (len(tts_result.audio_bytes) - 44) / (24000.0 * 2.0) * 1000.0
+            audio_payload = SpokenAudioPayload(
+                mime_type="audio/wav",
+                sample_rate=24000,
+                channels=1,
+                byte_count=len(tts_result.audio_bytes),
+                base64_audio=base64.b64encode(tts_result.audio_bytes).decode("ascii"),
+                duration_ms=round(dur_ms, 1),
+            )
         response = VoiceTurnResponse(
             request_id=request_id, client_turn_id=clean_turn_id, status="success",
             transcript=transcript_text, assistant_message=public_text, spoken_summary=public_text,
-            speech_audio=audio_payload, result_block=public_block, result_blocks=[public_block],
+            speech_audio=audio_payload,
+            speech_timings_ms={"stt_ms": stt_result.latency_ms or 0.0, "tts_ms": tts_result.latency_ms or 0.0},
+            result_block=public_block, result_blocks=[public_block],
             primary_result_id=public_block.id,
             session=TurnSessionInfo(state="VERIFIED", sessionId=existing_for_plan.session_id,
                 actor=SessionActor(employeeId=existing_for_plan.employee_id, fullName=existing_for_plan.full_name,
@@ -766,11 +775,21 @@ async def process_voice_turn(
     if not reusing_result and stt_result.speech_duration_s is not None and stt_result.speech_duration_s < 4.2:
         guidance = "Please speak a full request for at least five seconds so I can verify the voice evidence."
         tts_result = await tts_port.synthesize(guidance, clean_turn_id)
-        audio_payload = SpokenAudioPayload(byte_count=len(tts_result.audio_bytes),
-            base64_audio=base64.b64encode(tts_result.audio_bytes).decode("ascii")) if tts_result.audio_bytes else None
+        audio_payload = None
+        if tts_result.audio_bytes:
+            dur_ms = (len(tts_result.audio_bytes) - 44) / (24000.0 * 2.0) * 1000.0
+            audio_payload = SpokenAudioPayload(
+                mime_type="audio/wav",
+                sample_rate=24000,
+                channels=1,
+                byte_count=len(tts_result.audio_bytes),
+                base64_audio=base64.b64encode(tts_result.audio_bytes).decode("ascii"),
+                duration_ms=round(dur_ms, 1),
+            )
         response = VoiceTurnResponse(request_id=request_id, client_turn_id=clean_turn_id,
             status="clarification", transcript=transcript_text, assistant_message=guidance,
             spoken_summary=guidance, speech_audio=audio_payload,
+            speech_timings_ms={"stt_ms": stt_result.latency_ms or 0.0, "tts_ms": tts_result.latency_ms or 0.0},
             session=TurnSessionInfo(state="VERIFIED", sessionId=existing_for_plan.session_id,
                 actor=SessionActor(employeeId=existing_for_plan.employee_id, fullName=existing_for_plan.full_name,
                     role=existing_for_plan.role, department=existing_for_plan.department,
