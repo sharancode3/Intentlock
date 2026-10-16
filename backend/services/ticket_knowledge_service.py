@@ -11,6 +11,7 @@ import logging
 from typing import Dict, Any, List, Optional, Set
 
 from backend.core.config import settings
+from backend.services.ticket_action_store import TicketActionStore
 
 logger = logging.getLogger("ticket_knowledge_service")
 
@@ -26,6 +27,7 @@ class TicketKnowledgeService:
             self.data_path = os.path.join(base_dir, "data", "all_tickets.json")
 
         self.is_loaded: bool = False
+        self.store = TicketActionStore(seed_path=self.data_path) if data_path is None else None
         self._raw_tickets: List[Dict[str, Any]] = []
 
         # Normalized in-memory indexes
@@ -64,12 +66,20 @@ class TicketKnowledgeService:
             return
 
         logger.info(f"Loading canonical ticket dataset from {self.data_path}...")
-        with open(self.data_path, "r", encoding="utf-8") as f:
-            self._raw_tickets = json.load(f)
+        if self.store:
+            self._raw_tickets = self.store.list_tickets()
+        else:
+            with open(self.data_path, "r", encoding="utf-8") as f:
+                self._raw_tickets = json.load(f)
 
         self._build_indexes()
         self.is_loaded = True
         logger.info(f"Successfully loaded and indexed {len(self._raw_tickets)} tickets.")
+
+    def refresh_from_store(self) -> None:
+        if self.store:
+            self._raw_tickets = self.store.list_tickets()
+            self._build_indexes()
 
     def _build_indexes(self) -> None:
         self.tickets_by_id.clear()
@@ -124,9 +134,11 @@ class TicketKnowledgeService:
                 self.tickets_by_escalated_to.setdefault(esc_to.strip().upper(), []).append(t)
 
     def list_all_tickets(self) -> List[Dict[str, Any]]:
+        self.refresh_from_store()
         return list(self._raw_tickets)
 
     def get_ticket_by_id(self, ticket_id: str) -> Optional[Dict[str, Any]]:
+        self.refresh_from_store()
         norm_id = ticket_id.strip().upper()
         return self.tickets_by_id.get(norm_id)
 
@@ -142,12 +154,9 @@ class TicketKnowledgeService:
         - Manager: self + direct reports + tickets where manager is approver or escalation target.
         - Executive: technology-wide tickets + executive approvals/escalations + self.
         """
+        self.refresh_from_store()
         norm_actor = actor_id.strip().upper()
         reports = {r.strip().upper() for r in (direct_report_ids or [])}
-
-        if is_executive:
-            # Executive sees all tickets in their technology domain
-            return list(self._raw_tickets)
 
         seen_tids = set()
         scoped_tickets = []
@@ -166,7 +175,14 @@ class TicketKnowledgeService:
             # Manager oversight of direct reports
             is_report = bool(reports and (asn in reports or req in reports or crb in reports))
 
-            if (is_self or is_report) and tid not in seen_tids:
+            # The CTO's explicit technology domain is narrower than the company.
+            # A title or executive flag alone never grants a blanket ticket read.
+            is_technology_scope = (
+                is_executive
+                and norm_actor == "EMP-4002"
+                and t.get("department") == "Executive Management / Technology"
+            )
+            if (is_self or is_report or is_technology_scope) and tid not in seen_tids:
                 seen_tids.add(tid)
                 scoped_tickets.append(t)
 
@@ -298,8 +314,12 @@ class TicketKnowledgeService:
 
         # Normalize status to frontend enum
         st_raw = (t.get("status") or "Open").upper()
-        if st_raw in ("OPEN", "PENDING", "BLOCKED"):
+        if st_raw == "OPEN":
             front_status = "OPEN"
+        elif st_raw == "PENDING":
+            front_status = "PENDING"
+        elif st_raw == "BLOCKED":
+            front_status = "BLOCKED"
         elif st_raw in ("IN PROGRESS", "IN_PROGRESS"):
             front_status = "IN_PROGRESS"
         elif st_raw == "RESOLVED":

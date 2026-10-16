@@ -85,6 +85,9 @@ class Settings(BaseSettings):
         "MAPPING_DB_PATH",
         os.path.join(BASE_DIR, "backend", "data", "identity_mappings.sqlite3"),
     )
+    APP_DB_PATH: str = os.getenv(
+        "APP_DB_PATH", os.path.join(BASE_DIR, "backend", "data", "app_state.sqlite3")
+    )
 
     @field_validator("FRONTEND_ORIGINS", "ALLOWED_AUDIO_TYPES", mode="before")
     @classmethod

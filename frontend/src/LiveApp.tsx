@@ -8,6 +8,7 @@ import type { ConversationMessage, GenericResultBlock, SessionInfo, TurnStatusNo
 interface TurnReply {
   transcript?: string; assistant_message?: string; status: string; session?: SessionInfo;
   session_expires_at?: string; result_block?: GenericResultBlock | null;
+  result_blocks?: GenericResultBlock[]; primary_result_id?: string | null;
   speech_audio?: { base64_audio: string; mime_type: string };
   trust_evidence?: { speaker_decision?: string; authenticity_verdict?: string };
   error?: { message?: string };
@@ -31,6 +32,8 @@ export default function LiveApp() {
   const [captureEpoch, setCaptureEpoch] = useState(0);
   const epoch = useRef(0);
   const request = useRef<AbortController | null>(null);
+  const actionRequest = useRef<AbortController | null>(null);
+  const actionSequence = useRef(0);
   const sessionRef = useRef(session);
   useEffect(() => { sessionRef.current = session; }, [session]);
   const expiresAt = useRef<number | null>(null);
@@ -60,7 +63,9 @@ export default function LiveApp() {
 
   const clearSession = useCallback(() => {
     const token = sessionRef.current.sessionId;
-    epoch.current += 1; request.current?.abort(); request.current = null; stopAudio();
+    epoch.current += 1; actionSequence.current += 1;
+    request.current?.abort(); request.current = null;
+    actionRequest.current?.abort(); actionRequest.current = null; stopAudio();
     expiresAt.current = null; setSession(anonymous); sessionRef.current = anonymous;
     setBlock(null); setMessages([welcome()]); setLastAudio(undefined);
     setEvidence('Voice verification required'); setBusy(false); busyRef.current = false;
@@ -78,7 +83,7 @@ export default function LiveApp() {
     }, 1000);
     return () => clearInterval(timer);
   }, [clearSession]);
-  useEffect(() => () => { request.current?.abort(); stopAudio(); }, [stopAudio]);
+  useEffect(() => () => { request.current?.abort(); actionRequest.current?.abort(); stopAudio(); }, [stopAudio]);
 
   const onTranscript = useCallback(({ turnId, text, cancelled }: LiveTranscript) => {
     const id = `user-${turnId}`;
@@ -92,19 +97,14 @@ export default function LiveApp() {
 
   const handleAudio = useCallback(async (blob: Blob, duration: number, givenId?: string) => {
     if (busyRef.current) return;
+    actionSequence.current += 1; actionRequest.current?.abort(); actionRequest.current = null;
     const turnId = givenId || crypto.randomUUID();
     const messageId = `user-${turnId}`, turnEpoch = epoch.current;
-    if (duration < 4200) {
-      setMessages(previous => previous.map(value => value.id === messageId ? {
-        ...value, isStreaming: false, status: 'error', errorMessage: 'Please speak for at least 5–6 seconds for both voice checks.',
-      } : value));
-      setStatus({ type: 'clarification', message: 'Please speak a full question for at least 5–6 seconds, then pause.' });
-      return;
-    }
-    busyRef.current = true; setBusy(true); setBlock(null); setError(null);
-    setEvidence('Checking this recording…');
-    setStatus({ type: 'verifying', message: 'Final transcription, speaker verification and deepfake detection…' });
-    setSession(previous => ({ ...previous, state: 'VERIFYING' }));
+    void duration;
+    busyRef.current = true; setBusy(true); setError(null);
+    setEvidence('Processing this recording…');
+    setStatus({ type: 'transcribing', message: 'Finalizing your request…' });
+    const hadVerifiedSession = sessionRef.current.state === 'VERIFIED';
     const controller = new AbortController(); request.current = controller;
     const timeout = setTimeout(() => controller.abort(), 90000);
     try {
@@ -123,40 +123,86 @@ export default function LiveApp() {
       const updated = data.session || anonymous;
       setSession(updated); sessionRef.current = updated;
       expiresAt.current = data.session_expires_at ? Date.parse(data.session_expires_at) : null;
-      if (updated.state !== 'VERIFIED') {
-        setMessages(previous => previous.filter(value => value.id === messageId)); setLastAudio(undefined);
+      if (updated.state !== 'VERIFIED' && hadVerifiedSession) {
+        stopAudio(); setMessages([]); setBlock(null); setLastAudio(undefined);
       }
       const trust = data.trust_evidence;
-      setEvidence(trust ? `Speaker: ${trust.speaker_decision || 'unavailable'} · Authenticity: ${trust.authenticity_verdict || 'unavailable'}` : 'Verification incomplete; private access restricted');
+      setEvidence(trust ? `Speaker: ${trust.speaker_decision || 'reused session'} · Authenticity: ${trust.authenticity_verdict || 'reused session'}` : data.status === 'success' ? 'No voice verification needed for this request' : 'Verification incomplete; private access restricted');
+      const primary = data.result_blocks?.find(value => value.id === data.primary_result_id) || data.result_block || null;
       setMessages(previous => [
-        ...previous.map(value => value.id === messageId ? { ...value, text: data.transcript || value.text, status: 'complete' as const, isStreaming: false } : value),
+        ...previous.map(value => {
+          const completed = value.id === messageId ? { ...value, text: data.transcript || value.text, status: 'complete' as const, isStreaming: false } : value;
+          return primary?.type === 'ACTION_RECEIPT' && completed.resultBlock?.isSensitive
+            ? { ...completed, resultBlock: undefined, resultBlockId: undefined } : completed;
+        }),
         { id: `assistant-${turnId}`, sender: 'assistant', text: data.assistant_message || data.error?.message || 'No response was returned.',
           timestamp: new Date().toLocaleTimeString(), turnId, status: 'complete',
-          resultBlock: data.result_block || undefined, resultBlockId: data.result_block?.id },
+          resultBlock: primary || undefined, resultBlockId: primary?.id },
       ]);
-      setBlock(data.result_block || null);
-      setStatus({ type: updated.state === 'VERIFIED' ? 'result_ready' : 'denial', message: data.error?.message });
+      if (primary) setBlock(primary);
+      setStatus({ type: data.status === 'success' ? 'result_ready' : data.status === 'clarification' ? 'clarification' : 'denial', message: data.error?.message });
       if (data.speech_audio) { setLastAudio(data.speech_audio); await playAudio(data.speech_audio); }
     } catch (cause) {
       if (epoch.current !== turnEpoch) return;
       const message = cause instanceof Error && cause.name === 'AbortError' ? 'The voice request was cancelled or timed out.' : cause instanceof Error ? cause.message : 'Voice request failed.';
       setError(message); setSession(anonymous); sessionRef.current = anonymous; expiresAt.current = null;
       setBlock(null); setLastAudio(undefined); setEvidence('Verification unavailable');
-      setMessages(previous => previous.filter(value => value.id === messageId).map(value => ({ ...value, status: 'error', isStreaming: false, errorMessage: message })));
+      setMessages([{ id: crypto.randomUUID(), sender: 'assistant', text: message,
+        timestamp: new Date().toLocaleTimeString(), status: 'error', errorMessage: message }]);
       setStatus({ type: 'error', message });
     } finally {
       clearTimeout(timeout);
       if (epoch.current === turnEpoch) { busyRef.current = false; setBusy(false); request.current = null; }
     }
-  }, [candidate, playAudio]);
+  }, [candidate, playAudio, stopAudio]);
+
+  const handleResultAction = useCallback(async (action: string, parameters: Record<string, unknown>) => {
+    const token = sessionRef.current.sessionId;
+    if (!token || busyRef.current) return;
+    const sourceId = parameters.source_result_id;
+    if (typeof sourceId !== 'string') return;
+    const turnEpoch = epoch.current;
+    const actionId = ++actionSequence.current;
+    actionRequest.current?.abort();
+    const controller = new AbortController();
+    actionRequest.current = controller;
+    setStatus({ type: 'reasoning', message: 'Checking the selected result…' });
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/voice/result-action`, {
+        method: 'POST', signal: controller.signal,
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, source_result_id: sourceId, target_id: parameters.target_id,
+          view: parameters.view, group_by: parameters.group_by }),
+      });
+      if (epoch.current !== turnEpoch || actionSequence.current !== actionId) return;
+      const data = await response.json();
+      if (epoch.current !== turnEpoch || actionSequence.current !== actionId) return;
+      if (response.status === 409) {
+        setStatus({ type: 'clarification', message: data.assistant_message });
+        return;
+      }
+      if (!response.ok) throw new Error(data.error?.message || data.detail || 'Result action failed.');
+      const result = data.result_block as GenericResultBlock | undefined;
+      if (result) setBlock(result);
+      setMessages(previous => [...previous, { id: crypto.randomUUID(), sender: 'assistant',
+        text: data.assistant_message || 'Result updated.', timestamp: new Date().toLocaleTimeString(),
+        resultBlock: result, resultBlockId: result?.id }]);
+      setStatus({ type: 'result_ready' });
+    } catch (cause) {
+      if (epoch.current !== turnEpoch || actionSequence.current !== actionId || controller.signal.aborted) return;
+      setStatus({ type: 'error', message: cause instanceof Error ? cause.message : 'Result action failed.' });
+    } finally {
+      if (actionRequest.current === controller) actionRequest.current = null;
+    }
+  }, []);
 
   return <AppShell session={session} messages={messages} currentTurnStatus={status}
-    activeResultBlock={block} isResultLoading={busy && !playing} resultError={error}
+    activeResultBlock={block} isResultLoading={busy && !playing && !block} resultError={error}
     candidateEmployeeId={candidate} onSelectCandidate={value => { clearSession(); setCandidate(value); }}
     evidenceSummary={evidence} captureEpoch={captureEpoch} microphoneDisabled={busy || playing}
     isPlayingAudio={playing} onStopAudio={stopAudio} onReplayAudio={() => { if (lastAudio) void playAudio(lastAudio); }}
     hasAudioToReplay={Boolean(lastAudio)} onAudioCaptured={handleAudio} onLiveTranscript={onTranscript}
-    onEndSession={clearSession} onSelectResultBlock={value => {
+    onResultAction={handleResultAction} onEndSession={clearSession} onSelectResultBlock={value => {
       if (!value.isSensitive || sessionRef.current.state === 'VERIFIED') setBlock(value);
     }} />;
 }

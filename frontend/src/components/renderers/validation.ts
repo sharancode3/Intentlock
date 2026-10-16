@@ -27,7 +27,63 @@ import type {
   ProposedActionDraft,
   ActionReceiptPayload,
   ExecutionReceipt,
+  DataTablePayload,
+  OrgTreePayload,
 } from '../../types/payloads';
+
+export function validateDataTablePayload(raw: unknown): ValidationResult<DataTablePayload> {
+  if (!isRecord(raw) || !Array.isArray(raw.columns) || !Array.isArray(raw.rows) ||
+      raw.columns.length === 0 || raw.columns.length > 4 || raw.rows.length > 100 ||
+      typeof raw.total_count !== 'number' || raw.total_count < raw.rows.length) {
+    return { isValid: false, error: 'The table data is unavailable.' };
+  }
+  const allowed = new Set(['name', 'title', 'department']);
+  if (raw.columns.some((column: unknown) => !isRecord(column) || !allowed.has(String(column.key)) || !isNonEmptyString(column.label)) ||
+      raw.rows.some((row: unknown) => !isRecord(row) || !isNonEmptyString(row.id) ||
+        !isNonEmptyString(row.name) || !isNonEmptyString(row.title) || !isNonEmptyString(row.department))) {
+    return { isValid: false, error: 'The table data is malformed.' };
+  }
+  const rows = raw.rows as DataTablePayload['rows'];
+  if (new Set(rows.map(row => row.id)).size !== rows.length) {
+    return { isValid: false, error: 'The table contains duplicate rows.' };
+  }
+  return { isValid: true, data: raw as unknown as DataTablePayload };
+}
+
+export function validateOrgTreePayload(raw: unknown): ValidationResult<OrgTreePayload> {
+  if (!isRecord(raw) || !isNonEmptyString(raw.root_id) || !Array.isArray(raw.nodes) || !Array.isArray(raw.edges) ||
+      raw.nodes.length === 0 || raw.nodes.length > 30 || raw.edges.length > 29 ||
+      typeof raw.direct_count !== 'number' || typeof raw.descendant_count !== 'number') {
+    return { isValid: false, error: 'The reporting tree is unavailable.' };
+  }
+  if (raw.nodes.some((node: unknown) => !isRecord(node) || !isNonEmptyString(node.id) || !isNonEmptyString(node.name) ||
+      !isNonEmptyString(node.title) || typeof node.direct_count !== 'number') ||
+      raw.edges.some((edge: unknown) => !isRecord(edge) || !isNonEmptyString(edge.source) || !isNonEmptyString(edge.target))) {
+    return { isValid: false, error: 'The reporting tree is malformed.' };
+  }
+  const nodes = raw.nodes as OrgTreePayload['nodes'];
+  const edges = raw.edges as OrgTreePayload['edges'];
+  const ids = new Set(nodes.map(node => node.id));
+  if (ids.size !== nodes.length || !ids.has(raw.root_id as string) ||
+      edges.some(edge => !ids.has(edge.source) || !ids.has(edge.target) || edge.source === edge.target)) {
+    return { isValid: false, error: 'The reporting tree has invalid relationships.' };
+  }
+  const children = new Map<string, string[]>();
+  edges.forEach(edge => children.set(edge.source, [...(children.get(edge.source) || []), edge.target]));
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const hasCycle = (id: string): boolean => {
+    if (visiting.has(id)) return true;
+    if (visited.has(id)) return false;
+    visiting.add(id);
+    for (const child of children.get(id) || []) if (hasCycle(child)) return true;
+    visiting.delete(id); visited.add(id); return false;
+  };
+  if (nodes.some(node => hasCycle(node.id))) {
+    return { isValid: false, error: 'The reporting tree contains a cycle.' };
+  }
+  return { isValid: true, data: raw as unknown as OrgTreePayload };
+}
 
 export interface ValidationSuccess<T> {
   readonly isValid: true;
@@ -270,6 +326,13 @@ export function validateEmployeeProfilePayload(
       error: 'Invalid employee profile: status must be a string.',
     };
   }
+  if (!isOptionalString(candidate.manager_name)) {
+    return { isValid: false, error: 'Invalid employee profile: manager name must be a string.' };
+  }
+  if (candidate.skills !== undefined && (!Array.isArray(candidate.skills) ||
+      candidate.skills.length > 30 || candidate.skills.some((item: unknown) => typeof item !== 'string'))) {
+    return { isValid: false, error: 'Invalid employee profile: skills must be a bounded list of names.' };
+  }
 
   let normalizedProjects: string[] | undefined = undefined;
   if (candidate.active_projects !== undefined && candidate.active_projects !== null) {
@@ -302,6 +365,8 @@ export function validateEmployeeProfilePayload(
     email: isNonEmptyString(candidate.email) ? candidate.email.trim() : undefined,
     active_projects: normalizedProjects,
     status: isNonEmptyString(candidate.status) ? candidate.status.trim() : undefined,
+    skills: Array.isArray(candidate.skills) ? candidate.skills.map((item: string) => item.trim()) : undefined,
+    manager_name: isNonEmptyString(candidate.manager_name) ? candidate.manager_name.trim() : undefined,
   };
 
   return {
@@ -557,15 +622,15 @@ export function validateTeamMetricChartPayload(
 
   // Validate chart_type
   const rawType = typeof raw.chart_type === 'string' ? raw.chart_type.toUpperCase().trim() : '';
-  if (rawType !== 'BAR' && rawType !== 'PIE') {
+  if (rawType !== 'BAR' && rawType !== 'PIE' && rawType !== 'LINE' && rawType !== 'AREA') {
     return {
       isValid: false,
-      error: 'Invalid chart payload: chart_type must be either "BAR" or "PIE".',
+      error: 'Invalid chart payload: chart_type is unsupported.',
     };
   }
 
   // Validate data array
-  if (!Array.isArray(raw.data)) {
+  if (!Array.isArray(raw.data) || raw.data.length > 100) {
     return {
       isValid: false,
       error: 'Invalid chart payload: data must be an array of data points.',
@@ -593,7 +658,7 @@ export function validateTeamMetricChartPayload(
 
     // Accept count or value
     const rawCount = typeof pt.count === 'number' ? pt.count : typeof pt.value === 'number' ? pt.value : NaN;
-    if (isNaN(rawCount) || !isFinite(rawCount)) {
+    if (isNaN(rawCount) || !isFinite(rawCount) || rawCount < 0) {
       return {
         isValid: false,
         error: `Invalid chart data point at index ${i}: count/value must be a valid finite number.`,

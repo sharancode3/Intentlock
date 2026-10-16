@@ -245,6 +245,9 @@ def test_voice_turn_speaker_mismatch_rejection(client):
 
 def test_voice_turn_unenrolled_candidate(client):
     """An employee ID with no enrollment mapping returns unregistered denial."""
+    # The fixture's default transcript claims EMP-1001, which correctly
+    # conflicts with EMP-9999 before enrollment is checked.
+    app.dependency_overrides[get_speech_input_port] = lambda: MockSpeechInput("Show my profile")
     audio = make_dummy_audio()
     files = {"audio_file": ("speech.wav", io.BytesIO(audio), "audio/wav")}
     data = {

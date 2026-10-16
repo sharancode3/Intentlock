@@ -13,6 +13,7 @@ from openai import AsyncOpenAI
 
 from backend.core.config import settings
 from backend.core.ports import AnswerGenerationPort, AnswerResult
+from backend.services.conversation_dispatch import IntentPlan
 
 logger = logging.getLogger("intentlock.openai_adapter")
 
@@ -65,6 +66,35 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
     async def close(self) -> None:
         if self._client and not self._custom_client:
             await self._client.close()
+
+    async def plan_request(self, utterance: str, has_current_result: bool) -> Optional[IntentPlan]:
+        """Interpret an untrusted command without sending private records or authority.
+
+        The typed proposal is never an authorization decision or a direct write.
+        """
+        if not self.is_configured():
+            return None
+        try:
+            response = await self._get_client().responses.parse(
+                model=self.model,
+                instructions=(
+                    "Classify the user's request into one supported IntentPlan operation. "
+                    "Only extract arguments explicitly present in the utterance. "
+                    "Do not infer an identity, permission, result ID, or missing value. "
+                    "Use clarify for unsupported, ambiguous, or contradictory commands. "
+                    "Operations: help, profile, team_table, team_count, org_tree, ticket_list, "
+                    "ticket_chart, rechart, back, create_ticket, update_ticket, comment_ticket, "
+                    "confirm, cancel, clarify. Current-result availability is only a hint."
+                ),
+                input=f"Current result available: {has_current_result}. User command: {utterance[:1000]}",
+                text_format=IntentPlan,
+                max_output_tokens=350,
+                store=False,
+            )
+            return response.output_parsed
+        except Exception as exc:
+            logger.warning("Intent planning unavailable: %s", type(exc).__name__)
+            return None
 
     async def generate_answer(
         self,

@@ -22,6 +22,8 @@ import { TeamMetricChartCard } from './TeamMetricChartCard';
 import { TrustTraceGraphCard } from './TrustTraceGraphCard';
 import { ReadbackConfirmationCard } from './ReadbackConfirmationCard';
 import { ActionReceiptCard } from './ActionReceiptCard';
+import { DataTableCard } from './DataTableCard';
+import { OrgTreeCard } from './OrgTreeCard';
 
 // Bootstrap registration for custom result card renderers
 registerResultRenderer('PUBLIC_FAQ', PublicFaqCard);
@@ -32,6 +34,8 @@ registerResultRenderer('TEAM_METRIC_CHART', TeamMetricChartCard);
 registerResultRenderer('TRUST_TRACE_GRAPH', TrustTraceGraphCard);
 registerResultRenderer('READBACK_CONFIRMATION', ReadbackConfirmationCard);
 registerResultRenderer('ACTION_RECEIPT', ActionReceiptCard);
+registerResultRenderer('DATA_TABLE', DataTableCard);
+registerResultRenderer('ORG_TREE', OrgTreeCard);
 
 export { PublicFaqCard } from './PublicFaqCard';
 export { DenialBanner } from './DenialBanner';

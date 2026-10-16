@@ -40,7 +40,7 @@ export const EmployeeProfileCard: React.FC<ResultRendererProps> = ({ block }) =>
   }
 
   const { employee } = validation.data;
-  const { id, name, role, department, team, email, active_projects, status } = employee;
+  const { id, name, role, department, team, email, active_projects, status, skills, manager_name } = employee;
 
   // Format role for presentation (e.g. "manager" -> "Manager")
   const formattedRole = role ? role.charAt(0).toUpperCase() + role.slice(1) : '';
@@ -129,6 +129,16 @@ export const EmployeeProfileCard: React.FC<ResultRendererProps> = ({ block }) =>
       )}
 
       {/* Active Projects (rendered when provided) */}
+      {manager_name && (
+        <p className="text-xs text-ink-secondary dark:text-slate-300 pt-2 border-t border-surface-border/50 dark:border-surface-darkBorder/50">
+          Reports to <span className="font-semibold">{manager_name}</span>
+        </p>
+      )}
+      {skills && skills.length > 0 && (
+        <div className="pt-2 border-t border-surface-border/50 dark:border-surface-darkBorder/50 text-xs text-ink-secondary dark:text-slate-300">
+          <span className="font-semibold text-ink-primary dark:text-white">Skills: </span>{skills.join(', ')}
+        </div>
+      )}
       {active_projects && (
         <div className="pt-2 border-t border-surface-border/50 dark:border-surface-darkBorder/50 space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-ink-primary dark:text-white">

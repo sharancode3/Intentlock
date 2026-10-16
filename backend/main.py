@@ -12,6 +12,7 @@ import re
 import uuid
 import base64
 import hashlib
+import json
 import logging
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
@@ -33,6 +34,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from pydantic import BaseModel, Field
 import httpx
 
 from backend.core.config import settings
@@ -41,6 +43,7 @@ from backend.core.ports import (
     SpeechInputPort,
     SpeechOutputPort,
     VoiceEvidencePort,
+    VoiceEvidenceResult,
     AnswerGenerationPort,
     UnavailableSpeechInputAdapter,
     UnavailableSpeechOutputAdapter,
@@ -61,6 +64,8 @@ from backend.adapters.identity_mapping_store import IdentityMappingStore
 from backend.core.scoped_authorization import ScopedAuthorizationService
 from backend.services.employee_knowledge_service import EmployeeKnowledgeService
 from backend.services.ticket_knowledge_service import TicketKnowledgeService
+from backend.services.conversation_dispatch import ConversationDispatcher, parse_local, conversation_store, block
+from backend.services.conversation_dispatch import IntentPlan
 from backend.services.employee_visibility_service import EmployeeVisibilityService
 from backend.services.ollama_knowledge_service import OllamaKnowledgeService
 from backend.models.knowledge import (
@@ -634,6 +639,22 @@ async def process_voice_turn(
         sha256_digest=sha256_digest,
     )
 
+    # Exact delivery retries use the same logical turn and audio. A cached
+    # private response is usable only while its original session remains valid.
+    replay_store = IdentityMappingStore.get_instance()
+    replay_key = "voice_" + hashlib.sha256(
+        f"{clean_turn_id}|{(candidate_employee_id or '').strip().upper()}|{(session_id or '').strip()}".encode()
+    ).hexdigest()
+    replay = replay_store.get_idempotency_entry(replay_key)
+    if replay:
+        if replay["audio_digest"] != sha256_digest:
+            raise HTTPException(status_code=409, detail="This logical turn ID was already used with different audio.")
+        cached = replay["response"]
+        cached_session_id = (cached.get("session") or {}).get("sessionId")
+        if not cached_session_id or ((valid := replay_store.get_session(cached_session_id)) and valid.is_valid):
+            return JSONResponse(status_code=200, content=cached, headers={"Cache-Control": "no-store", "X-Request-Id": request_id})
+        raise HTTPException(status_code=401, detail="The original verified session is no longer valid for this turn.")
+
     logger.info(
         f"Audio turn received [{request_id}]: turn_id={clean_turn_id} bytes={total_bytes} "
         f"mime={normalized_mime} sha256={sha256_digest[:12]}..."
@@ -686,6 +707,78 @@ async def process_voice_turn(
             detail=f"Speech transcription failed: {stt_result.error_message or 'Unknown STT error'}",
         )
 
+    # Plan from the final transcript before any biometric call. Clear public
+    # requests and unsupported commands never consume Detectif credits.
+    transcript_text = stt_result.transcript or ""
+    store = IdentityMappingStore.get_instance()
+    existing_for_plan = store.get_session(session_id.strip()) if session_id and session_id.strip() else None
+    selected_claim = candidate_employee_id.strip().upper() if candidate_employee_id and candidate_employee_id.strip() else None
+    if existing_for_plan and existing_for_plan.is_valid and selected_claim and selected_claim != existing_for_plan.employee_id:
+        store.revoke_session(existing_for_plan.session_id)
+        conversation_store.clear(existing_for_plan.session_id)
+        raise HTTPException(status_code=400, detail="Caller identity claim conflict: selected employee does not match the active session.")
+    explicit_self_claim = re.search(
+        r"\b(?:i am|i'm|my employee id is|my id is|log me in as)\b.{0,55}?\b((?:EMP|RND|EXE)[-_]?\d{4})\b",
+        transcript_text, re.I,
+    )
+    if explicit_self_claim and selected_claim and explicit_self_claim.group(1).upper().replace("_", "-") != selected_claim:
+        if existing_for_plan and existing_for_plan.is_valid:
+            store.revoke_session(existing_for_plan.session_id)
+            conversation_store.clear(existing_for_plan.session_id)
+        raise HTTPException(status_code=400, detail="Spoken identity claim conflicts with the selected identity.")
+    plan_state = conversation_store.get(existing_for_plan.session_id, existing_for_plan.employee_id) if existing_for_plan and existing_for_plan.is_valid else None
+    intent_plan = parse_local(transcript_text, plan_state)
+    if intent_plan.operation == "clarify" and hasattr(ans_port, "plan_request"):
+        proposed = await ans_port.plan_request(transcript_text, bool(plan_state and plan_state.active_id))
+        if proposed:
+            intent_plan = proposed
+    if intent_plan.operation in ("help", "clarify"):
+        public_text = (
+            "I can show your profile, permitted direct reports, reporting tree, and scoped tickets. "
+            "You can ask for a ticket chart or switch an authorized result to a table."
+            if intent_plan.operation == "help" else
+            "Please ask for a profile, direct reports, reporting tree, or tickets, and include a specific target when needed."
+        )
+        public_block = block("PUBLIC_FAQ", "IntentLock help", {
+            "question": "Supported requests", "answer": public_text,
+            "category": "Help", "source_document": "IntentLock supported capabilities",
+        }, sensitive=False)
+        tts_result = await tts_port.synthesize(public_text, clean_turn_id)
+        audio_payload = None
+        if tts_result.audio_bytes:
+            audio_payload = SpokenAudioPayload(byte_count=len(tts_result.audio_bytes),
+                                               base64_audio=base64.b64encode(tts_result.audio_bytes).decode("ascii"))
+        response = VoiceTurnResponse(
+            request_id=request_id, client_turn_id=clean_turn_id, status="success",
+            transcript=transcript_text, assistant_message=public_text, spoken_summary=public_text,
+            speech_audio=audio_payload, result_block=public_block, result_blocks=[public_block],
+            primary_result_id=public_block.id,
+            session=TurnSessionInfo(state="VERIFIED", sessionId=existing_for_plan.session_id,
+                actor=SessionActor(employeeId=existing_for_plan.employee_id, fullName=existing_for_plan.full_name,
+                    role=existing_for_plan.role, department=existing_for_plan.department,
+                    teamId=existing_for_plan.team_id, expiresInSeconds=existing_for_plan.seconds_remaining))
+                if existing_for_plan and existing_for_plan.is_valid else TurnSessionInfo(),
+            session_expires_at=existing_for_plan.expires_at if existing_for_plan and existing_for_plan.is_valid else None,
+        )
+        return JSONResponse(status_code=200, content=response.model_dump(), headers={"Cache-Control": "no-store"})
+    reusing_result = bool((plan_state and plan_state.active_id and intent_plan.operation in ("rechart", "back")) or
+                          (existing_for_plan and existing_for_plan.is_valid and intent_plan.operation == "cancel"))
+    if not reusing_result and stt_result.speech_duration_s is not None and stt_result.speech_duration_s < 4.2:
+        guidance = "Please speak a full request for at least five seconds so I can verify the voice evidence."
+        tts_result = await tts_port.synthesize(guidance, clean_turn_id)
+        audio_payload = SpokenAudioPayload(byte_count=len(tts_result.audio_bytes),
+            base64_audio=base64.b64encode(tts_result.audio_bytes).decode("ascii")) if tts_result.audio_bytes else None
+        response = VoiceTurnResponse(request_id=request_id, client_turn_id=clean_turn_id,
+            status="clarification", transcript=transcript_text, assistant_message=guidance,
+            spoken_summary=guidance, speech_audio=audio_payload,
+            session=TurnSessionInfo(state="VERIFIED", sessionId=existing_for_plan.session_id,
+                actor=SessionActor(employeeId=existing_for_plan.employee_id, fullName=existing_for_plan.full_name,
+                    role=existing_for_plan.role, department=existing_for_plan.department,
+                    teamId=existing_for_plan.team_id, expiresInSeconds=existing_for_plan.seconds_remaining))
+                if existing_for_plan and existing_for_plan.is_valid else TurnSessionInfo(),
+            session_expires_at=existing_for_plan.expires_at if existing_for_plan and existing_for_plan.is_valid else None)
+        return JSONResponse(status_code=200, content=response.model_dump(), headers={"Cache-Control": "no-store"})
+
     # 8. Extract or resolve candidate employee ID and enforce claim consistency
     claimed_id: Optional[str] = None
     existing_sess = None
@@ -712,20 +805,18 @@ async def process_voice_turn(
     if not claimed_id and candidate_employee_id and candidate_employee_id.strip():
         claimed_id = candidate_employee_id.strip().upper()
 
-    # If not explicitly supplied, extract pattern from transcript
-    if not claimed_id and stt_result.transcript:
-        emp_match = re.search(r"\b(EMP[-_]?\d{4})\b", stt_result.transcript, re.IGNORECASE)
-        if emp_match:
-            raw_match = emp_match.group(1).upper()
-            if "_" in raw_match:
-                claimed_id = raw_match.replace("_", "-")
-            elif not raw_match.startswith("EMP-"):
-                claimed_id = f"EMP-{raw_match[3:]}"
-            else:
-                claimed_id = raw_match
+    # An employee ID mentioned as a requested target is not an actor claim.
+    self_claim = explicit_self_claim
+    if self_claim:
+        spoken_claim = self_claim.group(1).upper().replace("_", "-")
+        if claimed_id and spoken_claim != claimed_id:
+            if existing_sess and existing_sess.is_valid:
+                store.revoke_session(existing_sess.session_id)
+                conversation_store.clear(existing_sess.session_id)
+            raise HTTPException(status_code=400, detail="Spoken identity claim conflicts with the selected or active identity.")
+        claimed_id = spoken_claim
 
     # 9. Voice Evidence & Scoped Authorization Orchestration
-    store = IdentityMappingStore.get_instance()
     scoped_auth = ScopedAuthorizationService.get_instance()
     mapping = store.get_mapping_by_employee_id(claimed_id) if claimed_id else None
 
@@ -737,17 +828,37 @@ async def process_voice_turn(
     voice_timings_ms: Dict[str, float] = {}
 
     if claimed_id and mapping and mapping.enrollment_status == "ENROLLED":
-        # Execute combined Detectif verification
-        voice_res = await voice_port.verify_evidence(
-            audio_metadata=audio_metadata,
-            audio_bytes=bytes(audio_buffer),
-            candidate_speaker_id=mapping.provider_speaker_id,
-            correlation_id=clean_turn_id,
+        # A valid existing result can be reformatted or revisited without new
+        # biometric evidence. Any new private read still requires fresh evidence.
+        reuse_snapshot = bool(existing_sess and existing_sess.is_valid and
+                              ((plan_state and intent_plan.operation in ("rechart", "back")) or intent_plan.operation == "cancel"))
+        voice_res = VoiceEvidenceResult() if reuse_snapshot else await voice_port.verify_evidence(
+            audio_metadata=audio_metadata, audio_bytes=bytes(audio_buffer),
+            candidate_speaker_id=mapping.provider_speaker_id, correlation_id=clean_turn_id,
         )
         if voice_res.latency_ms:
             voice_timings_ms["detectif_ms"] = voice_res.latency_ms
 
-        if voice_res.is_dual_verified:
+        provider_identity_ok = reuse_snapshot or (
+            voice_res.speaker_id == mapping.provider_speaker_id
+            and (not voice_res.account_alias or voice_res.account_alias == mapping.account_alias)
+        )
+        logger.info("voice_trace %s", json.dumps({
+            "turn_id": clean_turn_id, "request_id": request_id,
+            "selected_candidate": selected_claim, "spoken_self_claim": self_claim.group(1).upper() if self_claim else None,
+            "session_actor": existing_sess.employee_id if existing_sess and existing_sess.is_valid else None,
+            "mapped_speaker": mapping.provider_speaker_id, "mapped_account": mapping.account_alias,
+            "audio_digest": sha256_digest, "provider_request_id": voice_res.request_id,
+            "provider_model": voice_res.model_version, "provider_speaker": voice_res.speaker_id,
+            "provider_account": voice_res.account_alias, "speaker_decision": voice_res.decision,
+            "speaker_score": voice_res.similarity_score, "speaker_threshold": voice_res.similarity_threshold,
+            "authenticity_verdict": voice_res.deepfake_verdict, "deepfake_score": voice_res.deepfake_score,
+            "deepfake_threshold": voice_res.deepfake_threshold, "provider_error": voice_res.error_code,
+            "identity_correspondence": provider_identity_ok,
+            "evidence_freshness": "reused_from_session" if reuse_snapshot else "fresh_this_turn",
+            "operation": intent_plan.operation,
+        }, sort_keys=True))
+        if reuse_snapshot or (voice_res.is_dual_verified and provider_identity_ok):
             # Dual verification succeeded: MATCH + REAL
             know_svc = knowledge_service or EmployeeKnowledgeService.get_instance()
             emp_data = know_svc.get_employee_by_id(claimed_id) if know_svc else None
@@ -759,7 +870,9 @@ async def process_voice_turn(
             team = emp_data["employment"].get("team") if emp_data else None
 
             # Issue or refresh server session (fixation resistant)
-            if session_id and existing_sess and existing_sess.is_valid and existing_sess.employee_id == claimed_id:
+            if reuse_snapshot:
+                session_rec = existing_sess
+            elif session_id and existing_sess and existing_sess.is_valid and existing_sess.employee_id == claimed_id:
                 session_rec = store.refresh_session(session_id, ttl_seconds=settings.SESSION_TTL_SECONDS)
                 if not session_rec:
                     session_rec = store.create_session(
@@ -785,19 +898,20 @@ async def process_voice_turn(
                     ttl_seconds=settings.SESSION_TTL_SECONDS,
                 )
 
-            transcript_text = stt_result.transcript or ""
-            t_lower = transcript_text.lower()
-            ticket_indicators = [
-                "ticket", "tickets", "tkt", "issue", "issues", "bug", "bugs",
-                "task", "tasks", "incident", "incidents", "sla", "approval",
-                "approvals", "escalat", "workload", "overdue", "assigned", "blocker"
-            ]
-            if any(ind in t_lower for ind in ticket_indicators):
-                scoped_res = scoped_auth.evaluate_and_get_tickets(actor_id=claimed_id, query=transcript_text)
-            else:
-                scoped_res = scoped_auth.evaluate_and_get_profile(actor_id=claimed_id)
+            scoped_res = ConversationDispatcher(scoped_auth).dispatch(
+                claimed_id, session_rec.session_id, intent_plan,
+                spoken_text=transcript_text,
+                evidence_digest=sha256_digest if not reuse_snapshot else "",
+            )
+            logger.info("voice_policy %s", json.dumps({
+                "turn_id": clean_turn_id, "actor": claimed_id, "operation": intent_plan.operation,
+                "target": intent_plan.ticket_id or (re.search(r"\b(?:EMP|RND|EXE)[-_]?\d{4}\b", intent_plan.entity or "", re.I).group(0).upper()
+                    if re.search(r"\b(?:EMP|RND|EXE)[-_]?\d{4}\b", intent_plan.entity or "", re.I) else None),
+                "authorized": scoped_res.is_authorized,
+                "renderer": scoped_res.result_block.type if scoped_res.result_block else None,
+            }, sort_keys=True))
 
-            turn_status = "success"
+            turn_status = "success" if scoped_res.is_authorized else "denied"
             turn_session = TurnSessionInfo(
                 state="VERIFIED",
                 sessionId=session_rec.session_id,
@@ -816,47 +930,37 @@ async def process_voice_turn(
             spoken_summary = scoped_res.spoken_summary
             safe_reply = scoped_res.spoken_summary
 
-            # Execute grounded answer generation if answer port is configured
-            if ans_port and getattr(ans_port, "is_configured", lambda: False)():
-                try:
-                    auth_context = scoped_auth.build_authorized_context_for_llm(
-                        actor_id=claimed_id,
-                        query=stt_result.transcript,
-                    )
-                    ans_res = await ans_port.generate_answer(
-                        question=stt_result.transcript,
-                        authorized_context=auth_context,
-                        correlation_id=clean_turn_id,
-                    )
-                    if ans_res and ans_res.is_available and ans_res.answer_text:
-                        safe_reply = ans_res.answer_text
-                        spoken_summary = ans_res.answer_text
-                        if ans_res.latency_ms:
-                            voice_timings_ms["llm_ms"] = ans_res.latency_ms
-                except Exception as ans_err:
-                    logger.error(f"Answer generation error for {clean_turn_id}: {ans_err}")
+            # The deterministic dispatcher owns the spoken factual summary.
+            # A generative answer cannot replace a denial or change its scope.
 
             trust_evidence = TrustEvidence(
-                speaker_decision="match",
+                freshness="reused_from_session" if reuse_snapshot else "fresh_this_turn",
+                reason="authorized_result_navigation" if reuse_snapshot else "new_private_read_or_action",
+                speaker_decision="match" if not reuse_snapshot else None,
                 similarity_score=voice_res.similarity_score,
                 similarity_threshold=voice_res.similarity_threshold,
-                authenticity_verdict="real",
+                authenticity_verdict="real" if not reuse_snapshot else None,
                 deepfake_score=voice_res.deepfake_score,
                 deepfake_threshold=voice_res.deepfake_threshold,
-                speaker_id=voice_res.speaker_id,
+                speaker_id=voice_res.speaker_id if not reuse_snapshot else mapping.provider_speaker_id,
                 is_dual_verified=True,
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat() if not reuse_snapshot else existing_sess.last_verified_at,
             )
 
         else:
             # Dual verification failed: no_match, fake, not_sure, or provider error
             if session_id:
                 store.revoke_session(session_id)
+                conversation_store.clear(session_id)
 
             turn_status = "denied"
             turn_session = TurnSessionInfo(state="ANONYMOUS", sessionId=None)
-            if voice_res.deepfake_verdict in ("fake", "not_sure"):
-                denial_reason = f"Voice authentication denied: potential synthetic audio detected ({voice_res.deepfake_verdict})."
+            if voice_res.deepfake_verdict == "fake":
+                denial_reason = "Voice authentication denied: provider classified this recording as synthetic audio."
+            elif voice_res.deepfake_verdict == "not_sure":
+                denial_reason = "Voice authenticity was inconclusive. Please try a clear full phrase."
+            elif voice_res.is_dual_verified and not provider_identity_ok:
+                denial_reason = "Voice verification returned inconsistent speaker or account evidence."
             elif voice_res.decision == "no_match":
                 denial_reason = f"Voice authentication denied: speaker does not match enrolled profile for {claimed_id}."
             elif voice_res.error_code:
@@ -868,6 +972,8 @@ async def process_voice_turn(
             spoken_summary = denial_reason
             safe_reply = denial_reason
             trust_evidence = TrustEvidence(
+                freshness="fresh_this_turn",
+                reason="verification_failed",
                 speaker_decision=voice_res.decision,
                 similarity_score=voice_res.similarity_score,
                 similarity_threshold=voice_res.similarity_threshold,
@@ -936,9 +1042,13 @@ async def process_voice_turn(
         speech_audio=spoken_payload,
         speech_timings_ms=timings,
         result_block=result_block,
+        result_blocks=[result_block] if result_block else [],
+        primary_result_id=result_block.id if result_block else None,
         trust_evidence=trust_evidence,
         error=None,
     )
+
+    replay_store.save_idempotency_record(replay_key, sha256_digest, claimed_id or "", turn_response.model_dump())
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -950,6 +1060,47 @@ async def process_voice_turn(
 # =============================================================================
 # Voice Session Management Endpoints
 # =============================================================================
+
+class ResultActionRequest(BaseModel):
+    action: str = Field(max_length=32)
+    source_result_id: str = Field(max_length=96)
+    target_id: Optional[str] = Field(default=None, max_length=32)
+    view: Optional[str] = Field(default=None, max_length=16)
+    group_by: Optional[str] = Field(default=None, max_length=16)
+
+
+@app.post(f"{settings.API_V1_PREFIX}/voice/result-action", tags=["Voice Gateway"])
+def process_result_action(action: ResultActionRequest, auth: Dict[str, Any] = Depends(require_verified_session)):
+    """Click actions may revisit delivered data but cannot introduce private scope."""
+    state = conversation_store.get(auth["session_id"], auth["employee_id"])
+    source = state.snapshots.get(action.source_result_id)
+    if not source:
+        raise HTTPException(status_code=403, detail="The selected result is no longer available in this session.")
+    state.active_id = source.block.id
+    if action.action == "open_profile":
+        if not action.target_id or action.target_id not in source.visible_ids:
+            raise HTTPException(status_code=403, detail="The selected person is outside this result.")
+        cached = next((snapshot for snapshot in state.snapshots.values()
+                       if snapshot.block.type == "EMPLOYEE_PROFILE" and
+                       snapshot.visible_ids == [action.target_id]), None)
+        if not cached:
+            return JSONResponse(status_code=409, content={
+                "status": "verification_required",
+                "assistant_message": "Please ask for this person's details by voice so the new private fields can be verified.",
+            })
+        result = cached.block
+        state.remember(cached)
+        return {"status": "success", "assistant_message": f"Showing {result.title}.", "result_block": result.model_dump()}
+    if action.action == "rechart":
+        if action.view not in ("TABLE", "BAR", "PIE", "LINE", "AREA") or action.group_by not in (None, "priority", "status"):
+            raise HTTPException(status_code=400, detail="Unsupported view or grouping.")
+        result = ConversationDispatcher().dispatch(auth["employee_id"], auth["session_id"],
+            IntentPlan(operation="rechart", view=action.view, group_by=action.group_by))
+        if not result.is_authorized or not result.result_block:
+            raise HTTPException(status_code=403, detail=result.spoken_summary)
+        return {"status": "success", "assistant_message": result.spoken_summary,
+                "result_block": result.result_block.model_dump()}
+    raise HTTPException(status_code=400, detail="Unsupported result action.")
 
 @app.post(
     f"{settings.API_V1_PREFIX}/voice/session/end",
@@ -972,6 +1123,7 @@ def end_voice_session(
             token = request.headers.get("X-Session-Id", "").strip()
     if token:
         store.revoke_session(token)
+        conversation_store.clear(token)
     return {
         "status": "session_terminated",
         "session": {"state": "ANONYMOUS", "sessionId": None},
