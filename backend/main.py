@@ -409,6 +409,19 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 # Truthful Health & Diagnostics Endpoints
 # =============================================================================
 
+@app.get("/", tags=["Root"])
+def root_index():
+    """Root endpoint welcoming visitors and providing API documentation links."""
+    return {
+        "project": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "status": "online",
+        "documentation": "/docs",
+        "health": "/health/live",
+        "readiness": "/health/ready",
+    }
+
+
 @app.get("/health/live", response_model=LivenessResponse, tags=["Health"])
 @app.get(f"{settings.API_V1_PREFIX}/health/live", response_model=LivenessResponse, tags=["Health"])
 def health_live():
