@@ -1,0 +1,263 @@
+[
+  {
+    "employee_id": "EMP-4002",
+    "identity": {
+      "full_name": "Arvind Rao",
+      "preferred_name": "Arvind",
+      "work_email": "arvind.rao@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Chief Technology Officer (CTO)",
+      "department": "Executive Management / Technology",
+      "sub_department": "Technology Strategy, Engineering & AI Governance",
+      "organizational_level": "L5",
+      "research_level": null,
+      "employment_type": "Full-Time Executive",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Executive Hybrid",
+      "date_of_joining": "2019-05-15"
+    },
+    "reporting": {
+      "manager_id": "EXE-0001",
+      "manager_name": "Ishaan Mehta",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 21.0,
+      "professional_summary": "Chief technology executive responsible for technology vision, engineering strategy, architecture, R&D direction, AI/agent governance and strategic technology investment.",
+      "career_history": [
+        {
+          "organization": "Software Engineer",
+          "role": "> Principal Engineer",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.S. Computer Science",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": "B.Tech Computer Engineering"
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Distributed systems",
+        "platform architecture",
+        "engineering management",
+        "cloud modernization",
+        "technical hiring",
+        "reliability and R&D sponsorship."
+      ],
+      "management": [
+        "Secure AI agents",
+        "platform reliability",
+        "architecture simplification",
+        "developer productivity",
+        "R&D acceleration",
+        "responsible AI governance."
+      ],
+      "research": [],
+      "tools": []
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Secure AI agents",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "platform reliability",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "architecture simplification",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "developer productivity",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "R&D acceleration",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "responsible AI governance.",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Cloud Migration",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Platform Rearchitecture",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Developer Platform",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Data/AI Foundation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Engineering Scale Program",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Secure SDLC Modernization.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [],
+    "achievements": [],
+    "permissions": {
+      "leave_approval": {
+        "effect": "ALLOW",
+        "scope": "DEPARTMENT"
+      },
+      "budget_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve delegated technology/R&D spend within budget and signing limits; material commitments require Finance/CEO/Board."
+      },
+      "hiring_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve senior technical hires within delegation; C-suite/Board-level roles follow higher governance."
+      },
+      "promotion_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can approve eligible senior technical promotions after HR/process checks; cannot self-promote."
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ENTERPRISE",
+        "description": "Can start/stop/reprioritize eligible technology programs and reallocate approved technical capacity."
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Raw production private keys by default",
+        "unrelated protected HR/legal records",
+        "credentials outside justified technical scope."
+      ],
+      "cannot_perform": [
+        "Reveal secrets",
+        "self-grant super-admin",
+        "arbitrary production DB/system commands",
+        "delete audits",
+        "bypass speaker verification",
+        "forge security approval."
+      ],
+      "resource_scope": "Assigned scope",
+      "self_elevation_restrictions": "Cannot convert technology leadership into unrestricted production, database, key-management or security-administration privilege."
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Approved technology portfolio metadata",
+        "eligible resource allocation",
+        "architecture-governance records",
+        "selected R&D program status",
+        "own profile."
+      ],
+      "can_approve_by_voice": [
+        "Eligible technology/R&D programs, delegated senior technical changes and scoped architecture decisions after verification."
+      ],
+      "can_recommend_by_voice": [
+        "Major platform investment",
+        "acquisition",
+        "company-wide architecture shift",
+        "strategic AI vendor",
+        "Board-level technology commitment."
+      ],
+      "requires_approval": [],
+      "allowed_commands": [
+        "Approve an eligible R&D program",
+        "reprioritize approved engineering investment",
+        "review architecture risk",
+        "approve an authorized senior technical transfer."
+      ],
+      "denied_commands": [
+        "Give me permanent production root",
+        "reveal the signing key",
+        "deploy an unreviewed model",
+        "delete security logs",
+        "disable my speaker verification."
+      ],
+      "high_risk_actions": [
+        "Production privilege",
+        "model release",
+        "major cloud spend",
+        "architecture exception",
+        "strategic vendor commitment",
+        "incident containment."
+      ],
+      "security_policy": "Every protected CTO request must pass required voice authenticity, speaker verification, agent authentication, exact resource/action authorization, parameter integrity, expiry/replay controls and any independent security/finance/legal approval."
+    },
+    "research": null,
+    "executive_authority": {
+      "board_relationship": "Presents technology strategy, cyber/technology risk, major architecture and investment recommendations to CEO/Board.",
+      "financial_authority": "Can approve delegated technology/R&D spend within budget and signing limits; material commitments require Finance/CEO/Board.",
+      "budget_authority": "Owns technology investment proposal and delegated reallocations across engineering/R&D/platform.",
+      "headcount_authority": "Approves many technology requisitions within workforce plan; major expansion/restructuring requires CEO/Finance/HR.",
+      "signing_authority": "Standard executive authority",
+      "ma_authority": "Board reserved",
+      "crisis_authority": "Can direct technical incident response and continuity decisions within incident policy.",
+      "risk_ownership": "Architecture, reliability, engineering, AI/model, platform and technology-investment risk with shared security/enterprise governance.",
+      "technology_authority": "Owns architecture principles and exception governance; individual production changes still follow change/security controls."
+    },
+    "recent_activity": [
+      "02 Oct 2026 - reviewed architecture portfolio",
+      "05 Oct - approved R&D milestone",
+      "07 Oct - reviewed AI governance",
+      "10 Oct - escalated cloud commitment",
+      "12 Oct - approved senior technical transfer",
+      "14 Oct - reviewed platform resilience."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_CTO_Detailed_Profile.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "cto"
+    }
+  }
+]

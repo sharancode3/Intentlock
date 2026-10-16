@@ -1,0 +1,1504 @@
+[
+  {
+    "employee_id": "RND-5001",
+    "identity": {
+      "full_name": "Dr. Aditi Narayan",
+      "preferred_name": "Aditi",
+      "work_email": "aditi.narayan@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Principal AI Research Scientist",
+      "department": "Research & Development",
+      "sub_department": "Trustworthy AI & Agent Security",
+      "organizational_level": "R&D",
+      "research_level": "R4 - Principal Researcher",
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Research Lab",
+      "date_of_joining": "2023-02-03"
+    },
+    "reporting": {
+      "manager_id": "EMP-4002",
+      "manager_name": "Arvind Rao",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 9.0,
+      "professional_summary": "Principal researcher leading R&D on secure AI agents, model trust, identity-aware execution and evaluation methods for high-risk AI workflows.",
+      "career_history": [
+        {
+          "organization": "Research Assistant, Demo Institute of AI (2017",
+          "role": "2019)",
+          "start_date": "2017",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Applied Scientist, SecureML Demo Labs (2019",
+          "role": "2022)",
+          "start_date": "2019",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior Research Scientist (2022",
+          "role": "2024)",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Principal AI Research Scientist (2024",
+          "role": "Present).",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "Ph.D. Computer Science - Trustworthy Machine Learning",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": "M.Tech Artificial Intelligence; B.E. Computer Science"
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Python",
+        "PyTorch",
+        "Transformers",
+        "FastAPI",
+        "PostgreSQL",
+        "evaluation frameworks",
+        "adversarial ML",
+        "statistical analysis",
+        "secure API design"
+      ],
+      "management": [],
+      "research": [
+        "Experimental design",
+        "literature review",
+        "hypothesis formulation",
+        "benchmark design",
+        "peer review",
+        "technical writing",
+        "reproducibility analysis"
+      ],
+      "tools": [
+        "Python notebooks",
+        "GitHub",
+        "ML experiment tracking",
+        "GPU compute",
+        "internal model registry",
+        "secure research storage"
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Verified Agent Identity Framework",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Voice-Agent Security Evaluation",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Action-Bound Authorization Research",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "AI Assurance Benchmark.",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Adversarial Robustness Benchmark",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Explainable Risk Classifier",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Secure Model Serving Study",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Agent Authorization Prototype.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Define hypotheses",
+      "design experiments",
+      "review methodology",
+      "supervise prototypes",
+      "evaluate results",
+      "coordinate security research",
+      "approve internal research milestones."
+    ],
+    "achievements": [],
+    "permissions": {
+      "leave_approval": {
+        "effect": "REQUIRE_APPROVAL",
+        "scope": "SELF"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Private signing keys",
+        "unrelated HR records",
+        "production customer secrets",
+        "unrestricted executive records",
+        "raw provider secrets."
+      ],
+      "cannot_perform": [
+        "Publish confidential research without review",
+        "delete immutable experiment/audit evidence",
+        "grant self production admin",
+        "disable IntentLock",
+        "bypass speaker verification."
+      ],
+      "resource_scope": "Approved R&D datasets and security test data; no unrestricted HR/customer/private production data.",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Own permitted profile fields",
+        "selected experiment metadata",
+        "approved project status",
+        "research task ownership within team."
+      ],
+      "can_approve_by_voice": [
+        "Routine internal research milestones and delegated experiment scheduling",
+        "not unrestricted data release, production deployment or IP publication."
+      ],
+      "can_recommend_by_voice": [
+        "New research project",
+        "compute allocation",
+        "publication submission",
+        "patent disclosure",
+        "external collaboration",
+        "research hiring."
+      ],
+      "requires_approval": [],
+      "allowed_commands": [
+        "Show my active research projects",
+        "assign an approved experiment to a researcher",
+        "show my experiment history",
+        "update experiment status",
+        "show my approved compute scope."
+      ],
+      "denied_commands": [
+        "Publish our unreleased model publicly",
+        "reveal the signing key",
+        "give me production super-admin",
+        "delete failed experiment audit",
+        "disable speaker verification."
+      ],
+      "high_risk_actions": [
+        "Production deployment",
+        "external model/data release",
+        "security exploit testing",
+        "large compute allocation",
+        "confidential IP transfer."
+      ],
+      "security_policy": "Verified voice establishes identity evidence; permissions enforced independently."
+    },
+    "research": {
+      "specialization": "Trustworthy AI, agent security, adversarial robustness, identity-aware AI systems",
+      "secondary_areas": [
+        "Explainable AI",
+        "model evaluation",
+        "secure agent orchestration",
+        "AI assurance"
+      ],
+      "research_experience_years": 8.0,
+      "publications": [
+        "4 fictional internal/external-style papers on agent security, robustness and AI assurance",
+        "multiple internal technical reports."
+      ],
+      "patents": [
+        "Co-inventor on fictional provisional disclosure for action-bound authorization of autonomous agents."
+      ],
+      "prototypes": [
+        "Agent identity handshake prototype",
+        "authorization-token validator",
+        "adversarial voice-evaluation harness",
+        "AI assurance dashboard."
+      ],
+      "datasets": [
+        "Synthetic agent-interaction corpus",
+        "consented demo voice-security dataset",
+        "public benchmark datasets approved for research."
+      ],
+      "models": [
+        "Open-source language models",
+        "embedding models",
+        "classifier prototypes",
+        "agent orchestration services",
+        "DetectifAI integration sandbox."
+      ],
+      "compute_access": "Approved shared GPU research cluster and isolated experiment environments; production compute requires separate authorization.",
+      "source_code_access": "R&D repositories and assigned security prototype repos; production repositories only when explicitly approved.",
+      "ip_scope": "May access assigned confidential R&D material and invention disclosures; cannot disclose unpublished research externally without approval.",
+      "model_release_rule": "No model/checkpoint can be released externally solely through a voice command; required technical, security, IP and legal reviews must complete.",
+      "dataset_release_rule": "Cannot export or publish restricted datasets without explicit data-governance and legal authorization."
+    },
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct 2026 - reviewed agent-security experiment",
+      "04 Oct - approved internal milestone",
+      "07 Oct - submitted invention disclosure",
+      "10 Oct - requested GPU allocation",
+      "12 Oct - reviewed voice-security results",
+      "14 Oct - submitted publication for internal review."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_RnD_Team_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "rnd_team"
+    }
+  },
+  {
+    "employee_id": "RND-5002",
+    "identity": {
+      "full_name": "Rohan Srinivasan",
+      "preferred_name": "Rohan",
+      "work_email": "rohan.srinivasan@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Senior Speech & Audio ML Researcher",
+      "department": "Research & Development",
+      "sub_department": "Speech Intelligence & Voice Security",
+      "organizational_level": "R&D",
+      "research_level": "R3 - Senior Researcher",
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Research Lab",
+      "date_of_joining": "2023-09-18"
+    },
+    "reporting": {
+      "manager_id": "RND-5001",
+      "manager_name": "Dr. Aditi Narayan",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 6.0,
+      "professional_summary": "Senior audio ML researcher focused on speaker-verification evaluation, synthetic/deepfake voice detection, speech robustness and secure voice-agent pipelines.",
+      "career_history": [
+        {
+          "organization": "Internal",
+          "role": "Audio ML Intern, VoiceDemo Research (2020)",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "ML Engineer, AcousticAI Demo (2020",
+          "role": "2022)",
+          "start_date": "2020",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Research Engineer, SpeechSecure Demo (2022",
+          "role": "2023)",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Senior Researcher (2023",
+          "role": "Present).",
+          "start_date": "2023",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Tech Signal Processing & Machine Learning",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": "B.E. Electronics & Communication"
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Python",
+        "PyTorch",
+        "librosa",
+        "torchaudio",
+        "signal processing",
+        "audio feature extraction",
+        "ASR evaluation",
+        "API integration"
+      ],
+      "management": [],
+      "research": [
+        "Benchmark design",
+        "statistical evaluation",
+        "error analysis",
+        "dataset curation",
+        "reproducibility",
+        "technical reporting"
+      ],
+      "tools": [
+        "Audio workstations",
+        "Python notebooks",
+        "GPU cluster",
+        "waveform/spectrogram tools",
+        "secure audio test storage"
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Voice Authenticity Benchmark",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Speaker Verification Evaluation",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Replay Attack Test Harness",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Browser Voice Capture Quality Study.",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Speaker Embedding Benchmark",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Synthetic Speech Detection Study",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Noise Robustness Evaluation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "ASR Error Analysis.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Design audio experiments",
+      "prepare consented test corpora",
+      "evaluate APIs/models",
+      "analyze false accepts/rejects",
+      "document provider limitations."
+    ],
+    "achievements": [],
+    "permissions": {
+      "leave_approval": {
+        "effect": "REQUIRE_APPROVAL",
+        "scope": "SELF"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Unconsented employee voice data",
+        "provider secrets",
+        "private keys",
+        "unrelated HR records",
+        "unrestricted production logs."
+      ],
+      "cannot_perform": [
+        "Enroll another person without authorized workflow",
+        "export restricted voice data",
+        "bypass consent",
+        "disable verification",
+        "manipulate immutable results."
+      ],
+      "resource_scope": "Approved consented audio and synthetic benchmark data; no unrelated employee/customer voice data.",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Own profile",
+        "approved experiment metadata",
+        "task ownership",
+        "test status."
+      ],
+      "can_approve_by_voice": [
+        "Routine assigned experiment completion/status within delegated scope."
+      ],
+      "can_recommend_by_voice": [
+        "New voice benchmark",
+        "dataset acquisition",
+        "tool purchase",
+        "publication",
+        "provider evaluation."
+      ],
+      "requires_approval": [],
+      "allowed_commands": [
+        "Show my speaker-verification experiments",
+        "show approved audio datasets",
+        "update replay-test status",
+        "request GPU time",
+        "show my previous audio research."
+      ],
+      "denied_commands": [
+        "Export every employee voice sample",
+        "enroll me as another employee",
+        "reveal provider API secret",
+        "change production verification threshold",
+        "delete negative results."
+      ],
+      "high_risk_actions": [
+        "Bulk voice export",
+        "threshold changes used in production",
+        "spoof-testing against live systems",
+        "external dataset release."
+      ],
+      "security_policy": "Verified voice establishes identity evidence; permissions enforced independently."
+    },
+    "research": {
+      "specialization": "Speech processing, speaker verification, synthetic-speech detection, audio ML",
+      "secondary_areas": [
+        "ASR evaluation",
+        "audio embeddings",
+        "anti-spoofing",
+        "acoustic robustness"
+      ],
+      "research_experience_years": 5.0,
+      "publications": [
+        "Fictional technical papers/reports on anti-spoofing, speaker verification and robust audio evaluation."
+      ],
+      "patents": [
+        "Contributor to internal invention disclosure on risk-adaptive voice verification."
+      ],
+      "prototypes": [
+        "Audio quality validator",
+        "replay-test harness",
+        "speaker-verification evaluation dashboard",
+        "consented enrollment utility."
+      ],
+      "datasets": [
+        "Consented demo voice corpus",
+        "synthetic speech samples",
+        "approved public anti-spoof benchmarks",
+        "augmented robustness test data."
+      ],
+      "models": [
+        "Speaker encoders",
+        "anti-spoof classifiers",
+        "ASR systems",
+        "DetectifAI sandbox APIs",
+        "open-source audio models."
+      ],
+      "compute_access": "Shared GPU/audio research environments; no standing production access.",
+      "source_code_access": "Voice R&D repos, evaluation tooling and assigned integration prototypes.",
+      "ip_scope": "Confidential audio-evaluation methods and provider integration results restricted to approved team.",
+      "model_release_rule": "Audio models/checkpoints require security/privacy/IP review before external release.",
+      "dataset_release_rule": "Identity-linked audio datasets cannot be released without explicit consent/governance approval."
+    },
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct - ran replay test",
+      "05 Oct - reviewed speaker false-reject cases",
+      "08 Oct - requested microphone kit",
+      "10 Oct - updated benchmark",
+      "13 Oct - submitted aggregate report",
+      "14 Oct - reviewed provider API evaluation."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_RnD_Team_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "rnd_team"
+    }
+  },
+  {
+    "employee_id": "RND-5003",
+    "identity": {
+      "full_name": "Megha Iyer",
+      "preferred_name": "Megha",
+      "work_email": "megha.iyer@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Applied AI Research Engineer",
+      "department": "Research & Development",
+      "sub_department": "Agent Intelligence & Evaluation",
+      "organizational_level": "R&D",
+      "research_level": "R2 - Research Engineer",
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2025-01-08"
+    },
+    "reporting": {
+      "manager_id": "RND-5001",
+      "manager_name": "Dr. Aditi Narayan",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 3.5,
+      "professional_summary": "Applied research engineer building and evaluating AI-agent prototypes, structured intent extraction and secure tool-use workflows.",
+      "career_history": [
+        {
+          "organization": "Internal",
+          "role": "AI Intern, DemoNLP Lab (2023)",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "ML Engineer, AgentWorks Demo (2023",
+          "role": "2024)",
+          "start_date": "2023",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Applied AI Research Engineer (2025",
+          "role": "Present).",
+          "start_date": "2025",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.S. Artificial Intelligence",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": "B.Tech Computer Science"
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Python",
+        "FastAPI",
+        "TypeScript",
+        "LLM APIs",
+        "local LLMs",
+        "embeddings",
+        "PostgreSQL",
+        "vector search",
+        "JSON schema",
+        "automated testing"
+      ],
+      "management": [],
+      "research": [
+        "Evaluation design",
+        "prompt testing",
+        "error taxonomy",
+        "ablation studies",
+        "reproducibility",
+        "technical documentation"
+      ],
+      "tools": [
+        "VS Code",
+        "GitHub",
+        "Python notebooks",
+        "local model runtime",
+        "experiment tracking",
+        "vector database sandbox"
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Intent Extraction Benchmark",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Protected Tool-Use Agent",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Agent-to-Agent Handshake Prototype",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Authorization Explanation Layer.",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Tool-Calling Reliability Benchmark",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "RAG Grounding Study",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Prompt Injection Evaluation",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Structured Extraction Prototype.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Implement experiments",
+      "build prototypes",
+      "evaluate agent behavior",
+      "maintain test sets",
+      "document failure cases",
+      "support reproducibility."
+    ],
+    "achievements": [],
+    "permissions": {
+      "leave_approval": {
+        "effect": "REQUIRE_APPROVAL",
+        "scope": "SELF"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Production secrets",
+        "private keys",
+        "unrelated HR data",
+        "confidential datasets outside project",
+        "unrestricted audit internals."
+      ],
+      "cannot_perform": [
+        "Deploy agent to production independently",
+        "grant permissions",
+        "delete audits",
+        "expose credentials",
+        "bypass authorization checks."
+      ],
+      "resource_scope": "Synthetic and approved research data; limited sanitized logs; no raw unrestricted production/customer data.",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Own profile",
+        "experiment status",
+        "task ownership within assigned project",
+        "approved research notes metadata."
+      ],
+      "can_approve_by_voice": [
+        "No high-level approvals",
+        "may mark own assigned experiment complete subject to review."
+      ],
+      "can_recommend_by_voice": [
+        "New benchmark",
+        "experiment",
+        "model/tool evaluation",
+        "training",
+        "compute request."
+      ],
+      "requires_approval": [],
+      "allowed_commands": [
+        "Show my agent experiments",
+        "update intent benchmark status",
+        "show my previous ML work",
+        "request approved compute",
+        "assign my own experiment subtask."
+      ],
+      "denied_commands": [
+        "Deploy this agent directly to production",
+        "show API keys",
+        "grant me admin",
+        "delete failed test logs",
+        "bypass authorization for testing."
+      ],
+      "high_risk_actions": [
+        "Production tool execution",
+        "external adversarial testing",
+        "credential access",
+        "model release",
+        "sensitive-log export."
+      ],
+      "security_policy": "Verified voice establishes identity evidence; permissions enforced independently."
+    },
+    "research": {
+      "specialization": "LLM agents, tool-use evaluation, structured intent extraction, RAG evaluation",
+      "secondary_areas": [
+        "Prompt robustness",
+        "function calling",
+        "agent memory",
+        "evaluation automation"
+      ],
+      "research_experience_years": 3.0,
+      "publications": [
+        "Internal research notes and benchmark reports",
+        "contributor to fictional workshop-style paper on secure tool use."
+      ],
+      "patents": [
+        "Contributor to internal invention disclosure on parameter-bound agent authorization."
+      ],
+      "prototypes": [
+        "Intent extractor",
+        "protected action router",
+        "prompt-injection test harness",
+        "agent identity handshake demo."
+      ],
+      "datasets": [
+        "Synthetic voice-command transcripts",
+        "agent-tool benchmark prompts",
+        "approved public QA/RAG datasets",
+        "generated adversarial prompts."
+      ],
+      "models": [
+        "Open-source LLMs",
+        "embedding models",
+        "structured-output models",
+        "RAG prototypes",
+        "agent frameworks."
+      ],
+      "compute_access": "Shared GPU/CPU sandbox and local model environments; production inference access only through approved services.",
+      "source_code_access": "Agent R&D repos and approved backend prototypes; no unrestricted production write access.",
+      "ip_scope": "Unreleased agent designs, prompts and evaluation results treated as confidential R&D.",
+      "model_release_rule": "Research agent/model artifacts require lead, security and IP review before release.",
+      "dataset_release_rule": "Synthetic/public data may still require license review; sanitized production-derived data cannot be exported without governance."
+    },
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - updated intent benchmark",
+      "04 Oct - ran prompt-injection tests",
+      "07 Oct - requested local GPU allocation",
+      "09 Oct - documented failure taxonomy",
+      "12 Oct - completed handshake prototype task",
+      "14 Oct - submitted experiment review."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_RnD_Team_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "rnd_team"
+    }
+  },
+  {
+    "employee_id": "RND-5004",
+    "identity": {
+      "full_name": "Arjun Kulkarni",
+      "preferred_name": "Arjun",
+      "work_email": "arjun.kulkarni@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Security Research Engineer",
+      "department": "Research & Development",
+      "sub_department": "Applied Security Research",
+      "organizational_level": "R&D",
+      "research_level": "R2 - Research Engineer",
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid / Security Lab",
+      "date_of_joining": "2024-07-22"
+    },
+    "reporting": {
+      "manager_id": "EMP-3005",
+      "manager_name": "Maya Krishnan",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 5.0,
+      "professional_summary": "Security research engineer studying secure authorization, replay resistance, agent identity and tamper-resistant execution for AI-agent systems.",
+      "career_history": [
+        {
+          "organization": "Internal",
+          "role": "Security Intern, CyberDemo Lab (2021)",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Security Engineer, AppSecWorks Demo (2021",
+          "role": "2024)",
+          "start_date": "2021",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Security Research Engineer (2024",
+          "role": "Present).",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Tech Cybersecurity",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": "B.E. Information Science"
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Python",
+        "FastAPI",
+        "OAuth concepts",
+        "JWT",
+        "Ed25519 integration",
+        "API security",
+        "threat modeling",
+        "PostgreSQL",
+        "Linux"
+      ],
+      "management": [],
+      "research": [
+        "Attack-tree design",
+        "adversarial testing",
+        "security experiment design",
+        "protocol review",
+        "reproducible vulnerability validation"
+      ],
+      "tools": [
+        "Security lab",
+        "API test tools",
+        "Python",
+        "GitHub",
+        "isolated containers",
+        "test keys",
+        "secure evidence storage"
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "Agent-to-Agent Authentication",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Nonce/Replay Protection",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Signed Action Envelope",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Protected Executor Threat Model.",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "API Replay Study",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "OAuth Misconfiguration Benchmark",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Audit Integrity Prototype",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Secure Webhook Validation.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Threat modeling",
+      "protocol tests",
+      "replay/tamper experiments",
+      "secure prototype implementation",
+      "vulnerability documentation",
+      "remediation validation."
+    ],
+    "achievements": [],
+    "permissions": {
+      "leave_approval": {
+        "effect": "REQUIRE_APPROVAL",
+        "scope": "SELF"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Production private keys",
+        "unrestricted secrets",
+        "unrelated employee HR data",
+        "raw customer credentials."
+      ],
+      "cannot_perform": [
+        "Attack unauthorized systems",
+        "expose vulnerabilities publicly",
+        "disable audit",
+        "grant self privilege",
+        "reuse real credentials outside scope."
+      ],
+      "resource_scope": "Sanitized security telemetry and test credentials; no unrestricted production credentials or customer secrets.",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Own profile",
+        "experiment status",
+        "remediation task metadata",
+        "assigned test ownership."
+      ],
+      "can_approve_by_voice": [
+        "Routine completion of own test tasks",
+        "no unilateral production security approval."
+      ],
+      "can_recommend_by_voice": [
+        "Security fix",
+        "new threat test",
+        "access-control change",
+        "research tooling",
+        "disclosure review."
+      ],
+      "requires_approval": [],
+      "allowed_commands": [
+        "Show my replay-protection experiments",
+        "update threat-model status",
+        "show approved test scope",
+        "request security-lab access."
+      ],
+      "denied_commands": [
+        "Give me the production signing key",
+        "run this exploit against production",
+        "delete security audit",
+        "disable nonce validation",
+        "publish the vulnerability now."
+      ],
+      "high_risk_actions": [
+        "Production security testing",
+        "exploit execution",
+        "private-key access",
+        "disclosure",
+        "disabling controls."
+      ],
+      "security_policy": "Verified voice establishes identity evidence; permissions enforced independently."
+    },
+    "research": {
+      "specialization": "Application security, authentication protocols, replay protection, secure agent communication",
+      "secondary_areas": [
+        "Threat modeling",
+        "API security",
+        "cryptographic protocol integration",
+        "audit integrity"
+      ],
+      "research_experience_years": 4.0,
+      "publications": [
+        "Internal security whitepapers and protocol-review reports",
+        "fictional conference poster on replay-resistant agent actions."
+      ],
+      "patents": [
+        "Contributor to action-envelope signing and replay-defense invention disclosure."
+      ],
+      "prototypes": [
+        "Signed request validator",
+        "nonce store",
+        "replay detector",
+        "immutable audit proof prototype",
+        "permission test harness."
+      ],
+      "datasets": [
+        "Synthetic attack traces",
+        "sanitized authorization logs",
+        "generated protocol test cases."
+      ],
+      "models": [
+        "Agent prototypes",
+        "authorization service",
+        "signing libraries",
+        "protected executor sandbox."
+      ],
+      "compute_access": "Security sandbox and standard research compute; production security systems only through approved test windows.",
+      "source_code_access": "Security/R&D repos and approved executor prototypes; production changes through reviewed workflow only.",
+      "ip_scope": "Security findings, exploit details and unreleased controls are highly confidential.",
+      "model_release_rule": "Security-sensitive agent prototypes require security review before release.",
+      "dataset_release_rule": "Attack traces/logs derived from protected systems require sanitization and approval."
+    },
+    "executive_authority": null,
+    "recent_activity": [
+      "02 Oct - ran replay test",
+      "05 Oct - updated threat model",
+      "08 Oct - validated nonce fix",
+      "10 Oct - requested lab tool",
+      "12 Oct - reviewed signed-envelope prototype",
+      "14 Oct - submitted security report."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_RnD_Team_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "rnd_team"
+    }
+  },
+  {
+    "employee_id": "RND-5005",
+    "identity": {
+      "full_name": "Nisha Verma",
+      "preferred_name": "Nisha",
+      "work_email": "nisha.verma@intentlock-demo.example"
+    },
+    "employment": {
+      "designation": "Human-Centered AI Researcher",
+      "department": "Research & Development",
+      "sub_department": "Human-AI Interaction & Responsible AI",
+      "organizational_level": "R&D",
+      "research_level": "R2 - Researcher",
+      "employment_type": "Full-Time",
+      "status": "Active",
+      "location": "Bengaluru",
+      "work_mode": "Hybrid",
+      "date_of_joining": "2025-03-17"
+    },
+    "reporting": {
+      "manager_id": null,
+      "manager_name": "Head of R&D / Responsible AI Lead",
+      "direct_report_ids": []
+    },
+    "experience": {
+      "total_years": 4.0,
+      "professional_summary": "Human-centered AI researcher studying how users understand verification, denial, authorization and security explanations in AI-agent experiences.",
+      "career_history": [
+        {
+          "organization": "Internal",
+          "role": "UX Research Intern, HumanTech Demo (2022)",
+          "start_date": null,
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "UX Researcher, ProductSense Demo (2022",
+          "role": "2024)",
+          "start_date": "2022",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "Responsible AI Researcher (2024",
+          "role": "2025)",
+          "start_date": "2024",
+          "end_date": null,
+          "responsibilities": []
+        },
+        {
+          "organization": "HAI Researcher (2025",
+          "role": "Present).",
+          "start_date": "2025",
+          "end_date": null,
+          "responsibilities": []
+        }
+      ]
+    },
+    "education": [
+      {
+        "degree": "M.Sc Human-Computer Interaction",
+        "institution": "Accredited University",
+        "graduation_year": "Prior to joining",
+        "details": "B.Des Interaction Design"
+      }
+    ],
+    "skills": {
+      "technical": [
+        "Figma",
+        "survey tools",
+        "qualitative coding",
+        "basic Python/statistics",
+        "usability analytics",
+        "accessibility review"
+      ],
+      "management": [],
+      "research": [
+        "User research",
+        "experimental design",
+        "interview methods",
+        "thematic analysis",
+        "consent design",
+        "research synthesis"
+      ],
+      "tools": [
+        "Figma",
+        "research repository",
+        "survey tools",
+        "analytics sandbox",
+        "secure consent-record system"
+      ]
+    },
+    "projects": {
+      "current": [
+        {
+          "name": "IntentLock Decision Explanation Study",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Verified-Agent Badge UX",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Voice Confirmation Research",
+          "role": "Contributor",
+          "status": "Active"
+        },
+        {
+          "name": "Denial Message Comprehension.",
+          "role": "Contributor",
+          "status": "Active"
+        }
+      ],
+      "previous": [
+        {
+          "name": "Explainable Permissions Study",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Security Warning Comprehension",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Voice UX Accessibility",
+          "role": "Contributor",
+          "status": "Completed"
+        },
+        {
+          "name": "Consent Flow Evaluation.",
+          "role": "Contributor",
+          "status": "Completed"
+        }
+      ]
+    },
+    "responsibilities": [
+      "Design user studies",
+      "prepare consent",
+      "conduct interviews",
+      "analyze qualitative/quantitative results",
+      "recommend UX improvements",
+      "document ethical considerations."
+    ],
+    "achievements": [],
+    "permissions": {
+      "leave_approval": {
+        "effect": "REQUIRE_APPROVAL",
+        "scope": "SELF"
+      },
+      "budget_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "hiring_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "promotion_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "termination_authority": {
+        "effect": "DENY",
+        "scope": "SELF"
+      },
+      "project_authority": {
+        "effect": "ALLOW",
+        "scope": "ASSIGNED_PROJECTS"
+      },
+      "profile_modification": {
+        "effect": "ALLOW",
+        "scope": "SELF_CONTACT_ONLY",
+        "requires_verification": true
+      }
+    },
+    "security_scope": {
+      "can_change_own_authority": false,
+      "can_grant_self_admin": false,
+      "can_disable_intentlock": false,
+      "can_delete_audit_history": false,
+      "can_bypass_speaker_verification": false,
+      "can_execute_arbitrary_commands": false,
+      "can_reveal_private_keys": false,
+      "cannot_view": [
+        "Participant identities outside study need",
+        "security secrets",
+        "unrelated HR data",
+        "raw production credentials."
+      ],
+      "cannot_perform": [
+        "Bypass participant consent",
+        "deanonymize data without authorization",
+        "publish participant data",
+        "disable security controls",
+        "delete protected research evidence."
+      ],
+      "resource_scope": "Consented/anonymized research participant data; no unrestricted employee/customer data.",
+      "self_elevation_restrictions": "Strictly prohibited"
+    },
+    "voice_authority": {
+      "can_modify_by_voice": [
+        "Own profile",
+        "study metadata",
+        "participant scheduling status where approved",
+        "research task status."
+      ],
+      "can_approve_by_voice": [
+        "Routine study task completion",
+        "cannot self-approve ethics/consent exceptions."
+      ],
+      "can_recommend_by_voice": [
+        "UX change",
+        "new study",
+        "accessibility improvement",
+        "participant recruitment",
+        "publication."
+      ],
+      "requires_approval": [],
+      "allowed_commands": [
+        "Show my active user studies",
+        "update approved study status",
+        "show aggregate results",
+        "request participant-study budget",
+        "show my research history."
+      ],
+      "denied_commands": [
+        "Export participant identities",
+        "skip consent for this study",
+        "publish raw interview transcripts",
+        "disable verification for usability testing",
+        "delete consent audit."
+      ],
+      "high_risk_actions": [
+        "Participant-data export",
+        "consent changes",
+        "deanonymization",
+        "external publication",
+        "production security-UX changes."
+      ],
+      "security_policy": "Verified voice establishes identity evidence; permissions enforced independently."
+    },
+    "research": {
+      "specialization": "Human-AI interaction, explainability UX, user trust, responsible AI evaluation",
+      "secondary_areas": [
+        "Voice UX",
+        "consent flows",
+        "security warnings",
+        "usability of authorization decisions"
+      ],
+      "research_experience_years": 3.5,
+      "publications": [
+        "Internal HAI reports and fictional workshop papers on authorization explanations and user trust."
+      ],
+      "patents": [
+        "Contributor to verified-agent trust-indicator design disclosure."
+      ],
+      "prototypes": [
+        "Verified-agent badge concepts",
+        "security decision cards",
+        "consent workflow prototypes",
+        "voice confirmation scripts."
+      ],
+      "datasets": [
+        "Consented usability-study responses",
+        "anonymized survey results",
+        "synthetic interaction transcripts."
+      ],
+      "models": [
+        "IntentLock prototypes",
+        "voice-agent UI",
+        "explanation generator",
+        "analytics tools."
+      ],
+      "compute_access": "Standard research compute and analytics sandbox; no privileged production compute.",
+      "source_code_access": "Research UI prototypes and approved frontend repositories; no privileged backend/security secrets.",
+      "ip_scope": "Participant data and unpublished UX findings confidential; research consent terms govern reuse.",
+      "model_release_rule": "Not normally a model owner; any research artifact with model behavior still requires technical/security review.",
+      "dataset_release_rule": "Participant-level data is never released solely by voice request; anonymization and governance review are mandatory."
+    },
+    "executive_authority": null,
+    "recent_activity": [
+      "01 Oct - reviewed study consent",
+      "04 Oct - ran explanation usability session",
+      "07 Oct - updated aggregate findings",
+      "09 Oct - requested study budget",
+      "12 Oct - reviewed accessibility feedback",
+      "14 Oct - submitted paper for internal review."
+    ],
+    "provenance": {
+      "source_document": "IntentLock_RnD_Team_Detailed_Profiles.docx",
+      "source_type": "DOCX",
+      "import_version": "1.0",
+      "category": "rnd_team"
+    }
+  }
+]
