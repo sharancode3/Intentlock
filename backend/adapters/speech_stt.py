@@ -12,7 +12,10 @@ import logging
 import threading
 from typing import Optional
 import numpy as np
-from faster_whisper import WhisperModel
+try:
+    from faster_whisper import WhisperModel
+except ImportError:
+    WhisperModel = None
 
 from backend.core.ports import SpeechInputPort, SpeechInputResult
 from backend.models.turn import OriginalAudioMetadata
@@ -32,6 +35,8 @@ class FasterWhisperSTTAdapter(SpeechInputPort):
         compute_type: str = "int8",
         vad_service: Optional[SpeechVADService] = None,
     ):
+        if WhisperModel is None:
+            raise RuntimeError("The 'faster-whisper' package is not installed. FasterWhisperSTTAdapter cannot initialize.")
         self.model_name = model_name
         self.device = device
         self.compute_type = compute_type

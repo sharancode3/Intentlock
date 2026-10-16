@@ -10,7 +10,10 @@ import pathlib
 import logging
 from typing import Optional
 import numpy as np
-from kokoro import KPipeline
+try:
+    from kokoro import KPipeline
+except ImportError:
+    KPipeline = None
 
 from backend.core.ports import SpeechOutputPort, SpeechOutputResult
 from backend.adapters.audio_decoder import AudioDecoder
@@ -28,6 +31,8 @@ class KokoroTTSAdapter(SpeechOutputPort):
         speed: float = 1.0,
         device: str = "cpu",
     ):
+        if KPipeline is None:
+            raise RuntimeError("The 'kokoro' package is not installed. KokoroTTSAdapter cannot initialize.")
         self.lang_code = lang_code
         self.voice = voice
         self.speed = speed

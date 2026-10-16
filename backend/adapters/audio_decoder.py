@@ -8,7 +8,10 @@ Also serializes raw synthesized PCM samples to compliant 16-bit PCM WAV containe
 import io
 import wave
 import numpy as np
-from faster_whisper.audio import decode_audio
+try:
+    from faster_whisper.audio import decode_audio
+except ImportError:
+    decode_audio = None
 
 
 class AudioDecoder:
@@ -37,6 +40,9 @@ class AudioDecoder:
         """
         if not audio_bytes or len(audio_bytes) == 0:
             raise ValueError("Audio buffer is empty (0 bytes).")
+
+        if decode_audio is None:
+            raise RuntimeError("Audio decoder requires 'faster-whisper' package to be installed.")
 
         try:
             # decode_audio handles WebM/Opus, MP4/M4A, WAV via PyAV in-memory
