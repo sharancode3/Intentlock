@@ -1,5 +1,5 @@
 import React from 'react';
-import { History, Clock, User, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { History, Clock, User, ArrowRight } from 'lucide-react';
 import type { TicketEvent } from '../../types/payloads';
 
 export interface TicketTimelineProps {

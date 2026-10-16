@@ -117,7 +117,7 @@ function computeDeterministicLayout(
         id: n.id,
         type: 'trustTraceNode',
         position: { x: xPos, y: yPos },
-        data: n,
+        data: n as unknown as Record<string, unknown>,
         draggable: false,
       });
     });
@@ -162,7 +162,7 @@ export const TrustTraceGraphCard: React.FC<ResultRendererProps> = ({ block }) =>
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showAccessibleList, setShowAccessibleList] = useState(false);
 
-  const payload = validation.isValid ? (block.payload as TrustTraceGraphPayload) : null;
+  const payload = validation.isValid ? (block.payload as unknown as TrustTraceGraphPayload) : null;
 
   // Selected node lookup
   const selectedNode = useMemo(() => {

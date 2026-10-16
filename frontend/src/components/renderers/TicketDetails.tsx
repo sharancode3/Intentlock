@@ -1,14 +1,10 @@
 import React from 'react';
 import {
   ArrowLeft,
-  Ticket,
   User,
   Tag,
-  Building,
   Calendar,
   Clock,
-  AlertCircle,
-  CheckCircle2,
 } from 'lucide-react';
 import type { TicketRecord, TicketPriority, TicketStatus } from '../../types/payloads';
 import { TicketTimeline } from './TicketTimeline';

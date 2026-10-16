@@ -498,7 +498,7 @@ export function validateTicketListPayload(raw: unknown): ValidationResult<Ticket
     }
 
     normalizedTickets.push({
-      ticket_id: typeof item.ticket_id === 'number' ? item.ticket_id : item.ticket_id.trim(),
+      ticket_id: typeof item.ticket_id === 'number' ? item.ticket_id : (item.ticket_id as string).trim(),
       title: item.title.trim(),
       priority: item.priority.trim(),
       status: item.status.trim(),

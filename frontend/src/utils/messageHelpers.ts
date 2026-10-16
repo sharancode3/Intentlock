@@ -11,7 +11,7 @@
  * - Does not fabricate credentials or backend claims.
  */
 
-import type { ConversationMessage, MessageSender, GenericResultBlock } from '../types';
+import type { ConversationMessage, MessageSender, GenericResultBlock, MessageStatus } from '../types';
 
 /**
  * Creates a new streaming assistant message initialized with empty or partial text.
@@ -98,6 +98,29 @@ export function setMessageError(
       isStreaming: false,
       status: 'error',
       errorMessage,
+    };
+  });
+}
+
+/**
+ * Immutably replaces the text of an existing message (used for progressive ASR revised snapshots).
+ */
+export function replaceMessageText(
+  messages: readonly ConversationMessage[],
+  messageId: string,
+  newText: string,
+  isStreaming = true,
+  status: MessageStatus = 'streaming'
+): ConversationMessage[] {
+  return messages.map((msg) => {
+    if (msg.id !== messageId) {
+      return msg;
+    }
+    return {
+      ...msg,
+      text: newText,
+      isStreaming,
+      status,
     };
   });
 }

@@ -4,14 +4,11 @@ import {
   AlertCircle,
   Search,
   Filter,
-  User,
   Tag,
-  ArrowRight,
-  ShieldCheck,
   ChevronRight,
 } from 'lucide-react';
 import type { ResultRendererProps } from '../workspace/resultRegistry';
-import type { TicketRecord, TicketStatus } from '../../types/payloads';
+import type { TicketStatus } from '../../types/payloads';
 import { validateTicketListPayload } from './validation';
 import { TicketDetails, getPriorityBadgeClass, getStatusBadgeClass } from './TicketDetails';
 

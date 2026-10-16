@@ -20,7 +20,14 @@ interface AppShellProps {
   activeResultBlock: GenericResultBlock | null;
   isResultLoading?: boolean;
   resultError?: string | null;
+  testFixtureId?: string;
+  onSelectTestFixture?: (fixtureId: string) => void;
+  isPlayingAudio?: boolean;
+  onStopAudio?: () => void;
+  onReplayAudio?: () => void;
+  hasAudioToReplay?: boolean;
   onAudioCaptured: (audioBlob: Blob, durationMs: number) => void;
+  onTextSubmitted?: (text: string) => void;
   onEndSession: () => void;
   onResultAction?: (actionVerb: string, parameters: Record<string, unknown>) => void;
   onSelectResultBlock?: (block: GenericResultBlock) => void;
@@ -33,7 +40,14 @@ export const AppShell: React.FC<AppShellProps> = ({
   activeResultBlock,
   isResultLoading = false,
   resultError = null,
+  testFixtureId = 'employee_self',
+  onSelectTestFixture,
+  isPlayingAudio = false,
+  onStopAudio,
+  onReplayAudio,
+  hasAudioToReplay = false,
   onAudioCaptured,
+  onTextSubmitted,
   onEndSession,
   onResultAction,
   onSelectResultBlock,
@@ -66,6 +80,52 @@ export const AppShell: React.FC<AppShellProps> = ({
         onEndSession={onEndSession}
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
+
+      {/* Persistent Local Render Test Indicator Banner */}
+      <div className="w-full bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/60 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+        <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-semibold">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+          <span>Local render test — Detectif verification not run</span>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <label htmlFor="test-fixture-select" className="text-amber-800 dark:text-amber-300 font-medium">
+            Test Context:
+          </label>
+          <select
+            id="test-fixture-select"
+            value={testFixtureId}
+            onChange={(e) => onSelectTestFixture?.(e.target.value)}
+            className="px-2.5 py-1 text-xs rounded border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium focus:outline-none focus:ring-1 focus:ring-amber-500"
+          >
+            <option value="employee_self">Aarav Mehta (EMP-1001) — Self Scope</option>
+            <option value="manager_team">Priya Sharma (EMP-2001) — Manager Team Scope</option>
+            <option value="executive_all">Arvind Rao (EMP-4002) — VP All-Company Scope</option>
+            <option value="anonymous_visitor">Anonymous Visitor — Public FAQ Only</option>
+          </select>
+
+          {/* Audio Playback Controls */}
+          {isPlayingAudio && onStopAudio && (
+            <button
+              type="button"
+              onClick={onStopAudio}
+              className="px-2.5 py-1 text-xs font-semibold rounded bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-1 shadow-none"
+            >
+              <span>Stop Audio</span>
+            </button>
+          )}
+
+          {!isPlayingAudio && hasAudioToReplay && onReplayAudio && (
+            <button
+              type="button"
+              onClick={onReplayAudio}
+              className="px-2.5 py-1 text-xs font-semibold rounded bg-amber-100 dark:bg-amber-900/60 hover:bg-amber-200 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-100 border border-amber-300 dark:border-amber-700 transition-colors flex items-center gap-1"
+            >
+              <span>Replay Audio</span>
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Mobile Tab Switcher (Visible only on < lg screens when results exist) */}
       <div className="lg:hidden flex border-b border-surface-border dark:border-surface-darkBorder bg-slate-50 dark:bg-slate-900/60 shrink-0">
@@ -124,11 +184,11 @@ export const AppShell: React.FC<AppShellProps> = ({
             activeResultBlockId={activeResultBlock?.id}
             onSelectResultBlock={handleSelectResultBlock}
             reducedMotion={settings.reducedMotion}
-            isSessionVerified={session.state === 'VERIFIED'}
+            isSessionVerified={session.state === 'VERIFIED' || testFixtureId !== 'anonymous_visitor'}
           />
 
-          {/* Anchored Microphone Action Dock */}
-          <MicDock onAudioCaptured={onAudioCaptured} />
+          {/* Anchored Microphone Action Dock with Typed Test Input */}
+          <MicDock onAudioCaptured={onAudioCaptured} onTextSubmitted={onTextSubmitted} />
         </section>
 
         {/* Right Pane: Contextual Results Host (Visible in Split Mode or Mobile Results tab) */}

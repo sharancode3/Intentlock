@@ -50,7 +50,7 @@ export const TeamMetricChartCard: React.FC<ResultRendererProps> = ({ block }) =>
     );
   }
 
-  const payload = block.payload as TeamMetricChartPayload;
+  const payload = block.payload as unknown as TeamMetricChartPayload;
   const { chart_type, title, data, unit, team_id, time_range, kpis } = payload;
 
   return (

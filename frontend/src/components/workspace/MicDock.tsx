@@ -4,6 +4,7 @@ import { useAudioRecorder } from '../../hooks/useAudioRecorder';
 
 interface MicDockProps {
   onAudioCaptured: (audioBlob: Blob, durationMs: number) => void;
+  onTextSubmitted?: (text: string) => void;
   disabled?: boolean;
   disabledReason?: string;
   className?: string;
@@ -11,10 +12,13 @@ interface MicDockProps {
 
 export const MicDock: React.FC<MicDockProps> = ({
   onAudioCaptured,
+  onTextSubmitted,
   disabled = false,
   disabledReason,
   className = '',
 }) => {
+  const [typedInput, setTypedInput] = React.useState('');
+
   const {
     isRecording,
     duration,
@@ -26,7 +30,7 @@ export const MicDock: React.FC<MicDockProps> = ({
     clearError,
   } = useAudioRecorder({
     onAudioCaptured,
-    maxDurationSeconds: 180,
+    maxDurationSeconds: 60,
   });
 
   const minutes = Math.floor(duration / 60);
@@ -68,7 +72,7 @@ export const MicDock: React.FC<MicDockProps> = ({
             {/* Recording Timer & Label */}
             <div className="flex flex-col items-center">
               <span className="text-xs font-medium text-brand-900 dark:text-blue-200">
-                Listening (Live VAD, Max 3m)
+                Listening (Live VAD, Max 60s)
               </span>
               <span className="font-mono text-sm font-bold text-brand-700 dark:text-blue-400">
                 {formattedTime}
@@ -100,7 +104,7 @@ export const MicDock: React.FC<MicDockProps> = ({
           </div>
         ) : (
           /* Idle Action: Prominent High-Contrast Primary Mic Button */
-          <div className="w-full flex flex-col items-center gap-1.5">
+          <div className="w-full flex flex-col items-center gap-2">
             <button
               type="button"
               disabled={disabled || permissionState === 'unsupported'}
@@ -115,6 +119,35 @@ export const MicDock: React.FC<MicDockProps> = ({
               <Mic className="w-5 h-5 shrink-0" aria-hidden="true" />
               <span>{disabled ? disabledReason || 'Microphone Unavailable' : 'Tap to Speak'}</span>
             </button>
+
+            {/* Typed Test Input Fallback */}
+            {onTextSubmitted && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (typedInput.trim()) {
+                    onTextSubmitted(typedInput.trim());
+                    setTypedInput('');
+                  }
+                }}
+                className="w-full flex items-center gap-2 max-w-xl"
+              >
+                <input
+                  type="text"
+                  value={typedInput}
+                  onChange={(e) => setTypedInput(e.target.value)}
+                  placeholder="Typed test input (e.g. 'Who is Aarav Mehta?' or 'Show my direct reports')..."
+                  className="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-surface-border dark:border-surface-darkBorder rounded-flat text-ink-primary dark:text-white placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-700"
+                />
+                <button
+                  type="submit"
+                  disabled={!typedInput.trim()}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-flat bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-ink-primary dark:text-slate-200 border border-slate-300 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+                >
+                  Send (Typed Test)
+                </button>
+              </form>
+            )}
 
             <span className="text-[11px] text-ink-muted dark:text-slate-400 tracking-tight text-center">
               Microphone is only active when initiated &bull; Audio processed in RAM without disk storage
