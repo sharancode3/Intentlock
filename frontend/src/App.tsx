@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { AppShell } from './components/layout/AppShell';
 import type {
   SessionInfo,
@@ -34,9 +34,13 @@ export function App() {
   const [isResultLoading, setIsResultLoading] = useState(false);
   const [resultError, setResultError] = useState<string | null>(null);
 
+  // Invalidation epoch to prevent stale async operations from repopulating revoked data
+  const sessionEpochRef = useRef(0);
+
   // 5. Minimal Browser Audio Capture Handler
   const handleAudioCaptured = useCallback((audioBlob: Blob, durationMs: number) => {
     const elapsedSec = (durationMs / 1000).toFixed(1);
+    const turnEpoch = sessionEpochRef.current;
     
     // Append real user audio event notice
     const userMsgId = `msg-user-${Date.now()}`;
@@ -59,6 +63,11 @@ export function App() {
     // In this frontend foundation, we do not call a nonexistent backend.
     // Provide clean, honest feedback about the next integration step.
     window.setTimeout(() => {
+      // If session was ended or invalidated while this turn was processing, discard the result
+      if (turnEpoch !== sessionEpochRef.current) {
+        return;
+      }
+
       setTurnStatus({
         type: 'idle',
       });
@@ -93,15 +102,33 @@ export function App() {
     }, 1200);
   }, []);
 
-  // 6. End Session Handler (Wipes all private state)
+  // Helper to purge protected/sensitive state and invalidate pending async operations
+  const purgeProtectedData = useCallback(() => {
+    sessionEpochRef.current += 1;
+    setActiveResultBlock((prev) => (prev?.isSensitive ? null : prev));
+    setMessages((prev) =>
+      prev.map((msg) => {
+        if (msg.resultBlock?.isSensitive) {
+          return {
+            ...msg,
+            resultBlock: undefined,
+            resultBlockId: undefined,
+          };
+        }
+        return msg;
+      })
+    );
+  }, []);
+
+  // 6. End Session Handler (Wipes private state, increments epoch, and purges sensitive blocks)
   const handleEndSession = useCallback(() => {
     setSession({
       state: 'ANONYMOUS',
       sessionId: null,
     });
-    setActiveResultBlock(null);
     setResultError(null);
     setIsResultLoading(false);
+    purgeProtectedData();
 
     setMessages((prev) => [
       ...prev,
@@ -112,20 +139,275 @@ export function App() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
-  }, []);
+  }, [purgeProtectedData]);
 
-  // 7. Result Action Handler (Pluggable seam for future readback confirmations)
+  // 7. Purge sensitive blocks when session transitions to EXPIRED
+  useEffect(() => {
+    if (session.state === 'EXPIRED') {
+      const timer = window.setTimeout(() => {
+        purgeProtectedData();
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+  }, [session.state, purgeProtectedData]);
+
+  // 8. Result Selection Handler (Guards sensitive results against activation outside verified session)
+  const handleSelectResultBlock = useCallback(
+    (block: GenericResultBlock) => {
+      // Security boundary: Sensitive result blocks cannot be reopened without an active verified session
+      if (block.isSensitive && session.state !== 'VERIFIED') {
+        return;
+      }
+      setActiveResultBlock(block);
+    },
+    [session.state]
+  );
+
+  // 9. Result Action Handler (Pluggable seam for future readback confirmations)
   const handleResultAction = useCallback((actionVerb: string, parameters: Record<string, unknown>) => {
     console.log('[IntentLock] Result Action Invoked:', actionVerb, parameters);
   }, []);
 
-  // Expose test simulation hook for automated verification in test runners & dev tools
+  // Optional development-only fixture loader via query parameter for automated verification
   useEffect(() => {
+    if (import.meta.env.DEV) {
+      const params = new URLSearchParams(window.location.search);
+      const fixtureParam = params.get('fixture');
+      if (fixtureParam) {
+        import('./components/renderers/fixtures').then((f) => {
+          if (fixtureParam === 'employee_profile' || fixtureParam === 'profile') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_test_dev',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validEmployeeProfileCompleteFixture);
+          } else if (fixtureParam === 'minimal') {
+            setActiveResultBlock(f.validEmployeeProfileMinimalFixture);
+          } else if (fixtureParam === 'invalid') {
+            setActiveResultBlock(f.invalidEmployeeProfileMissingNameFixture);
+          } else if (fixtureParam === 'tickets' || fixtureParam === 'ticket_list') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_test_dev',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validTicketListMultipleFixture);
+          } else if (fixtureParam === 'tickets_empty') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_test_dev',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validTicketListEmptyFixture);
+          } else if (fixtureParam === 'tickets_invalid') {
+            setActiveResultBlock(f.invalidTicketListMissingIdFixture);
+          } else if (fixtureParam === 'metrics_bar' || fixtureParam === 'metrics') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_test_manager',
+              actor: {
+                employeeId: 'mgr_9001',
+                fullName: 'Jordan Taylor (Lead Manager)',
+                role: 'manager',
+                expiresInSeconds: 120,
+              },
+            });
+            setActiveResultBlock(f.validTeamMetricBarFixture);
+          } else if (fixtureParam === 'metrics_pie') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_test_manager',
+              actor: {
+                employeeId: 'mgr_9001',
+                fullName: 'Jordan Taylor (Lead Manager)',
+                role: 'manager',
+                expiresInSeconds: 120,
+              },
+            });
+            setActiveResultBlock(f.validTeamMetricPieFixture);
+          } else if (fixtureParam === 'metrics_empty') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_test_manager',
+              actor: {
+                employeeId: 'mgr_9001',
+                fullName: 'Jordan Taylor (Lead Manager)',
+                role: 'manager',
+                expiresInSeconds: 120,
+              },
+            });
+            setActiveResultBlock(f.emptyTeamMetricChartFixture);
+          } else if (fixtureParam === 'metrics_all_zero') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_test_manager',
+              actor: {
+                employeeId: 'mgr_9001',
+                fullName: 'Jordan Taylor (Lead Manager)',
+                role: 'manager',
+                expiresInSeconds: 120,
+              },
+            });
+            setActiveResultBlock(f.allZeroTeamMetricChartFixture);
+          } else if (fixtureParam === 'metrics_invalid') {
+            setActiveResultBlock(f.invalidTeamMetricChartMissingFieldsFixture);
+          } else if (fixtureParam === 'trust_success' || fixtureParam === 'trust') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validTrustTraceSuccessFixture);
+          } else if (fixtureParam === 'trust_denied') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validTrustTraceDeniedFixture);
+          } else if (fixtureParam === 'trust_speaker_failed' || fixtureParam === 'trust_fail') {
+            setActiveResultBlock(f.validTrustTraceSpeakerMismatchFixture);
+          } else if (fixtureParam === 'trust_pending') {
+            setActiveResultBlock(f.validTrustTracePendingFixture);
+          } else if (fixtureParam === 'trust_parallel') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validTrustTraceParallelFixture);
+          } else if (fixtureParam === 'trust_empty') {
+            setActiveResultBlock(f.emptyTrustTraceFixture);
+          } else if (fixtureParam === 'trust_invalid') {
+            setActiveResultBlock(f.invalidTrustTraceDanglingEdgeFixture);
+          } else if (fixtureParam === 'readback' || fixtureParam === 'readback_canonical') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validReadbackConfirmationPendingFixture);
+          } else if (fixtureParam === 'readback_minimal') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validReadbackConfirmationMinimalFixture);
+          } else if (fixtureParam === 'readback_invalid') {
+            setActiveResultBlock(f.invalidReadbackConfirmationMissingActionFixture);
+          } else if (fixtureParam === 'readback_malformed_params') {
+            setActiveResultBlock(f.invalidReadbackConfirmationMalformedParamsFixture);
+          } else if (fixtureParam === 'receipt' || fixtureParam === 'receipt_success') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validActionReceiptSuccessFixture);
+          } else if (fixtureParam === 'receipt_failed') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validActionReceiptFailedFixture);
+          } else if (fixtureParam === 'receipt_denied') {
+            setSession({
+              state: 'VERIFIED',
+              sessionId: 'sess_charlie_1042',
+              actor: {
+                employeeId: 'emp_1042',
+                fullName: 'Charlie Davis',
+                role: 'employee',
+                expiresInSeconds: 90,
+              },
+            });
+            setActiveResultBlock(f.validActionReceiptDeniedFixture);
+          } else if (fixtureParam === 'receipt_invalid') {
+            setActiveResultBlock(f.invalidActionReceiptMissingTxIdFixture);
+          } else if (fixtureParam === 'denial' || fixtureParam === 'denial_complete') {
+            setActiveResultBlock(f.validDenialBannerCompleteFixture);
+          } else if (fixtureParam === 'denial_min') {
+            setActiveResultBlock(f.validDenialBannerMinimalFixture);
+          } else if (fixtureParam === 'denial_invalid') {
+            setActiveResultBlock(f.invalidDenialBannerMissingMessageFixture);
+          }
+        });
+      }
+    }
+  }, []);
+
+  // Expose test simulation hooks for automated verification in dev tools & subagents
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      (window as unknown as Record<string, unknown>).__intentLockDevHelpers = {
+        setSession,
+        setActiveResultBlock,
+        setMessages,
+        handleEndSession,
+        handleAudioCaptured,
+      };
+    }
     (window as unknown as { __intentLockSimulateVoiceTurn?: typeof handleAudioCaptured }).__intentLockSimulateVoiceTurn = handleAudioCaptured;
     return () => {
       delete (window as unknown as { __intentLockSimulateVoiceTurn?: typeof handleAudioCaptured }).__intentLockSimulateVoiceTurn;
+      if (import.meta.env.DEV) {
+        delete (window as unknown as Record<string, unknown>).__intentLockDevHelpers;
+      }
     };
-  }, [handleAudioCaptured]);
+  }, [handleAudioCaptured, handleEndSession]);
 
   return (
     <AppShell
@@ -138,7 +420,7 @@ export function App() {
       onAudioCaptured={handleAudioCaptured}
       onEndSession={handleEndSession}
       onResultAction={handleResultAction}
-      onSelectResultBlock={setActiveResultBlock}
+      onSelectResultBlock={handleSelectResultBlock}
     />
   );
 }

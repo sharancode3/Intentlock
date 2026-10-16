@@ -90,6 +90,12 @@ export const DenialBanner: React.FC<ResultRendererProps> = ({ block }) => {
           </div>
         </footer>
       )}
+
+      {/* Security Audit Footnote */}
+      <div className="pt-2 border-t border-red-200/60 dark:border-red-900/40 flex items-center justify-between text-[10px] text-red-800/70 dark:text-red-400/60">
+        <span>Deterministic policy engine decision.</span>
+        <span>Zero database rows altered</span>
+      </div>
     </section>
   );
 };
