@@ -655,6 +655,7 @@ export function App() {
 
   return (
     <AppShell
+      isLocalRenderTest
       session={session}
       messages={messages}
       currentTurnStatus={turnStatus}

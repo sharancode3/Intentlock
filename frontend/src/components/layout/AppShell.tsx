@@ -6,6 +6,7 @@ import { MicDock } from '../workspace/MicDock';
 import { ResultHost } from '../workspace/ResultHost';
 import { SettingsModal } from '../workspace/SettingsModal';
 import { useSettings } from '../../hooks/useSettings';
+import type { LiveTranscript } from '../../utils/voiceClient';
 import type {
   ConversationMessage,
   SessionInfo,
@@ -14,6 +15,13 @@ import type {
 } from '../../types';
 
 interface AppShellProps {
+  isLocalRenderTest?: boolean;
+  candidateEmployeeId?: string;
+  onSelectCandidate?: (id: string) => void;
+  evidenceSummary?: string;
+  captureEpoch?: number;
+  microphoneDisabled?: boolean;
+  onLiveTranscript?: (event: LiveTranscript) => void;
   session: SessionInfo;
   messages: ConversationMessage[];
   currentTurnStatus: TurnStatusNotice;
@@ -26,7 +34,7 @@ interface AppShellProps {
   onStopAudio?: () => void;
   onReplayAudio?: () => void;
   hasAudioToReplay?: boolean;
-  onAudioCaptured: (audioBlob: Blob, durationMs: number) => void;
+  onAudioCaptured: (audioBlob: Blob, durationMs: number, turnId?: string) => void | Promise<void>;
   onTextSubmitted?: (text: string) => void;
   onEndSession: () => void;
   onResultAction?: (actionVerb: string, parameters: Record<string, unknown>) => void;
@@ -34,6 +42,9 @@ interface AppShellProps {
 }
 
 export const AppShell: React.FC<AppShellProps> = ({
+  isLocalRenderTest = false,
+  candidateEmployeeId = 'EMP-1001', onSelectCandidate, evidenceSummary,
+  captureEpoch = 0, microphoneDisabled = false, onLiveTranscript,
   session,
   messages,
   currentTurnStatus,
@@ -82,7 +93,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       />
 
       {/* Persistent Local Render Test Indicator Banner */}
-      <div className="w-full bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/60 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+      {isLocalRenderTest ? <div className="w-full bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/60 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
         <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-semibold">
           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
           <span>Local render test — Detectif verification not run</span>
@@ -126,6 +137,25 @@ export const AppShell: React.FC<AppShellProps> = ({
           )}
         </div>
       </div>
+
+      : <div className="px-4 py-2 border-b border-surface-border dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <label className="flex items-center gap-2 text-ink-primary dark:text-white">
+          Claim employee ID
+          <select aria-label="Claim employee ID" value={candidateEmployeeId} disabled={microphoneDisabled}
+            onChange={event => onSelectCandidate?.(event.target.value)}
+            className="border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-800 dark:text-white">
+            <option value="EMP-1001">EMP-1001 — Employee</option>
+            <option value="EMP-2001">EMP-2001 — Engineering manager</option>
+            <option value="EMP-4002">EMP-4002 — CTO</option>
+          </select>
+        </label>
+        <span className="text-slate-600 dark:text-slate-300">{evidenceSummary}</span>
+        <div className="flex gap-2">
+          <button type="button" onClick={onEndSession} className="underline">Reset conversation</button>
+          {isPlayingAudio && <button type="button" onClick={onStopAudio} className="underline">Stop Audio</button>}
+          {!isPlayingAudio && hasAudioToReplay && <button type="button" onClick={onReplayAudio} className="underline">Replay Audio</button>}
+        </div>
+      </div>}
 
       {/* Mobile Tab Switcher (Visible only on < lg screens when results exist) */}
       <div className="lg:hidden flex border-b border-surface-border dark:border-surface-darkBorder bg-slate-50 dark:bg-slate-900/60 shrink-0">
@@ -184,11 +214,14 @@ export const AppShell: React.FC<AppShellProps> = ({
             activeResultBlockId={activeResultBlock?.id}
             onSelectResultBlock={handleSelectResultBlock}
             reducedMotion={settings.reducedMotion}
-            isSessionVerified={session.state === 'VERIFIED' || testFixtureId !== 'anonymous_visitor'}
+            isSessionVerified={session.state === 'VERIFIED' || (isLocalRenderTest && testFixtureId !== 'anonymous_visitor')}
           />
 
           {/* Anchored Microphone Action Dock with Typed Test Input */}
-          <MicDock onAudioCaptured={onAudioCaptured} onTextSubmitted={onTextSubmitted} />
+          <MicDock key={captureEpoch} onAudioCaptured={onAudioCaptured} onTextSubmitted={onTextSubmitted}
+            onLiveTranscript={onLiveTranscript} disabled={microphoneDisabled}
+            disabledReason={isPlayingAudio ? 'Playing response' : 'Processing voice turn'}
+            previewEnabled={!isLocalRenderTest} />
         </section>
 
         {/* Right Pane: Contextual Results Host (Visible in Split Mode or Mobile Results tab) */}

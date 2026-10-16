@@ -111,7 +111,7 @@ export const ResultHost: React.FC<ResultHostProps> = ({
               Contextual Results Will Appear Here
             </h3>
             <p className="text-xs text-ink-muted dark:text-slate-400 max-w-sm leading-relaxed mb-4">
-              When you ask a question or request a ticket action, authorized response cards, tables, team metrics, or execution receipts will be displayed in this panel.
+              Your authorized profile and supported contextual results appear here after the backend completes the required voice checks.
             </p>
             <div className="inline-flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />

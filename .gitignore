@@ -10,3 +10,10 @@ ENV/
 backend/models_cache/
 *.onnx
 *.bin
+
+.env*
+backend/.env
+backend/.env*
+speech_hf/
+*.sqlite3
+*.db

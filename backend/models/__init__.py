@@ -9,6 +9,14 @@ from backend.models.employee import (
     ResearchProfile,
     ExecutiveAuthority,
 )
+from backend.models.turn import (
+    VoiceTurnResponse,
+    TurnSessionInfo,
+    GenericResultBlock,
+    TrustEvidence,
+    OriginalAudioMetadata,
+)
+from backend.models.errors import SafeErrorDetail, SafeErrorResponse
 
 __all__ = [
     "EmployeeRecord",
@@ -19,4 +27,11 @@ __all__ = [
     "EmployeeProjects",
     "ResearchProfile",
     "ExecutiveAuthority",
+    "VoiceTurnResponse",
+    "TurnSessionInfo",
+    "GenericResultBlock",
+    "TrustEvidence",
+    "OriginalAudioMetadata",
+    "SafeErrorDetail",
+    "SafeErrorResponse",
 ]

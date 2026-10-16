@@ -1,9 +1,12 @@
 import React from 'react';
 import { Mic, Square, X, AlertCircle } from 'lucide-react';
-import { useAudioRecorder } from '../../hooks/useAudioRecorder';
+import { useLiveAudioRecorder } from '../../hooks/useLiveAudioRecorder';
+import type { LiveTranscript } from '../../utils/voiceClient';
 
 interface MicDockProps {
-  onAudioCaptured: (audioBlob: Blob, durationMs: number) => void;
+  onAudioCaptured: (audioBlob: Blob, durationMs: number, turnId?: string) => void | Promise<void>;
+  onLiveTranscript?: (event: LiveTranscript) => void;
+  previewEnabled?: boolean;
   onTextSubmitted?: (text: string) => void;
   disabled?: boolean;
   disabledReason?: string;
@@ -13,6 +16,7 @@ interface MicDockProps {
 export const MicDock: React.FC<MicDockProps> = ({
   onAudioCaptured,
   onTextSubmitted,
+  onLiveTranscript, previewEnabled = true,
   disabled = false,
   disabledReason,
   className = '',
@@ -21,6 +25,8 @@ export const MicDock: React.FC<MicDockProps> = ({
 
   const {
     isRecording,
+    isArmed,
+    previewStatus,
     duration,
     permissionState,
     errorMessage,
@@ -28,9 +34,9 @@ export const MicDock: React.FC<MicDockProps> = ({
     stopRecording,
     cancelRecording,
     clearError,
-  } = useAudioRecorder({
+  } = useLiveAudioRecorder({
     onAudioCaptured,
-    maxDurationSeconds: 60,
+    onLiveTranscript, previewEnabled, disabled,
   });
 
   const minutes = Math.floor(duration / 60);
@@ -72,7 +78,7 @@ export const MicDock: React.FC<MicDockProps> = ({
             {/* Recording Timer & Label */}
             <div className="flex flex-col items-center">
               <span className="text-xs font-medium text-brand-900 dark:text-blue-200">
-                Listening (Live VAD, Max 60s)
+                Listening · pause to send
               </span>
               <span className="font-mono text-sm font-bold text-brand-700 dark:text-blue-400">
                 {formattedTime}
@@ -108,7 +114,7 @@ export const MicDock: React.FC<MicDockProps> = ({
             <button
               type="button"
               disabled={disabled || permissionState === 'unsupported'}
-              onClick={startRecording}
+              onClick={() => { if (isArmed) cancelRecording(); else void startRecording(); }}
               className={`w-full sm:w-auto px-6 py-2.5 rounded-flat-lg font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-none min-h-[46px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-700 ${
                 disabled || permissionState === 'unsupported'
                   ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
@@ -117,7 +123,7 @@ export const MicDock: React.FC<MicDockProps> = ({
               aria-label={disabled ? disabledReason || 'Microphone unavailable' : 'Tap to speak into kiosk microphone'}
             >
               <Mic className="w-5 h-5 shrink-0" aria-hidden="true" />
-              <span>{disabled ? disabledReason || 'Microphone Unavailable' : 'Tap to Speak'}</span>
+              <span>{disabled ? disabledReason || 'Microphone Unavailable' : isArmed ? 'Stop Listening' : 'Start Conversation'}</span>
             </button>
 
             {/* Typed Test Input Fallback */}
@@ -150,7 +156,7 @@ export const MicDock: React.FC<MicDockProps> = ({
             )}
 
             <span className="text-[11px] text-ink-muted dark:text-slate-400 tracking-tight text-center">
-              Microphone is only active when initiated &bull; Audio processed in RAM without disk storage
+              {previewStatus || 'Start once to converse. A short pause sends your question; 20 seconds of silence stops the microphone.'}
             </span>
           </div>
         )}

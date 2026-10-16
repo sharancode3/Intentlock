@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Ticket,
   AlertCircle,
@@ -54,14 +54,11 @@ export const TicketListCard: React.FC<ResultRendererProps> = ({ block }) => {
   const displayTitle = title || block.title || 'Assigned Support Tickets';
 
   // Find currently selected ticket if active
-  const selectedTicket = useMemo(() => {
-    if (selectedTicketId === null) return null;
-    return tickets.find((t) => String(t.ticket_id) === String(selectedTicketId)) || null;
-  }, [tickets, selectedTicketId]);
+  const selectedTicket = selectedTicketId === null ? null
+    : tickets.find((t) => String(t.ticket_id) === String(selectedTicketId)) || null;
 
   // Filtered tickets based on search query and status
-  const filteredTickets = useMemo(() => {
-    return tickets.filter((ticket) => {
+  const filteredTickets = tickets.filter((ticket) => {
       // Status filter
       if (statusFilter !== 'ALL') {
         if (ticket.status.toUpperCase() !== statusFilter.toUpperCase()) {
@@ -78,8 +75,7 @@ export const TicketListCard: React.FC<ResultRendererProps> = ({ block }) => {
         return matchesTitle || matchesId || matchesCategory || matchesAssignee;
       }
       return true;
-    });
-  }, [tickets, searchQuery, statusFilter]);
+  });
 
   // If a ticket is selected, render TicketDetails in place with Back navigation
   if (selectedTicket) {

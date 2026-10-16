@@ -88,12 +88,11 @@ export const ConversationPanel: React.FC<ConversationPanelProps> = ({
                 IntentLock Shared Workspace
               </h2>
               <p className="mb-2">
-                You can verbally ask public company questions at any time (e.g.{' '}
-                <em>"What is the office visitor policy?"</em>).
+                Speak naturally to ask about your profile, assigned projects, or permitted team information.
               </p>
               <p className="text-xs text-ink-muted dark:text-slate-400 bg-white dark:bg-slate-800/80 p-2.5 rounded border border-slate-200 dark:border-slate-700">
-                <strong>Need private records or ticket actions?</strong> State your employee ID (e.g.{' '}
-                <em>"I am Charlie Davis, EMP-1001"</em>). The backend will verify your voice profile before providing access.
+                <strong>Private records require voice verification.</strong> Choose your claimed employee ID and ask a full question (e.g.{' '}
+                <em>"My employee ID is EMP-1001. Show my profile and current projects."</em>).
               </p>
             </div>
           </div>
