@@ -1,0 +1,52 @@
+services:
+  # 1. IntentLock FastAPI Backend Service
+  - type: web
+    name: intentlock-backend
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONPATH
+        value: .
+      - key: ENVIRONMENT
+        value: production
+      - key: DETECTIF_API_KEY
+        sync: false
+      - key: DETECTIF_BASE_URL
+        value: https://platform.detectif.ai/v1
+      - key: DETECTIF_ACCOUNT_ALIAS
+        value: primary_account
+      - key: SESSION_TTL_SECONDS
+        value: "90"
+      - key: LLM_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_TIMEOUT_SECONDS
+        value: "20"
+      - key: OPENAI_MAX_OUTPUT_TOKENS
+        value: "1024"
+      - key: OPENAI_MAX_RETRIES
+        value: "1"
+      - key: FRONTEND_ORIGINS
+        value: '["*"]'
+
+  # 2. IntentLock React Frontend Static Site
+  - type: web
+    name: intentlock-frontend
+    runtime: static
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: intentlock-backend
+          property: host
