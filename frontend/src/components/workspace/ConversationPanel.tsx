@@ -17,6 +17,8 @@ interface ConversationPanelProps {
   onSelectResultBlock?: (block: GenericResultBlock) => void;
   /** User preference to suppress smooth scrolling animations */
   reducedMotion?: boolean;
+  /** Whether the session is currently authenticated/verified */
+  isSessionVerified?: boolean;
 }
 
 export const ConversationPanel: React.FC<ConversationPanelProps> = ({
@@ -27,6 +29,7 @@ export const ConversationPanel: React.FC<ConversationPanelProps> = ({
   activeResultBlockId = null,
   onSelectResultBlock,
   reducedMotion = false,
+  isSessionVerified = false,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -175,7 +178,23 @@ export const ConversationPanel: React.FC<ConversationPanelProps> = ({
               {/* Contextual Result Block Placement (Layout-Aware) */}
               {message.resultBlock && (
                 <div className="w-full mt-1 pl-9">
-                  {isSplitView ? (
+                  {/* Security Boundary: If block is marked sensitive and session is not verified, lock/hide it */}
+                  {message.resultBlock.isSensitive && !isSessionVerified ? (
+                    <div
+                      className="rounded-flat border border-surface-border/70 dark:border-surface-darkBorder/70 bg-slate-50 dark:bg-slate-900/40 p-2.5 flex items-center justify-between gap-2 text-xs transition-colors"
+                      aria-label={`Protected Result: ${message.resultBlock.title || 'Result'} is locked`}
+                    >
+                      <div className="flex items-center gap-2 text-ink-muted dark:text-slate-400 min-w-0">
+                        <FileQuestion className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+                        <span className="font-medium truncate">
+                          {message.resultBlock.title || 'Protected Contextual Result'}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-medium text-ink-muted dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-flat shrink-0">
+                        Session Closed &bull; Protected
+                      </span>
+                    </div>
+                  ) : isSplitView ? (
                     /* SPLIT VIEW POLICY:
                      * 1. If this block is currently active in ResultHost, show a compact reference badge
                      *    to eliminate duplicate full-size cards.

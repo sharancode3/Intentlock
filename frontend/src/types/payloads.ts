@@ -60,6 +60,8 @@ export interface EmployeeRecord {
   email?: string;
   /** Optional active project names or assignments */
   active_projects?: string[];
+  /** Optional employment status if returned by backend, e.g. "Active", "On Leave" */
+  status?: string;
 }
 
 export interface EmployeeProfilePayload {
@@ -75,6 +77,26 @@ export type TicketPriority = 'URGENT' | 'HIGH' | 'NORMAL' | 'LOW' | string;
 export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED' | string;
 
 /**
+ * Genuine ticket transition or audit event recorded in backend event ledger.
+ */
+export interface TicketEvent {
+  /** Optional event identifier */
+  id?: string;
+  /** ISO 8601 event timestamp */
+  timestamp: string;
+  /** High-level event category or transition type */
+  type: 'CREATED' | 'ASSIGNED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'RESOLVED' | 'CLOSED' | 'COMMENT' | string;
+  /** Verified employee ID or system actor who triggered event */
+  actor?: string;
+  /** Human-readable event description */
+  description: string;
+  /** Previous value if a field mutation occurred */
+  old_value?: string;
+  /** New value if a field mutation occurred */
+  new_value?: string;
+}
+
+/**
  * Single support ticket item from Supabase `tickets`.
  */
 export interface TicketRecord {
@@ -82,6 +104,8 @@ export interface TicketRecord {
   ticket_id: number | string;
   /** Brief summary/title of the issue */
   title: string;
+  /** Optional detailed context / issue body from database schema */
+  description?: string;
   /** Ticket priority level */
   priority: TicketPriority;
   /** Current lifecycle status */
@@ -96,6 +120,8 @@ export interface TicketRecord {
   created_at?: string;
   /** Last updated timestamp (ISO 8601 string) */
   updated_at?: string;
+  /** Optional array of genuine lifecycle events if provided by backend */
+  events?: TicketEvent[];
 }
 
 export interface TicketListPayload {
@@ -116,10 +142,44 @@ export interface MetricDataPoint {
   label: string;
   /** Count computed strictly via backend SQL aggregation */
   count: number;
+  /** Compatible alias for label */
+  name?: string;
+  /** Compatible alias for count */
+  value?: number;
   /** Optional priority tier */
   priority?: string;
   /** Optional presentation color override */
   color?: string;
+}
+
+/**
+ * Single KPI card metric item with label, value, and optional unit.
+ */
+export interface MetricKpiItem {
+  label: string;
+  value: number | string;
+  unit?: string;
+  description?: string;
+}
+
+/**
+ * Optional aggregate KPI summary values supplied strictly by backend SQL calculation.
+ */
+export interface MetricKpiSummary {
+  total_tickets?: number;
+  open_tickets?: number;
+  in_progress_tickets?: number;
+  resolved_tickets?: number;
+  closed_tickets?: number;
+  avg_resolution_time?:
+    | string
+    | {
+        value: number;
+        unit: 'hours' | 'days' | 'minutes' | string;
+      };
+  sla_compliance_rate?: number;
+  sla_compliance_pct?: number;
+  items?: MetricKpiItem[];
 }
 
 export interface TeamMetricChartPayload {
@@ -127,8 +187,18 @@ export interface TeamMetricChartPayload {
   chart_type: 'BAR' | 'PIE';
   /** Human-readable metric title */
   metric_name?: string;
-  /** Filter or department scope represented */
+  /** Compatible alias for metric_name */
+  title?: string;
+  /** Metric unit (e.g. "tickets", "hours") */
+  unit?: string;
+  /** Filter or department scope represented (e.g. "Engineering Team A") */
   scope_description?: string;
+  /** Team identifier (e.g. "team_eng_a") */
+  team_id?: string;
+  /** Filtered time range description (e.g. "Last 30 Days") */
+  time_range?: string;
+  /** Optional aggregate KPI summaries supplied by backend */
+  kpis?: MetricKpiSummary;
   /** Data points bound strictly to SQL group-by counts */
   data: MetricDataPoint[];
 }
@@ -156,9 +226,21 @@ export interface ProposedActionDraft {
 
 export interface ReadbackConfirmationPayload {
   /** The action draft to be confirmed */
-  draft: ProposedActionDraft;
+  draft?: ProposedActionDraft;
+  /** Compatible flat aliases if provided directly */
+  action?: string;
+  target?: string;
+  params?: Record<string, unknown>;
+  summary_readback?: string;
+  expires_in_seconds?: number;
   /** Whether confirmation requires matching voice audio re-check */
   requires_voice_confirmation?: boolean;
+  /** Optional server confirmation identifier */
+  confirmation_id?: string;
+  /** Optional lifecycle status of the confirmation */
+  status?: 'PENDING' | 'CONFIRMED' | 'EXPIRED' | 'CANCELLED' | string;
+  /** Optional absolute expiration timestamp */
+  expires_at?: string;
 }
 
 // ============================================================================
@@ -209,14 +291,32 @@ export interface ExecutionReceipt {
 
 export interface ActionReceiptPayload {
   /** The committed execution receipt */
-  receipt: ExecutionReceipt;
+  receipt?: ExecutionReceipt;
+  /** Compatible flat aliases if provided directly at root */
+  req_id?: string;
+  tx_id?: string;
+  actor?: string;
+  action?: string;
+  timestamp?: string;
+  resource_id?: string | number;
+  status?: 'COMMITTED' | 'FAILED' | 'DENIED' | 'PENDING' | string;
+  grant_hash_prefix?: string;
+  summary?: string;
 }
 
 // ============================================================================
 // 8. TRUST_TRACE_GRAPH (React Flow Real-Time Security Telemetry)
 // ============================================================================
 
-export type TrustTraceNodeStatus = 'PASS' | 'FAIL' | 'PENDING' | 'SKIPPED' | 'ABORTED';
+export type TrustTraceNodeStatus =
+  | 'PASS'
+  | 'FAIL'
+  | 'PENDING'
+  | 'SKIPPED'
+  | 'ABORTED'
+  | 'DENIED'
+  | 'SUCCESS'
+  | string;
 
 export interface TrustTraceNode {
   /** Unique node identifier matching stage */
@@ -224,25 +324,59 @@ export interface TrustTraceNode {
   /** Human-readable node label */
   label: string;
   /** Pipeline stage represented */
-  stage: 'ingress' | 'deepfake' | 'speaker_match' | 'policy' | 'grant' | 'commit' | string;
+  stage:
+    | 'ingress'
+    | 'deepfake'
+    | 'speaker_match'
+    | 'policy'
+    | 'grant'
+    | 'commit'
+    | 'handshake'
+    | 'execution'
+    | string;
   /** Verdict status of this security checkpoint */
   status: TrustTraceNodeStatus;
   /** High-level non-secret summary or score label */
   detail?: string;
   /** Timestamp when stage completed */
   timestamp?: string;
+  /** Optional explanation or denial reason */
+  reason?: string;
+  /** Optional policy evaluation summary */
+  policy_decision?: string;
+  /** Optional receipt identifier or hash reference */
+  receipt_id?: string;
+  /** Optional turn identifier */
+  turn_id?: string;
+  /** Agent identity handshake: Requesting agent identity */
+  requesting_agent?: string;
+  /** Agent identity handshake: Receiving agent identity */
+  receiving_agent?: string;
+  /** Agent identity handshake: Requested capability */
+  requested_capability?: string;
+  /** Agent identity handshake: Handshake outcome */
+  handshake_outcome?: string;
 }
 
 export interface TrustTraceEdge {
   id: string;
   source: string;
   target: string;
+  label?: string;
   animated?: boolean;
 }
 
 export interface TrustTraceGraphPayload {
   /** Ingress turn or trace identifier */
   trace_id?: string;
+  /** Turn correlation identifier */
+  turn_id?: string;
+  /** Session reference */
+  session_id?: string;
+  /** High-level summary of the trace execution */
+  summary?: string;
+  /** Final security decision verdict */
+  final_verdict?: 'ALLOW' | 'DENY' | 'PENDING' | 'ABORT' | string;
   /** Nodes for the security pipeline */
   nodes: TrustTraceNode[];
   /** Optional edge connections between nodes */

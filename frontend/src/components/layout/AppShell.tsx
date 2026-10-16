@@ -124,6 +124,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             activeResultBlockId={activeResultBlock?.id}
             onSelectResultBlock={handleSelectResultBlock}
             reducedMotion={settings.reducedMotion}
+            isSessionVerified={session.state === 'VERIFIED'}
           />
 
           {/* Anchored Microphone Action Dock */}
