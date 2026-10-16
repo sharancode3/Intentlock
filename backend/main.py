@@ -1119,6 +1119,15 @@ def process_result_action(action: ResultActionRequest, auth: Dict[str, Any] = De
             raise HTTPException(status_code=403, detail=result.spoken_summary)
         return {"status": "success", "assistant_message": result.spoken_summary,
                 "result_block": result.result_block.model_dump()}
+    if action.action == "select_ticket":
+        if not action.target_id or action.target_id not in source.visible_ids:
+            raise HTTPException(status_code=403, detail="The selected ticket is outside this result.")
+        state.selected_ticket_id = action.target_id
+        return {
+            "status": "success",
+            "assistant_message": f"Selected ticket {action.target_id}. You can ask to view, update, or comment on this ticket.",
+            "selected_ticket_id": action.target_id,
+        }
     raise HTTPException(status_code=400, detail="Unsupported result action.")
 
 @app.post(

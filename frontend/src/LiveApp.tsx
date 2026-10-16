@@ -24,6 +24,7 @@ export default function LiveApp() {
   const [messages, setMessages] = useState<ConversationMessage[]>([welcome()]);
   const [status, setStatus] = useState<TurnStatusNotice>({ type: 'idle' });
   const [block, setBlock] = useState<GenericResultBlock | null>(null);
+  const [availableBlocks, setAvailableBlocks] = useState<GenericResultBlock[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -67,7 +68,7 @@ export default function LiveApp() {
     request.current?.abort(); request.current = null;
     actionRequest.current?.abort(); actionRequest.current = null; stopAudio();
     expiresAt.current = null; setSession(anonymous); sessionRef.current = anonymous;
-    setBlock(null); setMessages([welcome()]); setLastAudio(undefined);
+    setBlock(null); setAvailableBlocks([]); setMessages([welcome()]); setLastAudio(undefined);
     setEvidence('Voice verification required'); setBusy(false); busyRef.current = false;
     setStatus({ type: 'idle' }); setError(null); setCaptureEpoch(value => value + 1);
     if (token) void fetch(`${API_BASE}/api/v1/voice/session/end`, {
@@ -124,11 +125,13 @@ export default function LiveApp() {
       setSession(updated); sessionRef.current = updated;
       expiresAt.current = data.session_expires_at ? Date.parse(data.session_expires_at) : null;
       if (updated.state !== 'VERIFIED' && hadVerifiedSession) {
-        stopAudio(); setMessages([]); setBlock(null); setLastAudio(undefined);
+        stopAudio(); setMessages([]); setBlock(null); setAvailableBlocks([]); setLastAudio(undefined);
       }
       const trust = data.trust_evidence;
       setEvidence(trust ? `Speaker: ${trust.speaker_decision || 'reused session'} · Authenticity: ${trust.authenticity_verdict || 'reused session'}` : data.status === 'success' ? 'No voice verification needed for this request' : 'Verification incomplete; private access restricted');
       const primary = data.result_blocks?.find(value => value.id === data.primary_result_id) || data.result_block || null;
+      const allBlocks = data.result_blocks && data.result_blocks.length > 0 ? data.result_blocks : (primary ? [primary] : []);
+      setAvailableBlocks(allBlocks);
       setMessages(previous => [
         ...previous.map(value => {
           const completed = value.id === messageId ? { ...value, text: data.transcript || value.text, status: 'complete' as const, isStreaming: false } : value;
@@ -146,7 +149,7 @@ export default function LiveApp() {
       if (epoch.current !== turnEpoch) return;
       const message = cause instanceof Error && cause.name === 'AbortError' ? 'The voice request was cancelled or timed out.' : cause instanceof Error ? cause.message : 'Voice request failed.';
       setError(message); setSession(anonymous); sessionRef.current = anonymous; expiresAt.current = null;
-      setBlock(null); setLastAudio(undefined); setEvidence('Verification unavailable');
+      setBlock(null); setAvailableBlocks([]); setLastAudio(undefined); setEvidence('Verification unavailable');
       setMessages([{ id: crypto.randomUUID(), sender: 'assistant', text: message,
         timestamp: new Date().toLocaleTimeString(), status: 'error', errorMessage: message }]);
       setStatus({ type: 'error', message });
@@ -197,7 +200,7 @@ export default function LiveApp() {
   }, []);
 
   return <AppShell session={session} messages={messages} currentTurnStatus={status}
-    activeResultBlock={block} isResultLoading={busy && !playing && !block} resultError={error}
+    activeResultBlock={block} resultBlocks={availableBlocks} isResultLoading={busy && !playing && !block} resultError={error}
     candidateEmployeeId={candidate} onSelectCandidate={value => { clearSession(); setCandidate(value); }}
     evidenceSummary={evidence} captureEpoch={captureEpoch} microphoneDisabled={busy || playing}
     isPlayingAudio={playing} onStopAudio={stopAudio} onReplayAudio={() => { if (lastAudio) void playAudio(lastAudio); }}

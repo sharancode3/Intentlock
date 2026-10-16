@@ -26,6 +26,7 @@ interface AppShellProps {
   messages: ConversationMessage[];
   currentTurnStatus: TurnStatusNotice;
   activeResultBlock: GenericResultBlock | null;
+  resultBlocks?: GenericResultBlock[];
   isResultLoading?: boolean;
   resultError?: string | null;
   testFixtureId?: string;
@@ -49,6 +50,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   messages,
   currentTurnStatus,
   activeResultBlock,
+  resultBlocks,
   isResultLoading = false,
   resultError = null,
   testFixtureId = 'employee_self',
@@ -234,6 +236,8 @@ export const AppShell: React.FC<AppShellProps> = ({
           >
             <ResultHost
               activeBlock={activeResultBlock}
+              resultBlocks={resultBlocks}
+              onSelectBlock={onSelectResultBlock}
               isLoading={isResultLoading}
               errorMessage={resultError}
               onResultAction={onResultAction}
@@ -249,6 +253,8 @@ export const AppShell: React.FC<AppShellProps> = ({
           >
             <ResultHost
               activeBlock={activeResultBlock}
+              resultBlocks={resultBlocks}
+              onSelectBlock={onSelectResultBlock}
               isLoading={isResultLoading}
               errorMessage={resultError}
               onResultAction={onResultAction}

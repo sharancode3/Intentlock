@@ -215,29 +215,31 @@ class TicketKnowledgeService:
         filtered = list(tickets)
 
         # 2. Status filtering
-        if "open" in q and "unresolved" not in q:
-            filtered = [t for t in filtered if t.get("status") == "Open"]
-        elif "in progress" in q:
-            filtered = [t for t in filtered if t.get("status") == "In Progress"]
-        elif "blocked" in q:
-            filtered = [t for t in filtered if t.get("status") == "Blocked"]
-        elif "pending" in q:
-            filtered = [t for t in filtered if t.get("status") == "Pending" or t.get("approval", {}).get("status") == "Pending"]
-        elif "resolved" in q:
-            filtered = [t for t in filtered if t.get("status") in ("Resolved", "Closed")]
-        elif "closed" in q:
-            filtered = [t for t in filtered if t.get("status") == "Closed"]
-        elif "unresolved" in q or "active" in q:
+        if re.search(r"\b(unresolved|not resolved|active)\b", q):
             filtered = [t for t in filtered if t.get("status") not in ("Resolved", "Closed")]
+        elif re.search(r"\b(not closed|unclosed)\b", q):
+            filtered = [t for t in filtered if t.get("status") != "Closed"]
+        elif re.search(r"\bin[ -]?progress\b", q):
+            filtered = [t for t in filtered if t.get("status") == "In Progress"]
+        elif re.search(r"\bblocked\b", q):
+            filtered = [t for t in filtered if t.get("status") == "Blocked"]
+        elif re.search(r"\bpending\b", q):
+            filtered = [t for t in filtered if t.get("status") == "Pending" or t.get("approval", {}).get("status") == "Pending"]
+        elif re.search(r"\bclosed\b", q):
+            filtered = [t for t in filtered if t.get("status") == "Closed"]
+        elif re.search(r"\bresolved\b", q):
+            filtered = [t for t in filtered if t.get("status") in ("Resolved", "Closed")]
+        elif re.search(r"\bopen\b", q):
+            filtered = [t for t in filtered if t.get("status") == "Open"]
 
         # 3. Priority filtering
-        if "critical" in q or "highest" in q or "sev-1" in q or "s1" in q:
+        if re.search(r"\b(critical|highest|sev-1|s1|urgent)\b", q):
             filtered = [t for t in filtered if t.get("priority") == "Critical"]
-        elif "high" in q:
-            filtered = [t for t in filtered if t.get("priority") in ("High", "Critical")]
-        elif "medium" in q:
+        elif re.search(r"\bhigh\b", q):
+            filtered = [t for t in filtered if t.get("priority") == "High"]
+        elif re.search(r"\b(medium|normal)\b", q):
             filtered = [t for t in filtered if t.get("priority") == "Medium"]
-        elif "low" in q:
+        elif re.search(r"\blow\b", q):
             filtered = [t for t in filtered if t.get("priority") == "Low"]
 
         # 4. SLA filtering

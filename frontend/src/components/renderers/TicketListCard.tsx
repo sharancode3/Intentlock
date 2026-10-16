@@ -24,12 +24,17 @@ import { TicketDetails, getPriorityBadgeClass, getStatusBadgeClass } from './Tic
  * - Safe validation fallback with zero raw JSON dumps
  * - Full light/dark mode support
  */
-export const TicketListCard: React.FC<ResultRendererProps> = ({ block }) => {
+export const TicketListCard: React.FC<ResultRendererProps> = ({ block, onAction }) => {
   const validation = validateTicketListPayload(block.payload);
 
   const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | TicketStatus>('ALL');
+
+  const handleSelectTicket = (ticketId: string | number) => {
+    setSelectedTicketId(ticketId);
+    onAction?.('select_ticket', { target_id: String(ticketId), source_result_id: block.id });
+  };
 
   if (!validation.isValid) {
     return (
@@ -184,7 +189,7 @@ export const TicketListCard: React.FC<ResultRendererProps> = ({ block }) => {
                   <tr
                     key={String(t.ticket_id)}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors cursor-pointer group"
-                    onClick={() => setSelectedTicketId(t.ticket_id)}
+                    onClick={() => handleSelectTicket(t.ticket_id)}
                   >
                     <td className="py-2.5 px-3 font-mono font-bold text-ink-primary dark:text-white shrink-0">
                       #{t.ticket_id}
@@ -216,7 +221,7 @@ export const TicketListCard: React.FC<ResultRendererProps> = ({ block }) => {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedTicketId(t.ticket_id);
+                          handleSelectTicket(t.ticket_id);
                         }}
                         className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-700 dark:text-blue-400 hover:text-brand-800 dark:hover:text-blue-300 py-1 px-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                         aria-label={`View details for ticket ${t.ticket_id}`}
@@ -236,14 +241,14 @@ export const TicketListCard: React.FC<ResultRendererProps> = ({ block }) => {
             {filteredTickets.map((t) => (
               <div
                 key={String(t.ticket_id)}
-                onClick={() => setSelectedTicketId(t.ticket_id)}
+                onClick={() => handleSelectTicket(t.ticket_id)}
                 className="p-3 rounded-flat border border-surface-border dark:border-surface-darkBorder bg-slate-50/60 dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer space-y-2"
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    setSelectedTicketId(t.ticket_id);
+                    handleSelectTicket(t.ticket_id);
                   }
                 }}
                 aria-label={`Ticket ${t.ticket_id}: ${t.title}`}

@@ -34,9 +34,11 @@ class IntentPlan(BaseModel):
     operation: Operation
     entity: Optional[str] = Field(default=None, max_length=96)
     ticket_id: Optional[str] = Field(default=None, max_length=32)
+    person_filter: Optional[str] = Field(default=None, max_length=32)
+    sla_metric: Optional[Literal["overdue", "compliance"]] = None
     view: Optional[Literal["TABLE", "BAR", "PIE", "LINE", "AREA", "TREE"]] = None
     group_by: Optional[Literal["priority", "status"]] = None
-    status_filter: Optional[Literal["Open", "In Progress", "Pending", "Blocked", "Resolved", "Closed", "Unresolved"]] = None
+    status_filter: Optional[Literal["Open", "In Progress", "Pending", "Blocked", "Resolved", "Closed", "Unresolved", "Not Closed"]] = None
     priority_filter: Optional[Literal["Critical", "High", "Medium", "Low"]] = None
     descendants: bool = False
     field: Optional[Literal["description", "status", "priority"]] = None
@@ -53,6 +55,7 @@ class ResultSnapshot:
     source_rows: List[dict] = field(default_factory=list)
     source_kind: Optional[str] = None
     created_at: float = field(default_factory=time.time)
+    filter_state: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -61,6 +64,7 @@ class ConversationState:
     snapshots: Dict[str, ResultSnapshot] = field(default_factory=dict)
     active_id: Optional[str] = None
     previous_id: Optional[str] = None
+    selected_ticket_id: Optional[str] = None
 
     def remember(self, snapshot: ResultSnapshot) -> None:
         if self.active_id != snapshot.block.id:
@@ -124,10 +128,15 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
     if re.search(r"\b(back to|go back|previous (view|result))\b", q):
         return IntentPlan(operation="back")
     context_ticket = None
-    if state and state.active_id:
-        active = state.snapshots.get(state.active_id)
-        if active and active.source_kind == "tickets" and len(active.visible_ids) == 1:
-            context_ticket = active.visible_ids[0]
+    if state:
+        if state.selected_ticket_id:
+            context_ticket = state.selected_ticket_id
+        elif state.active_id:
+            active = state.snapshots.get(state.active_id)
+            if active and active.source_kind == "tickets" and len(active.visible_ids) == 1:
+                context_ticket = active.visible_ids[0]
+    if context_ticket and re.search(r"\b(?:open|show|view|details\s+for)\s+(?:this|the)\s+ticket\b", q):
+        return IntentPlan(operation="ticket_list", ticket_id=context_ticket)
     if re.search(r"\b(?:EMP|RND|EXE)[-_ ]?\d{4}\b", text, re.I) and not re.search(r"\bTKT[-_ ]?\d{4}", text, re.I) and not re.search(r"\b(tickets?|issues?)\b", q):
         return IntentPlan(operation="profile", entity=text.strip())
     if state and state.active_id and re.search(r"\b(?:open|show|view)\s+(?:the\s+)?(?:first|second|third|fourth)\s+person\b", q):
@@ -139,10 +148,39 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
     if (ticket_id or context_ticket) and re.search(r"\b(change|update|set|mark)\b", q):
         field = next((item for item in ("priority", "status", "description") if item in q), None)
         return IntentPlan(operation="update_ticket", ticket_id=ticket_id or context_ticket, field=field, value=text.strip())
-    if state and state.active_id and re.search(r"\b(this|that|those|same|instead)\b", q) and re.search(r"\b(table|bar|pie|chart|trend|timeline)\b", q):
+    if state and state.active_id and re.search(r"\b(this|that|those|same|instead|only)\b", q) and re.search(r"\b(table|bar|pie|chart|trend|timeline)\b", q):
         view = "TABLE" if "table" in q else "PIE" if "pie" in q else "AREA" if "area" in q else "LINE" if "line" in q or "trend" in q or "timeline" in q else "BAR"
         group = "status" if "status" in q else "priority" if "priority" in q else None
-        return IntentPlan(operation="rechart", view=view, group_by=group)
+        status = None
+        if re.search(r"\b(unresolved|not resolved|active)\b", q):
+            status = "Unresolved"
+        elif re.search(r"\b(not closed|unclosed)\b", q):
+            status = "Not Closed"
+        elif re.search(r"\bin[ -]?progress\b", q):
+            status = "In Progress"
+        elif re.search(r"\bpending\b", q):
+            status = "Pending"
+        elif re.search(r"\bblocked\b", q):
+            status = "Blocked"
+        elif re.search(r"\bclosed\b", q):
+            status = "Closed"
+        elif re.search(r"\bresolved\b", q):
+            status = "Resolved"
+        elif re.search(r"\bopen\b", q):
+            status = "Open"
+        priority = next((value for value in ("Critical", "High", "Medium", "Low") if re.search(rf"\b{value.lower()}\b", q)), None)
+        if not priority:
+            priority = "Critical" if re.search(r"\b(urgent|highest|sev[- ]?1)\b", q) else "Medium" if "normal" in q else None
+        dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", q)
+        try:
+            parsed_dates = [date.fromisoformat(item) for item in dates[:2]]
+        except ValueError:
+            return IntentPlan(operation="clarify")
+        from_date = parsed_dates[0] if parsed_dates and re.search(r"\b(since|after|from|between)\b", q) else None
+        to_date = parsed_dates[-1] if parsed_dates and re.search(r"\b(before|until|through|between)\b", q) else None
+        if from_date and to_date and from_date > to_date:
+            return IntentPlan(operation="clarify")
+        return IntentPlan(operation="rechart", view=view, group_by=group, status_filter=status, priority_filter=priority, from_date=from_date, to_date=to_date)
     if re.search(r"\b(reporting tree|org chart|organization chart|team tree|reporting hierarchy|everyone reporting|all my reports)\b", q):
         return IntentPlan(operation="org_tree", descendants=bool(re.search(r"\b(all|everyone|indirect|descendant|entire)\b", q)))
     if re.search(r"\b(how many|count|number of)\b.*\b(direct reports|people reporting|team members)\b", q):
@@ -157,13 +195,41 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
         return IntentPlan(operation="profile", entity=text.strip())
     if ticket_requested or ticket_id:
         view = "AREA" if "area" in q and "time" in q else "LINE" if re.search(r"\b(trend|timeline|over time|per day|line chart)\b", q) else "PIE" if "pie" in q or "donut" in q else "BAR" if "bar" in q or "chart" in q or "graph" in q else None
-        status = next((value for value in ("In Progress", "Pending", "Blocked", "Resolved", "Closed", "Unresolved", "Open") if value.lower() in q), None)
-        if not status and re.search(r"\b(active|not resolved)\b", q):
+        has_closed = bool(re.search(r"\bclosed\b", q))
+        has_open_or_unresolved = bool(re.search(r"\b(open|unresolved|not resolved|active)\b", q))
+        if has_closed and has_open_or_unresolved and not re.search(r"\bnot closed\b", q):
+            return IntentPlan(operation="clarify")
+        status = None
+        if re.search(r"\b(unresolved|not resolved|active)\b", q):
             status = "Unresolved"
+        elif re.search(r"\b(not closed|unclosed)\b", q):
+            status = "Not Closed"
+        elif re.search(r"\bin[ -]?progress\b", q):
+            status = "In Progress"
+        elif re.search(r"\bpending\b", q):
+            status = "Pending"
+        elif re.search(r"\bblocked\b", q):
+            status = "Blocked"
+        elif re.search(r"\bclosed\b", q):
+            status = "Closed"
+        elif re.search(r"\bresolved\b", q):
+            status = "Resolved"
+        elif re.search(r"\bopen\b", q):
+            status = "Open"
         priority = next((value for value in ("Critical", "High", "Medium", "Low") if re.search(rf"\b{value.lower()}\b", q)), None)
         if not priority:
             priority = "Critical" if re.search(r"\b(urgent|highest|sev[- ]?1)\b", q) else "Medium" if "normal" in q else None
         group = "status" if "by status" in q else "priority" if "by priority" in q else None
+
+        emp_match = re.search(r"\b((?:EMP|RND|EXE)[-_ ]?\d{4})\b", text, re.I)
+        person_filter = re.sub(r"[_ ]", "-", emp_match.group(1).upper()) if emp_match else None
+
+        sla_metric = None
+        if re.search(r"\b(how many|count)\b.*\b(overdue|breached|sla)\b", q) or re.search(r"\b(overdue|breached)\b", q):
+            sla_metric = "overdue"
+        elif re.search(r"\b(sla|compliance)\b", q):
+            sla_metric = "compliance"
+
         dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", q)
         try:
             parsed_dates = [date.fromisoformat(item) for item in dates[:2]]
@@ -173,7 +239,18 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
         to_date = parsed_dates[-1] if parsed_dates and re.search(r"\b(before|until|through|between)\b", q) else None
         if from_date and to_date and from_date > to_date:
             return IntentPlan(operation="clarify")
-        return IntentPlan(operation="ticket_chart" if view else "ticket_list", ticket_id=ticket_id, view=view, group_by=group, status_filter=status, priority_filter=priority, from_date=from_date, to_date=to_date)
+        return IntentPlan(
+            operation="ticket_chart" if view else "ticket_list",
+            ticket_id=ticket_id,
+            person_filter=person_filter,
+            sla_metric=sla_metric,
+            view=view,
+            group_by=group,
+            status_filter=status,
+            priority_filter=priority,
+            from_date=from_date,
+            to_date=to_date,
+        )
     return IntentPlan(operation="clarify")
 
 
@@ -187,14 +264,18 @@ class ConversationDispatcher:
 
     def _result(self, state: ConversationState, result: ScopedProfileResult, operation: str,
                 visible_ids: Optional[List[str]] = None, source_rows: Optional[List[dict]] = None,
-                source_kind: Optional[str] = None) -> ScopedProfileResult:
+                source_kind: Optional[str] = None, filter_state: Optional[dict] = None) -> ScopedProfileResult:
         if result.is_authorized and result.result_block:
-            state.remember(ResultSnapshot(result.result_block, operation, visible_ids or [], source_rows or [], source_kind))
+            state.remember(ResultSnapshot(result.result_block, operation, visible_ids or [], source_rows or [], source_kind,
+                                          filter_state=filter_state or {}))
         return result
 
     def _resolve_profile_target(self, actor_id: str, phrase: Optional[str], state: ConversationState) -> Optional[str]:
         if not phrase or re.search(r"\b(?:my profile|about me|who am i|myself)\b", phrase, re.I):
             return actor_id
+        if re.search(r"\b(?:my|the)\s+manager\b", phrase, re.I):
+            actor_emp = self.scoped.knowledge.get_employee_by_id(actor_id)
+            return actor_emp.get("reporting", {}).get("manager_id") if actor_emp else None
         visible = [actor_id] + [e["employee_id"] for e in self.scoped.knowledge.get_direct_reports(actor_id)]
         active = state.snapshots.get(state.active_id or "")
         if active:
@@ -235,9 +316,20 @@ class ConversationDispatcher:
         )
         if plan.ticket_id:
             tickets = [row for row in tickets if row["ticket_id"] == plan.ticket_id]
+        if plan.person_filter:
+            tickets = [
+                row for row in tickets
+                if row.get("assignee_id") == plan.person_filter
+                or row.get("requester_id") == plan.person_filter
+                or row.get("created_by") == plan.person_filter
+            ]
         if plan.status_filter:
-            tickets = [row for row in tickets if row.get("status") == plan.status_filter or
-                       (plan.status_filter == "Unresolved" and row.get("status") not in ("Resolved", "Closed"))]
+            if plan.status_filter == "Unresolved":
+                tickets = [row for row in tickets if row.get("status") not in ("Resolved", "Closed")]
+            elif plan.status_filter == "Not Closed":
+                tickets = [row for row in tickets if row.get("status") != "Closed"]
+            else:
+                tickets = [row for row in tickets if row.get("status") == plan.status_filter]
         if plan.priority_filter:
             tickets = [row for row in tickets if row.get("priority") == plan.priority_filter]
         if plan.from_date or plan.to_date:
@@ -355,9 +447,67 @@ class ConversationDispatcher:
             return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
                                 op, [p["employee_id"] for p in people])
         if op in ("ticket_list", "ticket_chart"):
+            employee = self.scoped.knowledge.get_employee_by_id(actor_id)
+            if not employee:
+                return self._deny("Actor profile is unavailable.")
+            if plan.sla_metric == "overdue":
+                all_rows = self.scoped.ticket_service.get_scoped_tickets_for_actor(
+                    actor_id, employee.get("reporting", {}).get("direct_report_ids", []),
+                    is_executive=actor_id == "EMP-4002",
+                )
+                def is_overdue(t: dict) -> bool:
+                    if t.get("status") in ("Resolved", "Closed"):
+                        return False
+                    if t.get("sla", {}).get("resolution_status") == "Breached":
+                        return True
+                    due = t.get("due_date")
+                    if due and str(due) <= "2026-10-16":
+                        return True
+                    return False
+                rows = [t for t in all_rows if is_overdue(t)]
+                visual = block("TEAM_METRIC_CHART", "Overdue tickets", {
+                    "chart_type": "BAR", "title": "Overdue tickets", "unit": "tickets",
+                    "data": [
+                        {"label": "Overdue / Breached", "count": len(rows)},
+                        {"label": "Within SLA", "count": len(all_rows) - len(rows)}
+                    ],
+                    "kpis": {
+                        "total_tickets": len(all_rows),
+                        "items": [
+                            {"label": "Overdue / Breached", "value": len(rows)},
+                            {"label": "Within SLA", "value": len(all_rows) - len(rows)}
+                        ]
+                    },
+                })
+                spoken = f"There are {len(rows)} overdue or breached tickets in your authorized scope of {len(all_rows)} tickets."
+                return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                                    op, [r["ticket_id"] for r in rows], rows, "tickets")
+            elif plan.sla_metric == "compliance":
+                all_rows = self.scoped.ticket_service.get_scoped_tickets_for_actor(
+                    actor_id, employee.get("reporting", {}).get("direct_report_ids", []),
+                    is_executive=actor_id == "EMP-4002",
+                )
+                counts = Counter(t.get("sla", {}).get("resolution_status") or "Within SLA" for t in all_rows)
+                data = [{"label": k, "count": counts[k]} for k in sorted(counts)]
+                visual = block("TEAM_METRIC_CHART", "Ticket SLA compliance", {
+                    "chart_type": "BAR", "title": "Ticket SLA compliance", "unit": "tickets",
+                    "data": data,
+                    "kpis": {"total_tickets": len(all_rows), "items": [{"label": k, "value": counts[k]} for k in sorted(counts)]},
+                })
+                spoken = f"SLA compliance across {len(all_rows)} authorized tickets: " + ", ".join(f"{k}: {counts[k]}" for k in sorted(counts)) + "."
+                return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                                    op, [r["ticket_id"] for r in all_rows], all_rows, "tickets")
+
             rows = self._ticket_rows(actor_id, plan)
             if plan.ticket_id and not rows:
                 return self._deny("That ticket is unavailable within your permitted scope.")
+            filter_state = {
+                "priority_filter": plan.priority_filter,
+                "status_filter": plan.status_filter,
+                "from_date": plan.from_date,
+                "to_date": plan.to_date,
+                "group_by": plan.group_by,
+            }
             if op == "ticket_chart":
                 group = plan.group_by or "priority"
                 visual = self._chart(rows, group, plan.view or "BAR")
@@ -369,19 +519,52 @@ class ConversationDispatcher:
                 })
                 spoken = f"Showing {len(rows)} authorized tickets."
             return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
-                                op, [r["ticket_id"] for r in rows], rows, "tickets")
+                                op, [r["ticket_id"] for r in rows], rows, "tickets", filter_state=filter_state)
         if op == "rechart":
             active = state.snapshots.get(state.active_id or "")
             if not active or active.source_kind != "tickets":
                 return self._deny("There is no current authorized ticket result to change views.")
-            rows = active.source_rows
+            rows = list(active.source_rows)
+            priority_filter = plan.priority_filter or active.filter_state.get("priority_filter")
+            status_filter = plan.status_filter or active.filter_state.get("status_filter")
+            from_date = plan.from_date or active.filter_state.get("from_date")
+            to_date = plan.to_date or active.filter_state.get("to_date")
+            group_by = plan.group_by or active.filter_state.get("group_by") or "priority"
+
+            if priority_filter:
+                rows = [r for r in rows if r.get("priority") == priority_filter]
+            if status_filter:
+                if status_filter == "Unresolved":
+                    rows = [r for r in rows if r.get("status") not in ("Resolved", "Closed")]
+                elif status_filter == "Not Closed":
+                    rows = [r for r in rows if r.get("status") != "Closed"]
+                else:
+                    rows = [r for r in rows if r.get("status") == status_filter]
+            if from_date or to_date:
+                def in_range(row: dict) -> bool:
+                    try:
+                        created = date.fromisoformat(str(row.get("created_at", ""))[:10])
+                        return (not from_date or created >= from_date) and (not to_date or created <= to_date)
+                    except ValueError:
+                        return False
+                rows = [r for r in rows if in_range(row)]
+
             if plan.view == "TABLE":
                 visual = block("TICKET_LIST", f"Authorized tickets ({len(rows)})", {
                     "title": f"Tickets ({len(rows)})", "tickets": [self.scoped.ticket_service.map_ticket_to_frontend_record(t) for t in rows],
                     "total_count": len(rows),
                 })
+                spoken = f"Showing the same {len(rows)} tickets as a table."
             else:
-                visual = self._chart(rows, plan.group_by or "priority", plan.view or "BAR")
-            return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=f"Showing the same {len(rows)} tickets as {plan.view.lower()}.", result_block=visual),
-                                op, active.visible_ids, rows, "tickets")
+                visual = self._chart(rows, group_by, plan.view or "BAR")
+                spoken = f"Showing {len(rows)} tickets as {plan.view.lower() if plan.view else 'bar'}{f' by {group_by}' if group_by else ''}."
+            new_filter_state = {
+                "priority_filter": priority_filter,
+                "status_filter": status_filter,
+                "from_date": from_date,
+                "to_date": to_date,
+                "group_by": group_by,
+            }
+            return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                                op, [r["ticket_id"] for r in rows], rows, "tickets", filter_state=new_filter_state)
         return self._deny("I can help with profiles, direct reports, reporting trees, and scoped tickets. Please specify one of those requests.")

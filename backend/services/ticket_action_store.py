@@ -107,19 +107,34 @@ class TicketActionStore:
         if not ticket_id:
             raise ActionError("Please include the exact ticket ID for this change.")
         if operation == "comment_ticket":
-            match = re.search(r"\bcomment\s+(?:on|to)\s+TKT[-_ ]?\d{4}[-_ ]?\d{3}\s*(?::|saying|that)\s*(.+)$", text, re.I)
+            match = re.search(r"\bcomment\s+(?:on|to)\s+(?:TKT[-_ ]?\d{4}[-_ ]?\d{3}|this ticket|it)\s*(?::|saying|that)\s*(.+)$", text, re.I)
+            if not match:
+                match = re.search(r"\b(?:add|post|leave)\s+(?:a\s+)?comment\s*(?::|saying|that)\s*(.+)$", text, re.I)
+            if not match:
+                match = re.search(r"\bcomment\s*:\s*(.+)$", text, re.I)
             if not match or not match.group(1).strip():
                 raise ActionError("Please include the exact comment after the ticket ID.")
             return {"comment": match.group(1).strip()[:500]}
         if operation == "update_ticket":
             match = re.search(r"\b(priority|status|description)\s+(?:to|as)\s+(.+)$", text, re.I)
             if not match:
+                mark_match = re.search(r"\bmark\s+(?:it|this ticket)?\s*(?:as)?\s+(resolved|closed|in progress|open|blocked)\b", text, re.I)
+                if mark_match:
+                    field = "status"
+                    val_str = mark_match.group(1).strip()
+                    val_map = {"resolved": "Resolved", "closed": "Closed", "in progress": "In Progress", "open": "Open", "blocked": "Blocked"}
+                    return {"field": field, "value": val_map.get(val_str.lower(), val_str.title())}
                 raise ActionError("Please name the ticket field and its exact new value.")
             field, value = match.group(1).lower(), match.group(2).strip().rstrip(".")
             options = {"priority": ("Critical", "High", "Medium", "Low"),
                        "status": ("Open", "In Progress", "Pending", "Blocked", "Resolved", "Closed")}
             if field in options:
-                value = next((candidate for candidate in options[field] if candidate.lower() == value.lower()), "")
+                if field == "priority" and value.lower() in ("urgent", "highest", "sev-1", "s1"):
+                    value = "Critical"
+                elif field == "priority" and value.lower() == "normal":
+                    value = "Medium"
+                else:
+                    value = next((candidate for candidate in options[field] if candidate.lower() == value.lower()), "")
                 if not value:
                     raise ActionError(f"Unsupported {field} value. Please use a listed ticket value.")
             elif len(value) < 6 or len(value) > 500:
@@ -135,10 +150,14 @@ class TicketActionStore:
             conn.execute("UPDATE action_drafts SET status='CANCELLED' WHERE session_id=? AND status='PENDING'", (session_id,))
             if operation == "create_ticket":
                 prefix = f"TKT-{now.year}-"
-                existing = [int(row[0][len(prefix):]) for row in conn.execute(
+                committed = [int(row[0][len(prefix):]) for row in conn.execute(
                     "SELECT ticket_id FROM tickets WHERE ticket_id LIKE ?", (prefix + "%",))
                     if row[0][len(prefix):].isdigit()]
-                target = f"{prefix}{max(existing, default=0) + 1:03d}"
+                pending = [int(row[0][len(prefix):]) for row in conn.execute(
+                    "SELECT ticket_id FROM action_drafts WHERE status='PENDING' AND ticket_id LIKE ?", (prefix + "%",))
+                    if row[0][len(prefix):].isdigit()]
+                all_ids = committed + pending
+                target = f"{prefix}{max(all_ids, default=0) + 1:03d}"
                 version = 0
             else:
                 target = ticket_id or ""
@@ -197,6 +216,21 @@ class TicketActionStore:
             params = json.loads(row["parameters"])
             operation = row["operation"]
             target = row["ticket_id"]
+            expected_version = row["expected_version"]
+
+            # Recompute and verify the canonical manifest hash
+            expected_manifest = {
+                "actor": row["actor_id"],
+                "session": row["session_id"],
+                "operation": operation,
+                "ticket": target,
+                "params": params,
+                "version": expected_version,
+            }
+            recomputed_hash = hashlib.sha256(canonical(expected_manifest).encode()).hexdigest()
+            if recomputed_hash != row["payload_hash"]:
+                raise ActionError("The action proposal manifest integrity verification failed. Parameters have been modified.")
+
             old_value = None
             if operation == "create_ticket":
                 new_ticket = {
@@ -208,7 +242,10 @@ class TicketActionStore:
                 }
                 new_version = 1
                 new_value = params["title"]
-                conn.execute("INSERT INTO tickets VALUES(?,?,?)", (target, new_version, canonical(new_ticket)))
+                try:
+                    conn.execute("INSERT INTO tickets VALUES(?,?,?)", (target, new_version, canonical(new_ticket)))
+                except sqlite3.IntegrityError:
+                    raise ActionError(f"Ticket {target} already exists or conflicted during commit. Please make a fresh proposal.")
             else:
                 ticket_row = conn.execute("SELECT version,document FROM tickets WHERE ticket_id=?", (target,)).fetchone()
                 if not ticket_row or ticket_row["version"] != row["expected_version"]:

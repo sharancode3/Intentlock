@@ -366,8 +366,11 @@ class IdentityMappingStore:
         employee_id: str,
         response_dict: Dict[str, Any],
     ) -> None:
-        now = datetime.now(timezone.utc).isoformat()
+        now_dt = datetime.now(timezone.utc)
+        now = now_dt.isoformat()
+        cutoff = (now_dt - timedelta(seconds=120)).isoformat()
         with self._get_connection() as conn:
+            conn.execute("DELETE FROM idempotency_records WHERE created_at < ?", (cutoff,))
             conn.execute(
                 """
                 INSERT OR REPLACE INTO idempotency_records (

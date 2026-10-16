@@ -6,6 +6,10 @@ import { getResultRenderer } from './resultRegistry';
 interface ResultHostProps {
   /** Active result block passed from current turn or null for empty state */
   activeBlock: GenericResultBlock | null;
+  /** Available result blocks for multi-result selection */
+  resultBlocks?: GenericResultBlock[];
+  /** Callback when user selects another result block */
+  onSelectBlock?: (block: GenericResultBlock) => void;
   /** Whether the result pane is currently loading data */
   isLoading?: boolean;
   /** Error message if result retrieval failed */
@@ -17,6 +21,8 @@ interface ResultHostProps {
 
 export const ResultHost: React.FC<ResultHostProps> = ({
   activeBlock,
+  resultBlocks,
+  onSelectBlock,
   isLoading = false,
   errorMessage = null,
   onResultAction,
@@ -41,6 +47,27 @@ export const ResultHost: React.FC<ResultHostProps> = ({
           </span>
         )}
       </div>
+
+      {/* Multi-result pill selector when more than one block is available */}
+      {resultBlocks && resultBlocks.length > 1 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1.5 px-4 bg-slate-50 dark:bg-slate-800/60 border-b border-surface-border dark:border-surface-darkBorder shrink-0">
+          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mr-1 shrink-0">Results:</span>
+          {resultBlocks.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => onSelectBlock?.(b)}
+              className={`px-2.5 py-0.5 rounded text-xs font-medium transition-colors whitespace-nowrap ${
+                b.id === activeBlock?.id
+                  ? 'bg-brand-700 text-white dark:bg-blue-600 shadow-sm'
+                  : 'bg-white dark:bg-slate-800 text-ink-muted dark:text-slate-300 hover:text-ink-primary dark:hover:text-white border border-surface-border dark:border-surface-darkBorder'
+              }`}
+            >
+              {b.title || b.type}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-5">

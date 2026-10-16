@@ -11,6 +11,7 @@ from backend.core.ports import SpeechInputResult, SpeechOutputResult, VoiceEvide
 from backend.core.scoped_authorization import ScopedAuthorizationService
 from backend.services.ticket_knowledge_service import TicketKnowledgeService
 from backend.services.conversation_dispatch import conversation_store
+from backend.services.ticket_action_store import canonical as json_canonical
 from backend.core.config import settings
 
 
@@ -258,3 +259,164 @@ async def test_stale_ticket_version_cannot_commit(rig):
     assert tickets.get_ticket_by_id("TKT-2026-001")["priority"] == "High"
     with sqlite3.connect(tickets.store.db_path) as conn:
         assert conn.execute("SELECT COUNT(*) FROM action_events").fetchone()[0] == 0
+
+
+@pytest.mark.asyncio
+async def test_unresolved_and_negated_status_filters(rig):
+    speech, voice, _ = rig
+    # 1. "Show unresolved tickets" must exclude Resolved and Closed
+    unresolved = await turn(speech, "EMP-2001", "Show unresolved tickets", turn_id="unresolved")
+    assert unresolved["result_block"]["type"] == "TICKET_LIST"
+    tickets_data = unresolved["result_block"]["payload"]["tickets"]
+    assert len(tickets_data) > 0
+    for t in tickets_data:
+        assert t["status"].lower() not in ("resolved", "closed")
+
+    # 2. "Show not resolved tickets" must also exclude Resolved and Closed
+    session = unresolved["session"]["sessionId"]
+    not_resolved = await turn(speech, "EMP-2001", "Show not resolved tickets", session, "not-resolved")
+    tickets_nr = not_resolved["result_block"]["payload"]["tickets"]
+    assert len(tickets_nr) == len(tickets_data)
+    for t in tickets_nr:
+        assert t["status"].lower() not in ("resolved", "closed")
+
+    # 3. "Show not closed tickets" must exclude Closed but can include Resolved
+    not_closed = await turn(speech, "EMP-2001", "Show not closed tickets", session, "not-closed")
+    tickets_nc = not_closed["result_block"]["payload"]["tickets"]
+    for t in tickets_nc:
+        assert t["status"].lower() != "closed"
+    assert any(t["status"].lower() == "resolved" for t in tickets_nc)
+
+
+@pytest.mark.asyncio
+async def test_followup_filtered_rechart(rig):
+    speech, voice, _ = rig
+    first = await turn(speech, "EMP-2001", "Show my team's tickets", turn_id="tickets-all")
+    assert first["result_block"]["type"] == "TICKET_LIST"
+    total_count = first["result_block"]["payload"]["total_count"]
+    assert total_count == 35
+    session = first["session"]["sessionId"]
+
+    # Follow up asking for only high priority tickets as a pie chart instead
+    chart = await turn(speech, "EMP-2001", "Show only high priority tickets as a pie chart instead", session, "pie-high")
+    assert chart["result_block"]["type"] == "TEAM_METRIC_CHART"
+    payload = chart["result_block"]["payload"]
+    assert payload["chart_type"] == "PIE"
+    chart_total = sum(item["count"] for item in payload["data"])
+    # High priority tickets count is 12 (not all 35)
+    assert chart_total == 12
+    assert chart_total < total_count
+    # Presentation-only switch with preserved filter to table
+    table = await turn(speech, "EMP-2001", "Table instead", session, "table-instead")
+    assert table["result_block"]["type"] == "TICKET_LIST"
+    assert table["result_block"]["payload"]["total_count"] == 12
+
+
+@pytest.mark.asyncio
+async def test_target_resolution_and_sla_analytics(rig):
+    speech, voice, _ = rig
+    # 1. "Show my manager profile": EMP-2001's manager is EMP-4002.
+    # Policy must deny access to manager's private profile, never substitute self!
+    mgr = await turn(speech, "EMP-2001", "Show my manager profile", turn_id="mgr-profile")
+    assert mgr["status"] == "denied"
+    assert mgr["result_block"]["type"] == "DENIAL_BANNER"
+
+    # 2. "Show EMP-1001 tickets": filters authorized tickets to EMP-1001
+    emp_tickets = await turn(speech, "EMP-2001", "Show EMP-1001 tickets", turn_id="emp-tickets")
+    assert emp_tickets["result_block"]["type"] == "TICKET_LIST"
+    t_list = emp_tickets["result_block"]["payload"]["tickets"]
+    assert len(t_list) < 35
+    for t in t_list:
+        assert t["assigned_to"] == "EMP-1001" or t.get("owner_id") == "EMP-1001"
+
+    # 3. Overdue tickets metric
+    overdue = await turn(speech, "EMP-2001", "How many overdue tickets?", turn_id="overdue")
+    assert overdue["result_block"]["type"] == "TEAM_METRIC_CHART"
+    assert "overdue" in overdue["result_block"]["title"].lower()
+    assert "overdue" in overdue["assistant_message"].lower()
+
+    # 4. SLA compliance metric
+    sla = await turn(speech, "EMP-2001", "Show ticket SLA compliance", turn_id="sla")
+    assert sla["result_block"]["type"] == "TEAM_METRIC_CHART"
+    assert "sla" in sla["result_block"]["title"].lower()
+
+
+@pytest.mark.asyncio
+async def test_ticket_selection_click_and_voice_context(rig):
+    speech, voice, tickets = rig
+    first = await turn(speech, "EMP-1001", "Show my tickets", turn_id="t-list")
+    session = first["session"]["sessionId"]
+    source_id = first["result_block"]["id"]
+
+    # Select a ticket via click action
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        action = {"action": "select_ticket", "source_result_id": source_id, "target_id": "TKT-2026-001"}
+        headers = {"Authorization": f"Bearer {session}"}
+        res = await client.post("/api/v1/voice/result-action", json=action, headers=headers)
+        assert res.status_code == 200
+        assert res.json()["status"] == "success"
+
+        # Selecting invalid target outside result returns 403
+        bad = await client.post("/api/v1/voice/result-action", json={**action, "target_id": "TKT-9999-999"}, headers=headers)
+        assert bad.status_code == 403
+
+    # Subsequent voice turn in same session resolves "this ticket" to TKT-2026-001
+    proposed = await turn(speech, "EMP-1001", "Change this ticket priority to Critical", session, "voice-change")
+    assert proposed["result_block"]["type"] == "READBACK_CONFIRMATION"
+    assert proposed["result_block"]["payload"]["draft"]["target"] == "TKT-2026-001"
+
+    # Context comments also resolve without repeating ticket ID
+    proposed_comment = await turn(speech, "EMP-1001", "Add a comment saying Investigating race condition", session, "voice-comment")
+    assert proposed_comment["result_block"]["type"] == "READBACK_CONFIRMATION"
+    assert proposed_comment["result_block"]["payload"]["draft"]["target"] == "TKT-2026-001"
+
+
+@pytest.mark.asyncio
+async def test_concurrent_ticket_creation_proposals_allocate_distinct_ids(rig):
+    speech, voice, tickets = rig
+    # Actor 1 proposes ticket creation
+    prop1 = await turn(speech, "EMP-1001", "Create a ticket titled First network outage in floor 2", turn_id="create-1")
+    assert prop1["result_block"]["type"] == "READBACK_CONFIRMATION"
+    id1 = prop1["result_block"]["payload"]["draft"]["target"]
+    sess1 = prop1["session"]["sessionId"]
+    readback1 = prop1["result_block"]["payload"]["draft"]["summary_readback"]
+
+    # Actor 2 proposes ticket creation while Actor 1 proposal is still PENDING
+    prop2 = await turn(speech, "EMP-2001", "Create a ticket titled Second database latency in primary cluster", turn_id="create-2")
+    assert prop2["result_block"]["type"] == "READBACK_CONFIRMATION"
+    id2 = prop2["result_block"]["payload"]["draft"]["target"]
+    sess2 = prop2["session"]["sessionId"]
+    readback2 = prop2["result_block"]["payload"]["draft"]["summary_readback"]
+
+    # Distinct ticket IDs must be reserved
+    assert id1 != id2
+
+    # Both confirmations commit without UNIQUE constraint conflict
+    commit1 = await turn(speech, "EMP-1001", readback1, sess1, "confirm-1")
+    assert commit1["result_block"]["type"] == "ACTION_RECEIPT"
+    assert commit1["result_block"]["payload"]["receipt"]["resource_id"] == id1
+
+    commit2 = await turn(speech, "EMP-2001", readback2, sess2, "confirm-2")
+    assert commit2["result_block"]["type"] == "ACTION_RECEIPT"
+    assert commit2["result_block"]["payload"]["receipt"]["resource_id"] == id2
+
+
+@pytest.mark.asyncio
+async def test_manifest_integrity_tampering_rejected(rig):
+    speech, voice, tickets = rig
+    proposal = await turn(speech, "EMP-1001", "Change TKT-2026-001 priority to Critical", turn_id="tamper-propose")
+    session = proposal["session"]["sessionId"]
+    phrase = proposal["result_block"]["payload"]["draft"]["summary_readback"]
+
+    # Tamper with the parameters stored in action_drafts SQLite table (simulate internal modification)
+    with sqlite3.connect(tickets.store.db_path) as conn:
+        conn.execute("UPDATE action_drafts SET parameters=? WHERE session_id=?",
+                     (json_canonical({"field": "priority", "value": "Low"}), session))
+
+    # Confirmation must fail verification because canonical manifest hash mismatch is caught
+    denied = await turn(speech, "EMP-1001", phrase, session, "tamper-confirm")
+    assert denied["status"] == "denied"
+    assert "integrity" in denied["assistant_message"].lower() or "modified" in denied["assistant_message"].lower()
+    # Verify ticket was not modified
+    assert tickets.get_ticket_by_id("TKT-2026-001")["priority"] == "High"
