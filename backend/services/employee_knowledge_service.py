@@ -55,9 +55,18 @@ class EmployeeKnowledgeService:
         if settings.STORAGE_BACKEND == "postgres":
             from backend.adapters.postgres_employee_repository import PostgresEmployeeRepository
             repo = PostgresEmployeeRepository.get_instance()
-            logger.info("Loading canonical employee dataset from Supabase Postgres...")
-            self._raw_employees = repo.list_all_employees()
-            self._cached_revision = repo.get_directory_revision()
+            try:
+                logger.info("Loading canonical employee dataset from Supabase Postgres...")
+                self._raw_employees = repo.list_all_employees()
+                self._cached_revision = repo.get_directory_revision()
+            except Exception as exc:
+                logger.warning(f"Failed to query Supabase Postgres ({exc}). Falling back to local dataset.")
+                self._raw_employees = []
+
+            if not self._raw_employees and os.path.exists(self.data_path):
+                logger.warning("Postgres returned 0 employees. Using local JSON dataset as fallback.")
+                with open(self.data_path, "r", encoding="utf-8") as f:
+                    self._raw_employees = json.load(f)
         else:
             if not os.path.exists(self.data_path):
                 raise FileNotFoundError(

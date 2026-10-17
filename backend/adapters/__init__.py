@@ -10,13 +10,15 @@ Provides:
 
 from backend.adapters.audio_decoder import AudioDecoder
 from backend.adapters.speech_vad import SpeechVADService, VADSpeechReport
-from backend.adapters.speech_stt import FasterWhisperSTTAdapter
-from backend.adapters.speech_tts import KokoroTTSAdapter
+from backend.adapters.speech_stt import FasterWhisperSTTAdapter, OpenAISpeechInputAdapter
+from backend.adapters.speech_tts import KokoroTTSAdapter, OpenAISpeechOutputAdapter
 
 __all__ = [
     "AudioDecoder",
     "SpeechVADService",
     "VADSpeechReport",
     "FasterWhisperSTTAdapter",
+    "OpenAISpeechInputAdapter",
     "KokoroTTSAdapter",
+    "OpenAISpeechOutputAdapter",
 ]

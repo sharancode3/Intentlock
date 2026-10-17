@@ -6,8 +6,9 @@ configured CORS origins, and upstream connector placeholders.
 
 import json
 import os
+import sys
 from typing import List, Optional, Union
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -54,6 +55,7 @@ class Settings(BaseSettings):
 
     # Speech Pipeline Configuration
     ENABLE_SPEECH_PIPELINE: bool = True
+    SPEECH_PROVIDER: str = os.getenv("SPEECH_PROVIDER", "auto")  # "auto", "openai", "local", "none"
     SPEECH_STT_MODEL: str = os.getenv("SPEECH_STT_MODEL", "tiny.en")
     SPEECH_STT_DEVICE: str = os.getenv("SPEECH_STT_DEVICE", "cpu")
     SPEECH_STT_COMPUTE_TYPE: str = os.getenv("SPEECH_STT_COMPUTE_TYPE", "int8")
@@ -61,6 +63,7 @@ class Settings(BaseSettings):
     SPEECH_TTS_LANG: str = os.getenv("SPEECH_TTS_LANG", "a")
     SPEECH_TTS_SPEED: float = float(os.getenv("SPEECH_TTS_SPEED", "1.0"))
     SPEECH_VAD_THRESHOLD: float = float(os.getenv("SPEECH_VAD_THRESHOLD", "0.5"))
+    OPENAI_TTS_VOICE: str = os.getenv("OPENAI_TTS_VOICE", "alloy")
 
     # DetectifAI Biometric Settings (Stage 2)
     DETECTIF_BASE_URL: str = os.getenv("DETECTIF_BASE_URL", "https://platform.detectif.ai/v1")
@@ -114,6 +117,18 @@ class Settings(BaseSettings):
                     pass
             return [item.strip() for item in v_trimmed.split(",") if item.strip()]
         return v
+
+    @model_validator(mode="after")
+    def resolve_defaults(self) -> "Settings":
+        # Keep sqlite in offline tests or test runner to ensure deterministic isolated suites
+        if os.getenv("INTENTLOCK_OFFLINE_TESTS") == "1" or "pytest" in sys.modules or os.getenv("PYTEST_CURRENT_TEST"):
+            object.__setattr__(self, "STORAGE_BACKEND", "sqlite")
+            return self
+        # Auto-activate postgres in cloud/production when Supabase DB URL is provided and STORAGE_BACKEND was not explicitly set
+        if self.SUPABASE_DATABASE_URL and os.getenv("STORAGE_BACKEND") is None:
+            if os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production":
+                object.__setattr__(self, "STORAGE_BACKEND", "postgres")
+        return self
 
     def get_safe_diagnostics(self) -> dict:
         """Returns non-sensitive configuration summary with redacted secrets."""

@@ -56,7 +56,9 @@ from backend.adapters import (
     AudioDecoder,
     SpeechVADService,
     FasterWhisperSTTAdapter,
+    OpenAISpeechInputAdapter,
     KokoroTTSAdapter,
+    OpenAISpeechOutputAdapter,
 )
 from backend.adapters.detectif_adapter import DetectifVoiceEvidenceAdapter
 from backend.adapters.openai_answer_adapter import OpenAIAnswerAdapter
@@ -178,31 +180,44 @@ async def lifespan(app: FastAPI):
 
     # Initialize real speech pipeline if configured and not running in offline test mode
     if settings.ENABLE_SPEECH_PIPELINE and os.getenv("INTENTLOCK_OFFLINE_TESTS") != "1":
-        try:
-            logger.info("Initializing IntentLock Open-Source Speech Pipeline (VAD, STT, TTS)...")
-            speech_vad_service = SpeechVADService.get_instance(threshold=settings.SPEECH_VAD_THRESHOLD)
+        speech_provider = getattr(settings, "SPEECH_PROVIDER", "auto").lower()
+        is_cloud_env = bool(os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production" or speech_provider == "openai")
 
-            stt_adapter = FasterWhisperSTTAdapter(
-                model_name=settings.SPEECH_STT_MODEL,
-                device=settings.SPEECH_STT_DEVICE,
-                compute_type=settings.SPEECH_STT_COMPUTE_TYPE,
-                vad_service=speech_vad_service,
-            )
-            stt_adapter.warmup()
+        if speech_provider == "openai" or (speech_provider == "auto" and is_cloud_env and settings.OPENAI_API_KEY):
+            logger.info("Initializing IntentLock Cloud Speech Pipeline (OpenAI Whisper STT + OpenAI TTS)...")
+            speech_input_port = OpenAISpeechInputAdapter(api_key=settings.OPENAI_API_KEY)
+            speech_output_port = OpenAISpeechOutputAdapter(api_key=settings.OPENAI_API_KEY)
+            logger.info("Cloud Speech Pipeline (OpenAI Whisper + TTS) initialized with zero RAM footprint.")
+        elif speech_provider in ("local", "auto"):
+            try:
+                logger.info("Initializing IntentLock Open-Source Speech Pipeline (VAD, STT, TTS)...")
+                speech_vad_service = SpeechVADService.get_instance(threshold=settings.SPEECH_VAD_THRESHOLD)
 
-            tts_adapter = KokoroTTSAdapter(
-                lang_code=settings.SPEECH_TTS_LANG,
-                voice=settings.SPEECH_TTS_VOICE,
-                speed=settings.SPEECH_TTS_SPEED,
-                device="cpu",
-            )
-            tts_adapter.warmup()
+                stt_adapter = FasterWhisperSTTAdapter(
+                    model_name=settings.SPEECH_STT_MODEL,
+                    device=settings.SPEECH_STT_DEVICE,
+                    compute_type=settings.SPEECH_STT_COMPUTE_TYPE,
+                    vad_service=speech_vad_service,
+                )
+                stt_adapter.warmup()
 
-            speech_input_port = stt_adapter
-            speech_output_port = tts_adapter
-            logger.info("Speech Pipeline (Silero VAD + Faster-Whisper + Kokoro TTS) loaded and warmed up successfully.")
-        except Exception as e:
-            logger.error(f"Speech pipeline initialization failed: {e}. Falling back to unavailable adapters.")
+                tts_adapter = KokoroTTSAdapter(
+                    lang_code=settings.SPEECH_TTS_LANG,
+                    voice=settings.SPEECH_TTS_VOICE,
+                    speed=settings.SPEECH_TTS_SPEED,
+                    device="cpu",
+                )
+                tts_adapter.warmup()
+
+                speech_input_port = stt_adapter
+                speech_output_port = tts_adapter
+                logger.info("Speech Pipeline (Silero VAD + Faster-Whisper + Kokoro TTS) loaded and warmed up successfully.")
+            except Exception as e:
+                logger.error(f"Speech pipeline initialization failed: {e}. Falling back to unavailable adapters.")
+                speech_input_port = UnavailableSpeechInputAdapter()
+                speech_output_port = UnavailableSpeechOutputAdapter()
+        else:
+            logger.info("Speech pipeline disabled or set to none.")
             speech_input_port = UnavailableSpeechInputAdapter()
             speech_output_port = UnavailableSpeechOutputAdapter()
 

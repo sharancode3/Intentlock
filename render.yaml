@@ -34,6 +34,18 @@ services:
         value: "1"
       - key: FRONTEND_ORIGINS
         value: '["*"]'
+      - key: SPEECH_PROVIDER
+        value: openai
+      - key: STORAGE_BACKEND
+        value: postgres
+      - key: SUPABASE_DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
 
   # 2. IntentLock React Frontend Static Site
   - type: web

@@ -74,7 +74,14 @@ class TicketKnowledgeService:
 
         logger.info(f"Loading canonical ticket dataset from {self.data_path}...")
         if self.store:
-            self._raw_tickets = self.store.list_tickets()
+            try:
+                self._raw_tickets = self.store.list_tickets()
+            except Exception as exc:
+                logger.warning(f"Failed to query tickets from store ({exc}). Falling back to local dataset.")
+                self._raw_tickets = []
+            if not self._raw_tickets and os.path.exists(self.data_path):
+                with open(self.data_path, "r", encoding="utf-8") as f:
+                    self._raw_tickets = json.load(f)
         else:
             with open(self.data_path, "r", encoding="utf-8") as f:
                 self._raw_tickets = json.load(f)

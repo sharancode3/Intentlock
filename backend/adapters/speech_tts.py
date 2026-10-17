@@ -135,3 +135,88 @@ class KokoroTTSAdapter(SpeechOutputPort):
         logger.info("Cleaning up Kokoro TTS pipeline.")
         if hasattr(self, "pipeline"):
             del self.pipeline
+
+
+class OpenAISpeechOutputAdapter(SpeechOutputPort):
+    """Cloud Text-to-Speech adapter using OpenAI TTS API (tts-1).
+
+    Provides high-fidelity 24kHz neural voice synthesis with zero local RAM footprint,
+    eliminating low-memory deployment OOM crashes on platforms like Render (512MB limit).
+    """
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: str = "tts-1",
+        voice: str = "alloy",
+    ):
+        from backend.core.config import settings
+        if api_key is not None:
+            self.api_key = api_key
+        else:
+            self.api_key = getattr(settings, "OPENAI_API_KEY", None)
+        self.model = model
+        self.voice = voice or getattr(settings, "OPENAI_TTS_VOICE", "alloy")
+        self.is_available = bool(self.api_key)
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None and self.api_key:
+            from openai import AsyncOpenAI
+            self._client = AsyncOpenAI(api_key=self.api_key)
+        return self._client
+
+    async def synthesize(
+        self,
+        text: str,
+        client_turn_id: str,
+    ) -> SpeechOutputResult:
+        if not self.is_available or not self.api_key:
+            return SpeechOutputResult(
+                is_available=False,
+                error_message="OpenAI API key not configured for TTS",
+            )
+
+        if not text or not text.strip():
+            return SpeechOutputResult(
+                is_available=True,
+                audio_bytes=None,
+                audio_format=None,
+                latency_ms=0.0,
+                error_message="EMPTY_TEXT",
+            )
+
+        t0 = time.perf_counter()
+        try:
+            client = self._get_client()
+            response = await client.audio.speech.create(
+                model=self.model,
+                voice=self.voice,
+                input=text.strip(),
+                response_format="wav",
+            )
+            audio_bytes = response.content
+            latency_ms = (time.perf_counter() - t0) * 1000.0
+
+            logger.info(
+                f"OpenAI TTS synthesized {len(text)} chars into {len(audio_bytes)} WAV bytes "
+                f"for turn={client_turn_id} in {latency_ms:.1f}ms"
+            )
+            return SpeechOutputResult(
+                is_available=True,
+                audio_bytes=audio_bytes,
+                audio_format="audio/wav",
+                latency_ms=round(latency_ms, 2),
+                error_message=None,
+            )
+        except Exception as e:
+            latency_ms = (time.perf_counter() - t0) * 1000.0
+            logger.error(f"OpenAI TTS failed for turn={client_turn_id}: {e}")
+            return SpeechOutputResult(
+                is_available=False,
+                error_message=str(e),
+                latency_ms=round(latency_ms, 2),
+            )
+
+    def cleanup(self) -> None:
+        self._client = None

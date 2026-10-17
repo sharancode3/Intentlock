@@ -146,3 +146,82 @@ class FasterWhisperSTTAdapter(SpeechInputPort):
         logger.info("Cleaning up Faster-Whisper model.")
         if hasattr(self, "model"):
             del self.model
+
+
+class OpenAISpeechInputAdapter(SpeechInputPort):
+    """Cloud Speech-to-Text adapter using OpenAI Whisper API (whisper-1).
+
+    Provides studio-grade transcription with zero local RAM footprint,
+    eliminating low-memory deployment OOM crashes on platforms like Render (512MB limit).
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model: str = "whisper-1"):
+        from backend.core.config import settings
+        if api_key is not None:
+            self.api_key = api_key
+        else:
+            self.api_key = getattr(settings, "OPENAI_API_KEY", None)
+        self.model = model
+        self.is_available = bool(self.api_key)
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None and self.api_key:
+            from openai import AsyncOpenAI
+            self._client = AsyncOpenAI(api_key=self.api_key)
+        return self._client
+
+    async def transcribe(
+        self,
+        audio_metadata: OriginalAudioMetadata,
+        audio_bytes: bytes,
+        client_turn_id: str,
+    ) -> SpeechInputResult:
+        if not self.is_available or not self.api_key:
+            return SpeechInputResult(
+                is_available=False,
+                error_message="OpenAI API key not configured for STT",
+            )
+
+        t0 = time.perf_counter()
+        try:
+            client = self._get_client()
+            mime_type = getattr(audio_metadata, "normalized_mime_type", None) or getattr(audio_metadata, "mime_type", "audio/wav")
+            ext = "wav"
+            if "webm" in mime_type:
+                ext = "webm"
+            elif "ogg" in mime_type:
+                ext = "ogg"
+            elif "mp4" in mime_type or "m4a" in mime_type:
+                ext = "m4a"
+            filename = f"audio_{client_turn_id}.{ext}"
+
+            response = await client.audio.transcriptions.create(
+                model=self.model,
+                file=(filename, audio_bytes, mime_type),
+            )
+            latency_ms = (time.perf_counter() - t0) * 1000.0
+            transcript = (response.text or "").strip()
+            duration_ms = getattr(audio_metadata, "duration_ms", None)
+            speech_duration_s = (duration_ms / 1000.0) if duration_ms is not None else None
+
+            logger.info(f"OpenAI STT completed for turn={client_turn_id} in {latency_ms:.1f}ms (length={len(transcript)})")
+            return SpeechInputResult(
+                is_available=True,
+                transcript=transcript,
+                confidence=0.98,
+                latency_ms=round(latency_ms, 2),
+                error_message=None,
+                speech_duration_s=speech_duration_s,
+            )
+        except Exception as e:
+            latency_ms = (time.perf_counter() - t0) * 1000.0
+            logger.error(f"OpenAI STT failed for turn={client_turn_id}: {e}")
+            return SpeechInputResult(
+                is_available=False,
+                error_message=str(e),
+                latency_ms=round(latency_ms, 2),
+            )
+
+    def cleanup(self) -> None:
+        self._client = None
