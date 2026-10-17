@@ -54,7 +54,7 @@ export const ActionReceiptCard: React.FC<ResultRendererProps> = ({ block }) => {
   const receipt = payload.receipt || {
     tx_id: payload.tx_id || 'unknown_tx',
     actor: payload.actor || 'unknown_actor',
-    timestamp: payload.timestamp || new Date().toISOString(),
+    timestamp: payload.timestamp || block.timestamp || '2026-10-16T12:00:00Z',
     req_id: payload.req_id,
     action: payload.action,
     resource_id: payload.resource_id,
@@ -109,7 +109,25 @@ export const ActionReceiptCard: React.FC<ResultRendererProps> = ({ block }) => {
                 Mutation Aborted
               </span>
             )}
-            {!isSuccess && !isFailed && (
+            {status === 'CONFLICT' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                <AlertCircle className="w-3 h-3 text-amber-400" aria-hidden="true" />
+                Version Conflict
+              </span>
+            )}
+            {status === 'APPROVAL_REQUIRED' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                <ShieldAlert className="w-3 h-3 text-purple-400" aria-hidden="true" />
+                Approval Required
+              </span>
+            )}
+            {status === 'OUTCOME_UNKNOWN' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-orange-500/20 text-orange-300 border border-orange-500/40">
+                <AlertCircle className="w-3 h-3 text-orange-400" aria-hidden="true" />
+                Outcome Unconfirmed
+              </span>
+            )}
+            {!isSuccess && !isFailed && status !== 'CONFLICT' && status !== 'APPROVAL_REQUIRED' && status !== 'OUTCOME_UNKNOWN' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
                 Status: {status}
               </span>

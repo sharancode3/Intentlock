@@ -1096,3 +1096,330 @@ export const unsupportedResultTypeFixture: GenericResultBlock = {
     file_size_bytes: 2048576,
   },
 };
+
+// ============================================================================
+// 10. DATA_TABLE Fixtures (Stage 1 Contracts)
+// ============================================================================
+
+/** Valid comprehensive DATA_TABLE fixture */
+export const validDataTableFixture: GenericResultBlock = {
+  id: 'fixture-datatable-authorized-people',
+  type: 'DATA_TABLE',
+  title: 'Engineering Team Roster',
+  timestamp: '12:20 PM',
+  isSensitive: true,
+  payload: {
+    columns: [
+      { key: 'name', label: 'Name' },
+      { key: 'title', label: 'Role / Title' },
+      { key: 'department', label: 'Department' },
+    ],
+    rows: [
+      { id: 'EMP-1001', name: 'Aarav Mehta', title: 'Senior Software Engineer', department: 'Engineering' },
+      { id: 'EMP-1002', name: 'Neha Gupta', title: 'Frontend Engineer', department: 'Engineering' },
+      { id: 'EMP-2001', name: 'Priya Sharma', title: 'Engineering Manager', department: 'Engineering' },
+    ],
+    total_count: 3,
+  },
+};
+
+/** Valid empty DATA_TABLE fixture */
+export const validDataTableEmptyFixture: GenericResultBlock = {
+  id: 'fixture-datatable-empty',
+  type: 'DATA_TABLE',
+  title: 'Empty Directory Search',
+  timestamp: '12:22 PM',
+  isSensitive: true,
+  payload: {
+    columns: [
+      { key: 'name', label: 'Name' },
+      { key: 'title', label: 'Role / Title' },
+      { key: 'department', label: 'Department' },
+    ],
+    rows: [],
+    total_count: 0,
+  },
+};
+
+/** Invalid DATA_TABLE: duplicate row IDs */
+export const invalidDataTableDuplicateRowsFixture: GenericResultBlock = {
+  id: 'fixture-datatable-invalid-dup',
+  type: 'DATA_TABLE',
+  title: 'Corrupted Table (Duplicate IDs)',
+  timestamp: '12:25 PM',
+  isSensitive: true,
+  payload: {
+    columns: [
+      { key: 'name', label: 'Name' },
+      { key: 'title', label: 'Title' },
+      { key: 'department', label: 'Department' },
+    ],
+    rows: [
+      { id: 'EMP-1001', name: 'Aarav Mehta', title: 'Engineer', department: 'Engineering' },
+      { id: 'EMP-1001', name: 'Aarav Duplicate', title: 'Engineer', department: 'Engineering' },
+    ],
+    total_count: 2,
+  },
+};
+
+// ============================================================================
+// 11. ORG_TREE Fixtures (Stage 1 Contracts)
+// ============================================================================
+
+/** Valid hierarchical ORG_TREE fixture */
+export const validOrgTreeHierarchyFixture: GenericResultBlock = {
+  id: 'fixture-orgtree-engineering',
+  type: 'ORG_TREE',
+  title: 'Engineering Reporting Tree',
+  timestamp: '12:30 PM',
+  isSensitive: true,
+  payload: {
+    root_id: 'EMP-4002',
+    nodes: [
+      { id: 'EMP-4002', name: 'Arvind Rao', title: 'CTO / VP Engineering', direct_count: 1 },
+      { id: 'EMP-2001', name: 'Priya Sharma', title: 'Engineering Manager', direct_count: 2 },
+      { id: 'EMP-1001', name: 'Aarav Mehta', title: 'Senior Software Engineer', direct_count: 0 },
+      { id: 'EMP-1002', name: 'Neha Gupta', title: 'Frontend Engineer', direct_count: 0 },
+    ],
+    edges: [
+      { source: 'EMP-4002', target: 'EMP-2001' },
+      { source: 'EMP-2001', target: 'EMP-1001' },
+      { source: 'EMP-2001', target: 'EMP-1002' },
+    ],
+    direct_count: 1,
+    descendant_count: 3,
+  },
+};
+
+/** Invalid ORG_TREE: cyclical relationship */
+export const invalidOrgTreeCycleFixture: GenericResultBlock = {
+  id: 'fixture-orgtree-cycle',
+  type: 'ORG_TREE',
+  title: 'Corrupted Org Tree (Cycle)',
+  timestamp: '12:32 PM',
+  isSensitive: true,
+  payload: {
+    root_id: 'EMP-2001',
+    nodes: [
+      { id: 'EMP-2001', name: 'Priya Sharma', title: 'Manager', direct_count: 1 },
+      { id: 'EMP-1001', name: 'Aarav Mehta', title: 'Lead', direct_count: 1 },
+    ],
+    edges: [
+      { source: 'EMP-2001', target: 'EMP-1001' },
+      { source: 'EMP-1001', target: 'EMP-2001' },
+    ],
+    direct_count: 1,
+    descendant_count: 1,
+  },
+};
+
+// ============================================================================
+// 12. Five Shared Coordination Contracts (Success, Clarification, Denied)
+// ============================================================================
+
+/** Contract 1: Success — Verified Actor & Dual Biometric Pass */
+export const contract1SuccessSessionFixture = {
+  state: 'VERIFIED' as const,
+  sessionId: 'sess_aarav_99120_auth',
+  actor: {
+    employeeId: 'EMP-1001',
+    fullName: 'Aarav Mehta',
+    role: 'employee' as const,
+    teamId: 'team_eng_a',
+    expiresInSeconds: 90,
+  },
+  evidence: {
+    speaker_decision: 'PASS',
+    authenticity_verdict: 'PASS',
+    speaker_score: 0.94,
+    authenticity_score: 0.97,
+  },
+};
+
+/** Contract 1: Clarification — Unclaimed session requires employee ID */
+export const contract1ClarificationSessionFixture = {
+  state: 'ANONYMOUS' as const,
+  sessionId: null,
+  status: 'clarification' as const,
+  message: 'Please state your employee ID to view private records.',
+  evidence: {
+    speaker_decision: 'SKIPPED',
+    authenticity_verdict: 'SKIPPED',
+    reason: 'Anonymous public inquiry requires no biometric verification',
+  },
+};
+
+/** Contract 1: Denied — Biometric voice mismatch or synthetic speech */
+export const contract1DeniedSessionFixture = {
+  state: 'ANONYMOUS' as const,
+  sessionId: null,
+  status: 'denial' as const,
+  error: {
+    code: 'SPEAKER_MISMATCH',
+    message: 'Spoken voice does not match the enrolled voice profile for EMP-1001.',
+  },
+  evidence: {
+    speaker_decision: 'FAIL',
+    authenticity_verdict: 'PASS',
+    speaker_score: 0.22,
+    reason: 'Cosine similarity below verification threshold (0.22 < 0.75)',
+  },
+};
+
+/** Contract 2: Success Proposal — Contact edit draft awaiting spoken readback */
+export const contract2SuccessProposalFixture: GenericResultBlock = {
+  id: 'fixture-contract2-proposal-success',
+  type: 'READBACK_CONFIRMATION',
+  title: 'Action Confirmation Required',
+  timestamp: '12:40 PM',
+  isSensitive: true,
+  payload: {
+    confirmation_id: 'conf_contact_emp1001_01',
+    status: 'PENDING',
+    requires_voice_confirmation: true,
+    draft: {
+      action: 'update_contact',
+      target: 'EMP-1001 (Aarav Mehta)',
+      params: {
+        field: 'phone',
+        current_value: '+1-555-0100',
+        proposed_value: '+1-555-0199',
+      },
+      summary_readback: 'Update your contact phone number to +1-555-0199?',
+      expires_in_seconds: 60,
+    },
+  },
+};
+
+/** Contract 2: Clarification Proposal — Missing mutation field */
+export const contract2ClarificationProposalFixture = {
+  status: 'clarification' as const,
+  message: 'Which contact field would you like to update? You can change your phone number or corporate email.',
+};
+
+/** Contract 2: Denied Proposal — Cross-employee promotion unauthorized */
+export const contract2DeniedProposalFixture: GenericResultBlock = {
+  id: 'fixture-contract2-proposal-denied',
+  type: 'DENIAL_BANNER',
+  title: 'Unauthorized Action Request',
+  timestamp: '12:42 PM',
+  isSensitive: false,
+  payload: {
+    code: 'INSUFFICIENT_ROLE_AUTHORITY',
+    message: 'You are not authorized to modify designations or reporting managers.',
+    reason: 'Role and reporting mutations require executive authorization and formal HR sign-off.',
+    next_step: 'Contact the corporate HR operations desk for reporting adjustments.',
+  },
+};
+
+/** Contract 2: Committed Write — Transaction receipt committed to Supabase */
+export const contract2CommittedReceiptFixture: GenericResultBlock = {
+  id: 'fixture-contract2-receipt-committed',
+  type: 'ACTION_RECEIPT',
+  title: 'Cryptographic Action Receipt: Contact Update',
+  timestamp: '12:43 PM',
+  isSensitive: true,
+  payload: {
+    summary: 'Contact phone number updated and committed to PostgreSQL.',
+    receipt: {
+      req_id: 'req_88195_turn05',
+      tx_id: 'tx_pg_commit_emp1001_phone',
+      actor: 'EMP-1001 (Aarav Mehta)',
+      action: 'update_contact',
+      resource_id: 'EMP-1001',
+      status: 'COMMITTED',
+      grant_hash_prefix: '4c8e1a',
+      timestamp: '2026-10-17T12:43:00Z',
+    },
+  },
+};
+
+/** Contract 3: Success Selection — Context references stable target ID */
+export const contract3SuccessSelectionFixture = {
+  action: 'select_ticket',
+  source_result_id: 'fixture-tickets-multiple',
+  target_id: '412',
+  view: 'detail',
+};
+
+/** Contract 3: Clarification Selection — Ambiguous natural reference */
+export const contract3ClarificationSelectionFixture = {
+  status: 'clarification' as const,
+  assistant_message: 'Multiple tickets match "the urgent one". Did you mean ticket #412 (monitor flickering) or ticket #389 (VPN access)?',
+};
+
+/** Contract 3: Denied Selection — Target out of permitted scope */
+export const contract3DeniedSelectionFixture = {
+  status: 'denial' as const,
+  error: {
+    code: 'OUT_OF_SCOPE',
+    message: 'Ticket #999 belongs to an unauthorized security team partition.',
+  },
+};
+
+/** Contract 4: Success Multi-Result — Primary list + secondary metric breakdown */
+export const contract4SuccessMultiResultFixture = {
+  primary_result_id: 'fixture-tickets-multiple',
+  result_blocks: [
+    validTicketListMultipleFixture,
+    validTeamMetricBarFixture,
+  ],
+};
+
+/** Contract 4: Clarification Result — Unresolved entity disambiguation */
+export const contract4ClarificationResultFixture: GenericResultBlock = {
+  id: 'fixture-contract4-clarification',
+  type: 'PUBLIC_FAQ',
+  title: 'Topic Disambiguation',
+  timestamp: '12:46 PM',
+  isSensitive: false,
+  payload: {
+    question: 'Hardware vs Software Support Guidelines',
+    answer: 'Standard laptop hardware issues are handled via self-service tickets. Cloud infrastructure requests require team lead endorsement.',
+    category: 'Helpdesk Guidance',
+  },
+};
+
+/** Contract 4: Denied Result — Policy denial with actionable next step */
+export const contract4DeniedResultFixture = validDenialBannerCompleteFixture;
+
+/** Contract 5: Success Turn Reply — Complete logical turn with TTS audio */
+export const contract5SuccessTurnReplyFixture = {
+  transcript: 'Show my assigned support tickets.',
+  assistant_message: 'Here are your 4 active engineering support tickets.',
+  status: 'success' as const,
+  session: contract1SuccessSessionFixture,
+  result_block: validTicketListMultipleFixture,
+  result_blocks: [validTicketListMultipleFixture],
+  primary_result_id: 'fixture-tickets-multiple',
+  speech_audio: {
+    base64_audio: 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+    mime_type: 'audio/wav',
+  },
+  trust_evidence: {
+    speaker_decision: 'PASS',
+    authenticity_verdict: 'PASS',
+  },
+};
+
+/** Contract 5: Clarification Turn Reply — Low confidence / ambiguous speech */
+export const contract5ClarificationTurnReplyFixture = {
+  transcript: 'Show me...',
+  assistant_message: 'I heard "Show me...", but could not determine which records you wanted. You can ask for your profile, tickets, or team chart.',
+  status: 'clarification' as const,
+  session: contract1SuccessSessionFixture,
+};
+
+/** Contract 5: Denied Turn Reply — Voice verification failure */
+export const contract5DeniedTurnReplyFixture = {
+  transcript: 'Show executive payroll.',
+  assistant_message: 'Access to executive payroll records is restricted to executive leadership.',
+  status: 'denial' as const,
+  error: {
+    code: 'ACCESS_DENIED',
+    message: 'Policy evaluation DENIED: caller role EMPLOYEE lacks EXECUTIVE capability.',
+  },
+  session: contract1SuccessSessionFixture,
+  result_block: validDenialBannerCompleteFixture,
+};
+

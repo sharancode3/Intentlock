@@ -10,7 +10,8 @@ import {
 import type { ResultRendererProps } from '../workspace/resultRegistry';
 import type { TicketStatus } from '../../types/payloads';
 import { validateTicketListPayload } from './validation';
-import { TicketDetails, getPriorityBadgeClass, getStatusBadgeClass } from './TicketDetails';
+import { TicketDetails } from './TicketDetails';
+import { getPriorityBadgeClass, getStatusBadgeClass } from './ticketBadges';
 
 /**
  * TicketListCard — Renderer for TICKET_LIST result blocks.
@@ -24,12 +25,16 @@ import { TicketDetails, getPriorityBadgeClass, getStatusBadgeClass } from './Tic
  * - Safe validation fallback with zero raw JSON dumps
  * - Full light/dark mode support
  */
-export const TicketListCard: React.FC<ResultRendererProps> = ({ block, onAction }) => {
+export const TicketListCard: React.FC<ResultRendererProps> = ({ block, onAction, selectedEntity }) => {
   const validation = validateTicketListPayload(block.payload);
 
   const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | TicketStatus>('ALL');
+
+  const activeTicketId = selectedTicketId !== null
+    ? selectedTicketId
+    : (selectedEntity?.type === 'ticket' ? selectedEntity.id : null);
 
   const handleSelectTicket = (ticketId: string | number) => {
     setSelectedTicketId(ticketId);
@@ -59,8 +64,8 @@ export const TicketListCard: React.FC<ResultRendererProps> = ({ block, onAction 
   const displayTitle = title || block.title || 'Assigned Support Tickets';
 
   // Find currently selected ticket if active
-  const selectedTicket = selectedTicketId === null ? null
-    : tickets.find((t) => String(t.ticket_id) === String(selectedTicketId)) || null;
+  const selectedTicket = activeTicketId === null ? null
+    : tickets.find((t) => String(t.ticket_id) === String(activeTicketId)) || null;
 
   // Filtered tickets based on search query and status
   const filteredTickets = tickets.filter((ticket) => {

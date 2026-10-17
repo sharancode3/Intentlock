@@ -6,18 +6,20 @@ import { MicDock } from '../workspace/MicDock';
 import { ResultHost } from '../workspace/ResultHost';
 import { SettingsModal } from '../workspace/SettingsModal';
 import { useSettings } from '../../hooks/useSettings';
+import { deriveDisabledReason } from '../../utils/statusPresentation';
 import type { LiveTranscript } from '../../utils/voiceClient';
 import type {
   ConversationMessage,
   SessionInfo,
   GenericResultBlock,
   TurnStatusNotice,
+  SelectedEntityContext,
 } from '../../types';
 
 interface AppShellProps {
   isLocalRenderTest?: boolean;
-  candidateEmployeeId?: string;
-  onSelectCandidate?: (id: string) => void;
+  candidateEmployeeId?: string | null;
+  onSelectCandidate?: (id: string | null) => void;
   evidenceSummary?: string;
   captureEpoch?: number;
   microphoneDisabled?: boolean;
@@ -40,11 +42,13 @@ interface AppShellProps {
   onEndSession: () => void;
   onResultAction?: (actionVerb: string, parameters: Record<string, unknown>) => void;
   onSelectResultBlock?: (block: GenericResultBlock) => void;
+  selectedEntity?: SelectedEntityContext | null;
+  onClearSelectedEntity?: () => void;
 }
 
 export const AppShell: React.FC<AppShellProps> = ({
   isLocalRenderTest = false,
-  candidateEmployeeId = 'EMP-1001', onSelectCandidate, evidenceSummary,
+  candidateEmployeeId = null, onSelectCandidate, evidenceSummary,
   captureEpoch = 0, microphoneDisabled = false, onLiveTranscript,
   session,
   messages,
@@ -64,6 +68,8 @@ export const AppShell: React.FC<AppShellProps> = ({
   onEndSession,
   onResultAction,
   onSelectResultBlock,
+  selectedEntity,
+  onClearSelectedEntity,
 }) => {
   const { settings, updateSettings } = useSettings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -142,20 +148,21 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       : <div className="px-4 py-2 border-b border-surface-border dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex flex-wrap items-center justify-between gap-2 text-xs">
         <label className="flex items-center gap-2 text-ink-primary dark:text-white">
-          Claim employee ID
-          <select aria-label="Claim employee ID" value={candidateEmployeeId} disabled={microphoneDisabled}
-            onChange={event => onSelectCandidate?.(event.target.value)}
-            className="border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-800 dark:text-white">
-            <option value="EMP-1001">EMP-1001 — Employee</option>
-            <option value="EMP-2001">EMP-2001 — Engineering manager</option>
-            <option value="EMP-4002">EMP-4002 — CTO</option>
+          <span className="font-medium text-slate-700 dark:text-slate-300">Demo Persona (Optional):</span>
+          <select aria-label="Demo Persona Operator Override" value={candidateEmployeeId || ''} disabled={microphoneDisabled}
+            onChange={event => onSelectCandidate?.(event.target.value ? event.target.value : null)}
+            className="border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-800 dark:text-white text-xs">
+            <option value="">None (Voice-First / Spoken ID)</option>
+            <option value="EMP-1001">EMP-1001 — Aarav Mehta (Employee)</option>
+            <option value="EMP-2001">EMP-2001 — Priya Sharma (Engineering Manager)</option>
+            <option value="EMP-4002">EMP-4002 — Arvind Rao (CTO)</option>
           </select>
         </label>
         <span className="text-slate-600 dark:text-slate-300">{evidenceSummary}</span>
         <div className="flex gap-2">
-          <button type="button" onClick={onEndSession} className="underline">Reset conversation</button>
-          {isPlayingAudio && <button type="button" onClick={onStopAudio} className="underline">Stop Audio</button>}
-          {!isPlayingAudio && hasAudioToReplay && <button type="button" onClick={onReplayAudio} className="underline">Replay Audio</button>}
+          <button type="button" onClick={onEndSession} className="underline text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">End Session / Reset</button>
+          {isPlayingAudio && <button type="button" onClick={onStopAudio} className="underline text-red-600">Stop Audio</button>}
+          {!isPlayingAudio && hasAudioToReplay && <button type="button" onClick={onReplayAudio} className="underline text-brand-700">Replay Audio</button>}
         </div>
       </div>}
 
@@ -220,10 +227,17 @@ export const AppShell: React.FC<AppShellProps> = ({
           />
 
           {/* Anchored Microphone Action Dock with Typed Test Input */}
-          <MicDock key={captureEpoch} onAudioCaptured={onAudioCaptured} onTextSubmitted={onTextSubmitted}
-            onLiveTranscript={onLiveTranscript} disabled={microphoneDisabled}
-            disabledReason={isPlayingAudio ? 'Playing response' : 'Processing voice turn'}
-            previewEnabled={!isLocalRenderTest} />
+          <MicDock
+            key={captureEpoch}
+            onAudioCaptured={onAudioCaptured}
+            onTextSubmitted={onTextSubmitted}
+            onLiveTranscript={onLiveTranscript}
+            disabled={microphoneDisabled}
+            disabledReason={deriveDisabledReason(currentTurnStatus, Boolean(isPlayingAudio))}
+            previewEnabled={!isLocalRenderTest}
+            isPlayingAudio={isPlayingAudio}
+            onStopAudio={onStopAudio}
+          />
         </section>
 
         {/* Right Pane: Contextual Results Host (Visible in Split Mode or Mobile Results tab) */}
@@ -241,6 +255,9 @@ export const AppShell: React.FC<AppShellProps> = ({
               isLoading={isResultLoading}
               errorMessage={resultError}
               onResultAction={onResultAction}
+              isSessionVerified={session.state === 'VERIFIED'}
+              selectedEntity={selectedEntity}
+              onClearSelectedEntity={onClearSelectedEntity}
             />
           </aside>
         )}
@@ -258,6 +275,9 @@ export const AppShell: React.FC<AppShellProps> = ({
               isLoading={isResultLoading}
               errorMessage={resultError}
               onResultAction={onResultAction}
+              isSessionVerified={session.state === 'VERIFIED'}
+              selectedEntity={selectedEntity}
+              onClearSelectedEntity={onClearSelectedEntity}
             />
           </aside>
         )}

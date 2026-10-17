@@ -1,6 +1,6 @@
 import React from 'react';
-import { Layers, FileQuestion, Shield, AlertCircle } from 'lucide-react';
-import type { GenericResultBlock } from '../../types';
+import { Layers, FileQuestion, Shield, AlertCircle, ShieldAlert } from 'lucide-react';
+import type { GenericResultBlock, SelectedEntityContext } from '../../types';
 import { getResultRenderer } from './resultRegistry';
 
 interface ResultHostProps {
@@ -16,6 +16,12 @@ interface ResultHostProps {
   errorMessage?: string | null;
   /** Callback for user interactions inside child renderers */
   onResultAction?: (actionVerb: string, parameters: Record<string, unknown>) => void;
+  /** Whether the session is currently authenticated and verified */
+  isSessionVerified?: boolean;
+  /** Active selected entity context for click-and-voice follow-up continuity */
+  selectedEntity?: SelectedEntityContext | null;
+  /** Callback to clear active selection */
+  onClearSelectedEntity?: () => void;
   className?: string;
 }
 
@@ -26,6 +32,9 @@ export const ResultHost: React.FC<ResultHostProps> = ({
   isLoading = false,
   errorMessage = null,
   onResultAction,
+  isSessionVerified = false,
+  selectedEntity,
+  onClearSelectedEntity,
   className = '',
 }) => {
   return (
@@ -69,6 +78,32 @@ export const ResultHost: React.FC<ResultHostProps> = ({
         </div>
       )}
 
+      {/* Active Voice Context Selection Bar (Stage 6) */}
+      {selectedEntity && (
+        <div className="py-1 px-4 bg-blue-50/90 dark:bg-blue-950/60 border-b border-blue-200 dark:border-blue-900 flex items-center justify-between text-xs text-blue-900 dark:text-blue-200 shrink-0">
+          <div className="flex items-center gap-1.5 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+            <span className="font-semibold uppercase text-[10px] tracking-wider text-blue-800 dark:text-blue-300">Active Voice Context:</span>
+            <span className="font-mono text-xs font-bold text-brand-700 dark:text-blue-400">
+              {selectedEntity.type === 'ticket' ? `Ticket #${selectedEntity.id}` : `Employee ${selectedEntity.id}`}
+            </span>
+            {selectedEntity.name && (
+              <span className="text-slate-600 dark:text-slate-400 truncate hidden sm:inline">({selectedEntity.name})</span>
+            )}
+          </div>
+          {onClearSelectedEntity && (
+            <button
+              type="button"
+              onClick={onClearSelectedEntity}
+              className="text-[11px] font-medium text-blue-700 dark:text-blue-400 hover:underline shrink-0 ml-2 focus:outline-none"
+              aria-label="Clear active voice context"
+            >
+              Deselect
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-5">
         {isLoading ? (
@@ -91,12 +126,27 @@ export const ResultHost: React.FC<ResultHostProps> = ({
               <p>{errorMessage}</p>
             </div>
           </div>
+        ) : activeBlock && activeBlock.isSensitive && !isSessionVerified ? (
+          /* Enforce Zero Private Records Prior to Verification */
+          <div className="rounded-flat border-2 border-state-warningBorder bg-state-warningBg dark:bg-amber-950/40 dark:border-amber-800 p-5 transition-colors">
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="w-5 h-5 text-state-warning dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-sm text-amber-950 dark:text-amber-200">
+                  Verification Required for Private Records
+                </h3>
+                <p className="text-xs text-amber-900/90 dark:text-amber-300/80 mt-1">
+                  This content is protected by organization policy. Please state your employee ID into the microphone (e.g. <em>"My employee ID is EMP-1001"</em>) to verify your identity.
+                </p>
+              </div>
+            </div>
+          </div>
         ) : activeBlock ? (
           /* Render Active Block via Registry or Clean Fallback */
           (() => {
             const CustomRenderer = getResultRenderer(activeBlock.type);
             if (CustomRenderer) {
-              return <CustomRenderer block={activeBlock} onAction={onResultAction} />;
+              return <CustomRenderer block={activeBlock} onAction={onResultAction} selectedEntity={selectedEntity} />;
             }
 
             /* Fallback renderer when teammate has not yet implemented this specific card */

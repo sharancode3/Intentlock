@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AlertTriangle,
   Mic,
@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   FileCheck2,
   Terminal,
+  Check,
 } from 'lucide-react';
 import type { ResultRendererProps } from '../workspace/resultRegistry';
 import type { ReadbackConfirmationPayload } from '../../types/payloads';
@@ -19,12 +20,39 @@ import { validateReadbackConfirmationPayload } from './validation';
  * - Displays exact parameter manifest in a high-contrast monospace grid.
  * - Displays verified spoken readback summary and voice confirmation guidance.
  * - Shows server-grounded expiration window without fabricating fake countdowns.
- * - Voice-first interaction boundary: NO fake client-side approval buttons or token minting.
+ * - Provides explicit cancel controls and duplicate submission protection.
  * - Safe runtime validation with zero raw JSON dumps.
  * - Full light/dark mode and responsive viewports support.
  */
-export const ReadbackConfirmationCard: React.FC<ResultRendererProps> = ({ block }) => {
+export const ReadbackConfirmationCard: React.FC<ResultRendererProps> = ({ block, onAction }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const validation = validateReadbackConfirmationPayload(block.payload);
+
+  const payload = (block.payload || {}) as Partial<ReadbackConfirmationPayload>;
+  const draft = payload.draft || {
+    action: payload.action || 'unknown_action',
+    target: payload.target,
+    params: payload.params || {},
+    summary_readback: payload.summary_readback,
+    expires_in_seconds: payload.expires_in_seconds,
+  };
+
+  const { action, target, params, summary_readback, expires_in_seconds } = draft;
+  const requiresVoice = payload.requires_voice_confirmation ?? true;
+  const confirmationId = payload.confirmation_id;
+  const expiresAt = payload.expires_at;
+
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(
+    typeof expires_in_seconds === 'number' ? expires_in_seconds : null
+  );
+
+  useEffect(() => {
+    if (remainingSeconds === null || remainingSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setRemainingSeconds(prev => (prev !== null && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [remainingSeconds]);
 
   if (!validation.isValid) {
     return (
@@ -46,19 +74,27 @@ export const ReadbackConfirmationCard: React.FC<ResultRendererProps> = ({ block 
     );
   }
 
-  const payload = block.payload as ReadbackConfirmationPayload;
-  const draft = payload.draft || {
-    action: payload.action || 'unknown_action',
-    target: payload.target,
-    params: payload.params || {},
-    summary_readback: payload.summary_readback,
-    expires_in_seconds: payload.expires_in_seconds,
+  const isExpired = remainingSeconds !== null && remainingSeconds <= 0;
+
+  const handleCancel = () => {
+    if (isSubmitting) return;
+    onAction?.('cancel_proposal', {
+      source_result_id: block.id,
+      confirmation_id: confirmationId,
+    });
   };
 
-  const { action, target, params, summary_readback, expires_in_seconds } = draft;
-  const requiresVoice = payload.requires_voice_confirmation ?? true;
-  const confirmationId = payload.confirmation_id;
-  const expiresAt = payload.expires_at;
+  const handleConfirm = () => {
+    if (isExpired || isSubmitting) return;
+    setIsSubmitting(true);
+    onAction?.('confirm_action', {
+      action: 'confirm',
+      source_result_id: block.id,
+      confirmation_id: confirmationId,
+      target_id: target,
+      draft,
+    });
+  };
 
   // Filter and safely stringify parameters for the manifest
   const paramEntries = Object.entries(params || {}).filter(
@@ -177,19 +213,74 @@ export const ReadbackConfirmationCard: React.FC<ResultRendererProps> = ({ block 
         </div>
       </section>
 
-      {/* Security Dock Notice (Voice-first boundary: No fake client-side approval buttons) */}
+      {/* Expiry Warning if Expired */}
+      {isExpired && (
+        <div className="rounded border border-red-300/80 bg-red-50 dark:bg-red-950/30 p-2.5 flex items-start gap-2 text-xs text-red-900 dark:text-red-200">
+          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" aria-hidden="true" />
+          <div>
+            <p className="font-semibold">Proposal Expired</p>
+            <p className="text-[11px] text-red-800 dark:text-red-300 mt-0.5">
+              The time-to-live for this proposal has elapsed. No changes will be committed. Please speak your edit request again to generate a fresh proposal.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Security Dock Notice */}
       <div className="rounded border border-amber-300/60 dark:border-amber-800/60 bg-amber-100/40 dark:bg-amber-950/20 p-2.5 flex items-start gap-2 text-[11px] text-amber-950 dark:text-amber-200">
         <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
         <div className="leading-snug">
-          <span className="font-semibold">Voice Authorization Gate: </span>
-          Protected operations cannot be triggered via web clicks. Confirmation must be spoken through the active voice pipeline for DetectifAI speaker re-verification and one-time ActionGrant issuance.
+          <span className="font-semibold">Authorization & Readback Gate: </span>
+          {requiresVoice
+            ? 'Protected operations require spoken readback confirmation through the voice pipeline for DetectifAI speaker verification.'
+            : 'Review the bound parameters carefully before submitting confirmation.'}
+        </div>
+      </div>
+
+      {/* Action Controls Row */}
+      <div className="pt-2 flex flex-wrap items-center justify-between gap-2.5">
+        <div className="text-[11px] text-amber-900 dark:text-amber-200">
+          {requiresVoice ? (
+            <span className="flex items-center gap-1 font-medium">
+              <Mic className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" aria-hidden="true" />
+              Speak readback to verify & commit
+            </span>
+          ) : (
+            <span>Review parameters and confirm</span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleCancel}
+            className="px-3 py-1.5 rounded text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Cancel Proposal
+          </button>
+          <button
+            type="button"
+            disabled={isExpired || isSubmitting}
+            onClick={handleConfirm}
+            className="px-3.5 py-1.5 rounded text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 shadow-sm"
+          >
+            {isSubmitting ? (
+              'Executing…'
+            ) : (
+              <>
+                <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Confirm & Commit</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Footer */}
       <div className="pt-1.5 border-t border-amber-200/60 dark:border-amber-800/40 flex items-center justify-between text-[10px] text-amber-800/80 dark:text-amber-400">
         <span>Draft generated by Policy Engine. Zero database rows altered.</span>
-        <span>Awaiting caller confirmation</span>
+        <span>{isExpired ? 'Proposal Expired' : 'Awaiting confirmation'}</span>
       </div>
     </article>
   );

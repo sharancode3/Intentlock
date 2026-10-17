@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "npx tsx src/tests/contractValidation.test.ts && npx tsx src/tests/stage2SpokenEntry.test.ts && npx tsx src/tests/stage3VoicePipeline.test.ts && npx tsx src/tests/stage4StateReliability.test.ts && npx tsx src/tests/stage5DynamicRenderers.test.ts && npx tsx src/tests/stage6ClickVoiceContext.test.ts && npx tsx src/tests/stage7ProtectedEdit.test.ts && npx tsx src/tests/stage8PostCommitRefresh.test.ts && npx tsx src/tests/stage9SpeechReliability.test.ts && npx tsx src/tests/stage10FinalIntegration.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {
