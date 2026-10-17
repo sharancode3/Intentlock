@@ -229,11 +229,17 @@ async def lifespan(app: FastAPI):
 
     # Initialize Voice Evidence Adapter (Detectif)
     global voice_evidence_port, answer_port
-    if settings.DETECTIF_API_KEY and os.getenv("INTENTLOCK_OFFLINE_TESTS") != "1":
-        logger.info("Detectif API key configured. Initializing DetectifVoiceEvidenceAdapter...")
+    has_detectif_keys = bool(
+        settings.DETECTIF_API_KEY
+        or settings.DETECTIF_COMBINED_API_KEY
+        or settings.DETECTIF_SPEAKER_API_KEY
+        or settings.DETECTIF_DEEPFAKE_API_KEY
+    )
+    if has_detectif_keys and os.getenv("INTENTLOCK_OFFLINE_TESTS") != "1":
+        logger.info("Detectif API keys configured. Initializing DetectifVoiceEvidenceAdapter...")
         voice_evidence_port = DetectifVoiceEvidenceAdapter(account_alias=settings.DETECTIF_ACCOUNT_ALIAS)
     else:
-        logger.info("Detectif API key unconfigured. Using UnavailableVoiceEvidenceAdapter (fail-closed).")
+        logger.info("Detectif API keys unconfigured. Using UnavailableVoiceEvidenceAdapter (fail-closed).")
         voice_evidence_port = UnavailableVoiceEvidenceAdapter()
 
     # Initialize Answer Generation Adapter (OpenAI or Unavailable)
