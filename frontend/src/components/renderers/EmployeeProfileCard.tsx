@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, ShieldCheck, Mail, Building2, Briefcase, FolderGit2, AlertCircle } from 'lucide-react';
+import { User, ShieldCheck, Mail, Phone, Building2, Briefcase, FolderGit2, AlertCircle } from 'lucide-react';
 import type { ResultRendererProps } from '../workspace/resultRegistry';
 import { validateEmployeeProfilePayload } from './validation';
 
@@ -10,6 +10,7 @@ import { validateEmployeeProfilePayload } from './validation';
  * - Render employee name, ID, role/title.
  * - Render department and team when available.
  * - Render corporate email when available.
+ * - Render contact phone when available.
  * - Render active projects list when provided.
  * - Render employment status only when present in the actual contract.
  * - Safe fallback for malformed or missing payloads without raw JSON dumps.
@@ -40,7 +41,7 @@ export const EmployeeProfileCard: React.FC<ResultRendererProps> = ({ block }) =>
   }
 
   const { employee } = validation.data;
-  const { id, name, role, department, team, email, active_projects, status, skills, manager_name } = employee;
+  const { id, name, role, department, team, email, phone, active_projects, status, skills, manager_name } = employee;
 
   // Format role for presentation (e.g. "manager" -> "Manager")
   const formattedRole = role ? role.charAt(0).toUpperCase() + role.slice(1) : '';
@@ -93,8 +94,8 @@ export const EmployeeProfileCard: React.FC<ResultRendererProps> = ({ block }) =>
         </div>
       </div>
 
-      {/* Metadata Attributes: Department, Team, Email */}
-      {(department || team || email) && (
+      {/* Metadata Attributes: Department, Team, Email, Phone */}
+      {(department || team || email || phone) && (
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-surface-border/50 dark:border-surface-darkBorder/50 text-xs text-ink-secondary dark:text-slate-300">
           {(department || team) && (
             <div className="flex items-start gap-2 bg-slate-50/60 dark:bg-slate-900/40 p-2.5 rounded-flat border border-surface-border/50 dark:border-surface-darkBorder/50">
@@ -121,6 +122,20 @@ export const EmployeeProfileCard: React.FC<ResultRendererProps> = ({ block }) =>
                 </dt>
                 <dd className="font-mono text-xs text-ink-primary dark:text-slate-200 break-all mt-0.5">
                   {email}
+                </dd>
+              </div>
+            </div>
+          )}
+
+          {phone && (
+            <div className="flex items-start gap-2 bg-slate-50/60 dark:bg-slate-900/40 p-2.5 rounded-flat border border-surface-border/50 dark:border-surface-darkBorder/50">
+              <Phone className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-[10px] font-semibold uppercase tracking-wider text-ink-muted dark:text-slate-400">
+                  Contact Phone
+                </dt>
+                <dd className="font-mono text-xs text-ink-primary dark:text-slate-200 break-all mt-0.5">
+                  {phone}
                 </dd>
               </div>
             </div>

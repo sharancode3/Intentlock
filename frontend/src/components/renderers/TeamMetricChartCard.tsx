@@ -69,7 +69,7 @@ export const TeamMetricChartCard: React.FC<ResultRendererProps> = ({ block }) =>
               ) : (
                 <PieChartIcon className="w-3 h-3" aria-hidden="true" />
               )}
-              Manager Analytics
+              {payload.category || (unit === 'employees' || unit === 'people' ? 'Workforce Analytics' : 'Manager Analytics')}
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
               <ShieldCheck className="w-3 h-3 text-emerald-500" aria-hidden="true" />
@@ -120,7 +120,11 @@ export const TeamMetricChartCard: React.FC<ResultRendererProps> = ({ block }) =>
 
       {/* Security & Data Integrity Footer */}
       <div className="pt-2 border-t border-surface-border/40 dark:border-surface-darkBorder/40 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-        <span>Aggregate metrics computed server-side under manager RBAC.</span>
+        <span>
+          {unit === 'employees'
+            ? 'Aggregate workforce metrics computed server-side under executive RBAC.'
+            : 'Aggregate metrics computed server-side under manager RBAC.'}
+        </span>
         <span>Local presentation only</span>
       </div>
     </article>

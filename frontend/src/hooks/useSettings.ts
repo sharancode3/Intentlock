@@ -4,7 +4,7 @@ import type { WorkspaceSettings, ThemeMode, TextSize, ViewMode } from '../types'
 const STORAGE_KEY = 'intentlock_ui_preferences_v1';
 
 const DEFAULT_SETTINGS: WorkspaceSettings = {
-  theme: 'system',
+  theme: 'light',
   textSize: 'md',
   reducedMotion: false,
   voicePlaybackEnabled: true,

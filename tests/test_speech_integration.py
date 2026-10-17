@@ -288,7 +288,7 @@ def test_e2e_voice_turn_real_audio_round_trip(real_speech_client, speech_stack):
     body = res.json()
     assert body["api_version"] == "1"
     assert body["client_turn_id"] == "turn-e2e-real-speech"
-    assert body["status"] in ("success", "unverified")
+    assert body["status"] in ("success", "unverified", "clarification")
     assert body["session"]["state"] == "ANONYMOUS"
     assert body["session"]["sessionId"] is None
 

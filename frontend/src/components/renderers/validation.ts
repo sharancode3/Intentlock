@@ -320,6 +320,13 @@ export function validateEmployeeProfilePayload(
     };
   }
 
+  if (!isOptionalString(candidate.phone)) {
+    return {
+      isValid: false,
+      error: 'Invalid employee profile: phone must be a string.',
+    };
+  }
+
   if (!isOptionalString(candidate.status)) {
     return {
       isValid: false,
@@ -363,6 +370,7 @@ export function validateEmployeeProfilePayload(
     department: isNonEmptyString(candidate.department) ? candidate.department.trim() : undefined,
     team: isNonEmptyString(candidate.team) ? candidate.team.trim() : undefined,
     email: isNonEmptyString(candidate.email) ? candidate.email.trim() : undefined,
+    phone: isNonEmptyString(candidate.phone) ? candidate.phone.trim() : undefined,
     active_projects: normalizedProjects,
     status: isNonEmptyString(candidate.status) ? candidate.status.trim() : undefined,
     skills: Array.isArray(candidate.skills) ? candidate.skills.map((item: string) => item.trim()) : undefined,
@@ -701,6 +709,9 @@ export function validateTeamMetricChartPayload(
   if (!isOptionalString(raw.metric_name) && !isOptionalString(raw.title)) {
     return { isValid: false, error: 'Invalid chart payload: metric_name / title must be a string.' };
   }
+  if (!isOptionalString(raw.category)) {
+    return { isValid: false, error: 'Invalid chart payload: category must be a string.' };
+  }
   if (!isOptionalString(raw.unit)) {
     return { isValid: false, error: 'Invalid chart payload: unit must be a string.' };
   }
@@ -783,6 +794,7 @@ export function validateTeamMetricChartPayload(
     chart_type: rawType as 'BAR' | 'PIE',
     metric_name: rawTitle,
     title: rawTitle,
+    category: isNonEmptyString(raw.category) ? raw.category.trim() : undefined,
     unit: isNonEmptyString(raw.unit) ? raw.unit.trim() : undefined,
     scope_description: isNonEmptyString(raw.scope_description)
       ? raw.scope_description.trim()

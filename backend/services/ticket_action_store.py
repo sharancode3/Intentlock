@@ -23,6 +23,16 @@ def canonical(data: dict) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def normalize_readback(value: str) -> str:
+    val = value.lower().strip()
+    val = re.sub(r"[,!?;:\"'`\(\)\[\]{}]+", " ", val)
+    # Remove periods only when they are not decimal points between digits
+    val = re.sub(r"(?<!\d)\.|\.(?!\d)", " ", val)
+    # Normalize hyphens
+    val = re.sub(r"\s+-\s+", " -", val)
+    return re.sub(r"\s+", " ", val).strip()
+
+
 class ActionError(ValueError):
     pass
 
@@ -97,6 +107,73 @@ class TicketActionStore:
         return actor_id in involved or bool(set(direct_report_ids) & involved)
 
     @staticmethod
+    def build_typed_proposal(
+        operation: str,
+        ticket_id: Optional[str],
+        field: Optional[str] = None,
+        value: Optional[str] = None,
+        utterance: Optional[str] = None,
+    ) -> Dict[str, str]:
+        if operation == "update_contact":
+            phone_val = value or utterance or ""
+            phone_match = re.search(r"(\+?[0-9\s\-\(\)\.]{3,30})", phone_val)
+            if not phone_match:
+                raise ActionError("Please provide a valid contact number (e.g. +91 98765 43210).")
+            clean_phone = phone_match.group(1).strip()
+            clean_phone = re.sub(r"\s+", " ", clean_phone)
+            digits = re.sub(r"[^\d]", "", clean_phone)
+            if len(digits) < 7 or len(digits) > 15:
+                raise ActionError("Phone number must contain between 7 and 15 digits.")
+            return {"field": "phone", "value": clean_phone}
+
+        if operation == "create_ticket":
+            if value and len(value.strip()) >= 6:
+                return {"title": value.strip()[:160]}
+            if utterance:
+                return TicketActionStore.parse_proposal(operation, utterance, ticket_id)
+            raise ActionError("Please say 'create a ticket titled' followed by a specific title.")
+
+        text_source = utterance or value or ""
+
+        if not ticket_id:
+            raise ActionError("Please include the exact ticket ID for this change.")
+
+        if operation == "comment_ticket":
+            if value and not re.search(r"\b(comment|add|post|leave)\b", value, re.I):
+                v = value.strip()[:500]
+                if v:
+                    return {"comment": v}
+            if text_source:
+                return TicketActionStore.parse_proposal(operation, text_source, ticket_id)
+            raise ActionError("Please include the exact comment after the ticket ID.")
+
+        if operation == "update_ticket":
+            if field and value and not re.search(r"\b(change|update|set|mark)\b", value, re.I):
+                f_norm = field.lower().strip()
+                v_norm = value.strip().rstrip(".")
+                options = {
+                    "priority": ("Critical", "High", "Medium", "Low"),
+                    "status": ("Open", "In Progress", "Pending", "Blocked", "Resolved", "Closed"),
+                }
+                if f_norm in options:
+                    if f_norm == "priority" and v_norm.lower() in ("urgent", "highest", "sev-1", "s1"):
+                        v_norm = "Critical"
+                    elif f_norm == "priority" and v_norm.lower() == "normal":
+                        v_norm = "Medium"
+                    else:
+                        v_norm = next((candidate for candidate in options[f_norm] if candidate.lower() == v_norm.lower()), "")
+                    if v_norm:
+                        return {"field": f_norm, "value": v_norm}
+                elif 6 <= len(v_norm) <= 500:
+                    return {"field": f_norm, "value": v_norm}
+
+            if text_source:
+                return TicketActionStore.parse_proposal(operation, text_source, ticket_id)
+            raise ActionError("Please name the ticket field and its exact new value.")
+
+        raise ActionError("This ticket action is unsupported.")
+
+    @staticmethod
     def parse_proposal(operation: str, utterance: str, ticket_id: Optional[str]) -> Dict[str, str]:
         text = utterance.strip()
         if operation == "create_ticket":
@@ -148,7 +225,19 @@ class TicketActionStore:
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             conn.execute("UPDATE action_drafts SET status='CANCELLED' WHERE session_id=? AND status='PENDING'", (session_id,))
-            if operation == "create_ticket":
+            if operation == "update_contact":
+                target = actor_id
+                from backend.services.employee_knowledge_service import EmployeeKnowledgeService
+                emp = EmployeeKnowledgeService.get_instance().get_employee_by_id(actor_id)
+                if not emp:
+                    raise ActionError("Employee record not found.")
+                pol = emp.get("permissions", {}).get("profile_modification", {})
+                if pol.get("effect") != "ALLOW":
+                    raise ActionError("Policy denies profile modification for this employee.")
+                version = emp.get("version", 1)
+                description = f"phone to {params['value']}"
+                readback = f"I confirm update contact for {target}: {description}"
+            elif operation == "create_ticket":
                 prefix = f"TKT-{now.year}-"
                 committed = [int(row[0][len(prefix):]) for row in conn.execute(
                     "SELECT ticket_id FROM tickets WHERE ticket_id LIKE ?", (prefix + "%",))
@@ -159,6 +248,8 @@ class TicketActionStore:
                 all_ids = committed + pending
                 target = f"{prefix}{max(all_ids, default=0) + 1:03d}"
                 version = 0
+                description = params.get("title", "")
+                readback = f"I confirm create ticket for {target}: {description}"
             else:
                 target = ticket_id or ""
                 row = conn.execute("SELECT version, document FROM tickets WHERE ticket_id=?", (target,)).fetchone()
@@ -169,13 +260,21 @@ class TicketActionStore:
                 if operation == "update_ticket" and params["field"] == "status":
                     if ticket.get("status") == "Closed" or params["value"] == ticket.get("status"):
                         raise ActionError("That ticket status transition is unavailable.")
+                description = params.get("comment") or f"{params.get('field')} to {params.get('value')}"
+                readback = f"I confirm {operation.replace('_', ' ')} for {target}: {description}"
             draft_id = f"draft_{uuid.uuid4().hex}"
-            manifest = {"actor": actor_id, "session": session_id, "operation": operation,
-                        "ticket": target, "params": params, "version": version}
-            payload_hash = hashlib.sha256(canonical(manifest).encode()).hexdigest()
-            description = params.get("title") or params.get("comment") or f"{params.get('field')} to {params.get('value')}"
-            readback = f"I confirm {operation.replace('_', ' ')} for {target}: {description}"
             expires = (now + timedelta(seconds=90)).isoformat()
+            manifest = {
+                "actor": actor_id,
+                "session": session_id,
+                "operation": operation,
+                "ticket": target,
+                "params": params,
+                "version": version,
+                "expires_at": expires,
+                "readback": readback,
+            }
+            payload_hash = hashlib.sha256(canonical(manifest).encode()).hexdigest()
             conn.execute("""INSERT INTO action_drafts
                 (draft_id,session_id,actor_id,operation,ticket_id,parameters,expected_version,
                  payload_hash,readback,expires_at,status,receipt,proposal_digest)
@@ -204,12 +303,14 @@ class TicketActionStore:
             row = conn.execute("SELECT * FROM action_drafts WHERE session_id=? ORDER BY rowid DESC LIMIT 1", (session_id,)).fetchone()
             if not row or row["actor_id"] != actor_id:
                 raise ActionError("There is no pending action for this verified actor.")
-            normalize = lambda value: re.sub(r"[^a-z0-9]+", "", value.lower())
-            if normalize(spoken) != normalize(row["readback"]):
+            if normalize_readback(spoken) != normalize_readback(row["readback"]):
                 raise ActionError("The spoken confirmation did not match the exact readback. No change was made.")
             if row["status"] == "COMMITTED" and row["receipt"]:
                 return json.loads(row["receipt"])
-            if row["status"] != "PENDING" or datetime.fromisoformat(row["expires_at"]) <= now:
+            exp_dt = datetime.fromisoformat(row["expires_at"])
+            if exp_dt.tzinfo is None:
+                exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+            if row["status"] != "PENDING" or exp_dt <= now:
                 raise ActionError("The pending action was cancelled or expired.")
             if row["proposal_digest"] and row["proposal_digest"] == evidence_digest:
                 raise ActionError("Please record a new spoken confirmation for this exact action.")
@@ -218,7 +319,7 @@ class TicketActionStore:
             target = row["ticket_id"]
             expected_version = row["expected_version"]
 
-            # Recompute and verify the canonical manifest hash
+            # Recompute and verify the canonical manifest hash including expiry and readback
             expected_manifest = {
                 "actor": row["actor_id"],
                 "session": row["session_id"],
@@ -226,13 +327,34 @@ class TicketActionStore:
                 "ticket": target,
                 "params": params,
                 "version": expected_version,
+                "expires_at": row["expires_at"],
+                "readback": row["readback"],
             }
             recomputed_hash = hashlib.sha256(canonical(expected_manifest).encode()).hexdigest()
             if recomputed_hash != row["payload_hash"]:
-                raise ActionError("The action proposal manifest integrity verification failed. Parameters have been modified.")
+                raise ActionError("The action proposal manifest integrity verification failed. Parameters or metadata have been modified.")
+
+            # Planned executor boundary: Validate and record authorization grant BEFORE mutation
+            grant_id = secrets.token_urlsafe(24)
+            grant_expires = (now + timedelta(seconds=30)).isoformat()
+            conn.execute("""INSERT INTO action_grants
+                (grant_id, draft_id, actor_id, payload_hash, evidence_digest, expected_version, expires_at, consumed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, NULL)""",
+                (grant_id, row["draft_id"], actor_id, row["payload_hash"], evidence_digest,
+                 expected_version, grant_expires))
 
             old_value = None
-            if operation == "create_ticket":
+            if operation == "update_contact":
+                from backend.services.employee_knowledge_service import EmployeeKnowledgeService
+                emp = EmployeeKnowledgeService.get_instance().get_employee_by_id(actor_id)
+                if not emp:
+                    raise ActionError("Employee record not found.")
+                pol = emp.get("permissions", {}).get("profile_modification", {})
+                if pol.get("effect") != "ALLOW":
+                    raise ActionError("Policy denies profile modification for this employee.")
+                new_version = expected_version + 1
+                new_value = params["value"]
+            elif operation == "create_ticket":
                 new_ticket = {
                     "ticket_id": target, "title": params["title"], "description": params["title"],
                     "ticket_type": "Service Request", "category": "General", "status": "Open", "priority": "Medium",
@@ -275,10 +397,10 @@ class TicketActionStore:
                 new_version = ticket_row["version"] + 1
                 conn.execute("UPDATE tickets SET version=?,document=? WHERE ticket_id=? AND version=?",
                              (new_version, canonical(ticket), target, ticket_row["version"]))
-            grant_id = secrets.token_urlsafe(24)
-            conn.execute("INSERT INTO action_grants VALUES(?,?,?,?,?,?,?,?)",
-                (grant_id, row["draft_id"], actor_id, row["payload_hash"], evidence_digest,
-                 row["expected_version"], (now + timedelta(seconds=30)).isoformat(), now.isoformat()))
+
+            # Mark grant consumed upon successful mutation commit
+            conn.execute("UPDATE action_grants SET consumed_at = ? WHERE grant_id = ?", (now.isoformat(), grant_id))
+
             event_id = f"evt_{uuid.uuid4().hex}"
             conn.execute("INSERT INTO action_events VALUES(?,?,?,?,?,?,?,?,?)",
                 (event_id, row["draft_id"], target, actor_id, operation,

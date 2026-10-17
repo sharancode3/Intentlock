@@ -20,6 +20,7 @@ class EmployeeKnowledgeService:
         self.data_path = data_path or settings.DATA_PATH
         self.is_loaded: bool = False
         self._raw_employees: List[Dict[str, Any]] = []
+        self._cached_revision: int = 1
 
         # In-memory indexes
         self.employees_by_id: Dict[str, Dict[str, Any]] = {}
@@ -46,26 +47,61 @@ class EmployeeKnowledgeService:
         return val.strip().lower() if val else ""
 
     def load_data(self) -> None:
-        """Load all_employees.json ONCE and build indexes."""
+        """Load canonical employee dataset from Postgres or local JSON and build indexes."""
         if self.is_loaded:
             logger.info("EmployeeKnowledgeService is already loaded into memory.")
             return
 
-        if not os.path.exists(self.data_path):
-            raise FileNotFoundError(
-                f"Canonical dataset not found at {self.data_path}. "
-                "Please run scripts/build_employee_knowledge_base.py first."
-            )
+        if settings.STORAGE_BACKEND == "postgres":
+            from backend.adapters.postgres_employee_repository import PostgresEmployeeRepository
+            repo = PostgresEmployeeRepository.get_instance()
+            logger.info("Loading canonical employee dataset from Supabase Postgres...")
+            self._raw_employees = repo.list_all_employees()
+            self._cached_revision = repo.get_directory_revision()
+        else:
+            if not os.path.exists(self.data_path):
+                raise FileNotFoundError(
+                    f"Canonical dataset not found at {self.data_path}. "
+                    "Please run scripts/build_employee_knowledge_base.py first."
+                )
 
-        logger.info(f"Loading canonical employee dataset from {self.data_path}...")
-        with open(self.data_path, "r", encoding="utf-8") as f:
-            self._raw_employees = json.load(f)
+            logger.info(f"Loading canonical employee dataset from {self.data_path}...")
+            with open(self.data_path, "r", encoding="utf-8") as f:
+                self._raw_employees = json.load(f)
 
         self._build_indexes()
         self.is_loaded = True
         logger.info(
             f"Successfully loaded and indexed {len(self._raw_employees)} employees."
         )
+
+    def refresh_if_stale(self) -> None:
+        """Checks directory revision and reloads indexes if another process or transaction mutated records."""
+        if settings.STORAGE_BACKEND == "postgres":
+            from backend.adapters.postgres_employee_repository import PostgresEmployeeRepository
+            repo = PostgresEmployeeRepository.get_instance()
+            try:
+                rev = repo.get_directory_revision()
+                if rev != self._cached_revision:
+                    self._raw_employees = repo.list_all_employees()
+                    self._build_indexes()
+                    self._cached_revision = rev
+                    logger.info("Employee directory cache invalidated and reloaded to revision %s.", rev)
+            except Exception as exc:
+                logger.warning("Directory revision check failed: %s", exc)
+
+    def reload(self) -> None:
+        """Forces immediate rebuild of employee indexes."""
+        self.is_loaded = False
+        self.load_data()
+
+    def update_employee_phone_in_memory(self, employee_id: str, new_phone: str) -> None:
+        """Update an employee's phone number in the in-memory cache (for testing or local cache sync)."""
+        emp = self.employees_by_id.get(employee_id)
+        if emp:
+            emp.setdefault("identity", {})["work_phone"] = new_phone
+            emp["identity"].setdefault("contact", {})["phone"] = new_phone
+            emp["version"] = emp.get("version", 1) + 1
 
     def _build_indexes(self) -> None:
         """Build normalized indexes over the raw in-memory employee records."""
@@ -133,18 +169,21 @@ class EmployeeKnowledgeService:
 
     def list_all_employees(self) -> List[Dict[str, Any]]:
         """Return all canonical employee records."""
+        self.refresh_if_stale()
         return list(self._raw_employees)
 
     def get_employee_by_id(self, employee_id: str) -> Optional[Dict[str, Any]]:
         """Exact lookup by employee ID (case-insensitive e.g. emp-1001 or EMP-1001)."""
         if not employee_id:
             return None
+        self.refresh_if_stale()
         return self.employees_by_id.get(employee_id.strip().upper())
 
     def find_employee_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         """Lookup by full name, preferred name, or substring match."""
         if not name:
             return None
+        self.refresh_if_stale()
         norm_name = self._normalize(name)
         if norm_name in self.employees_by_name:
             return self.employees_by_name[norm_name]
@@ -159,6 +198,7 @@ class EmployeeKnowledgeService:
         """Free-text multi-field search across identity, designation, department, skills, and projects."""
         if not query:
             return []
+        self.refresh_if_stale()
         q_norm = self._normalize(query)
         results: Dict[str, Dict[str, Any]] = {}
 

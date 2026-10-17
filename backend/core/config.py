@@ -89,6 +89,17 @@ class Settings(BaseSettings):
         "APP_DB_PATH", os.path.join(BASE_DIR, "backend", "data", "app_state.sqlite3")
     )
 
+    # Storage Backend & Supabase Configuration
+    STORAGE_BACKEND: str = os.getenv("STORAGE_BACKEND", "sqlite")  # "sqlite" (default/offline) or "postgres"
+    SUPABASE_DATABASE_URL: Optional[str] = os.getenv("SUPABASE_DATABASE_URL", None)
+    SUPABASE_DIRECT_URL: Optional[str] = os.getenv("SUPABASE_DIRECT_URL", None)
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = os.getenv("SUPABASE_SERVICE_ROLE_KEY", None)
+    SUPABASE_ANON_KEY: Optional[str] = os.getenv("SUPABASE_ANON_KEY", None)
+    SUPABASE_URL: Optional[str] = os.getenv("SUPABASE_URL", None)
+    DB_POOL_MIN_SIZE: int = int(os.getenv("DB_POOL_MIN_SIZE", "1"))
+    DB_POOL_MAX_SIZE: int = int(os.getenv("DB_POOL_MAX_SIZE", "10"))
+    DB_TIMEOUT_SECONDS: float = float(os.getenv("DB_TIMEOUT_SECONDS", "10.0"))
+
     @field_validator("FRONTEND_ORIGINS", "ALLOWED_AUDIO_TYPES", mode="before")
     @classmethod
     def parse_string_list(cls, v: Union[str, List[str]]) -> List[str]:
@@ -119,6 +130,15 @@ class Settings(BaseSettings):
             "speech_stt_model": self.SPEECH_STT_MODEL,
             "speech_tts_voice": self.SPEECH_TTS_VOICE,
             "operator_key_configured": bool(self.OPERATOR_SECRET_KEY),
+            "storage_backend": self.STORAGE_BACKEND,
+            "supabase_configured": bool(self.SUPABASE_DATABASE_URL or self.SUPABASE_URL),
+            "supabase": {
+                "database_url_configured": bool(self.SUPABASE_DATABASE_URL),
+                "direct_url_configured": bool(self.SUPABASE_DIRECT_URL),
+                "url_configured": bool(self.SUPABASE_URL),
+                "service_role_configured": bool(self.SUPABASE_SERVICE_ROLE_KEY),
+                "anon_key_configured": bool(self.SUPABASE_ANON_KEY),
+            },
         }
 
     model_config = SettingsConfigDict(
@@ -133,3 +153,6 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+
+def get_safe_diagnostics() -> dict:
+    return settings.get_safe_diagnostics()

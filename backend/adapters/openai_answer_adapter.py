@@ -83,8 +83,11 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
                     "Do not infer an identity, permission, result ID, or missing value. "
                     "Use clarify for unsupported, ambiguous, or contradictory commands. "
                     "Operations: help, profile, team_table, team_count, org_tree, ticket_list, "
-                    "ticket_chart, rechart, back, create_ticket, update_ticket, comment_ticket, "
-                    "confirm, cancel, clarify. Current-result availability is only a hint."
+                    "ticket_chart, rechart, back, headcount, create_ticket, update_ticket, comment_ticket, "
+                    "confirm, cancel, clarify. Current-result availability is only a hint. "
+                    "For headcount: extract scope ('company', 'direct_reports', 'reporting_tree', 'department', 'location'), "
+                    "location (if specified), department (if specified). If a location is requested, set location. "
+                    "If the location is not Bengaluru or is unrecognized (e.g. Tulum), also set unresolved_location to that location."
                 ),
                 input=f"Current result available: {has_current_result}. User command: {utterance[:1000]}",
                 text_format=IntentPlan,

@@ -130,6 +130,16 @@ class AuthorizationPolicyPort(Protocol):
 @runtime_checkable
 class AnswerGenerationPort(Protocol):
     """Internal contract for grounded answer generation via Responses API."""
+    def is_configured(self) -> bool:
+        ...
+
+    async def plan_request(
+        self,
+        utterance: str,
+        has_current_result: bool,
+    ) -> Optional[Any]:
+        ...
+
     async def generate_answer(
         self,
         question: str,
@@ -190,6 +200,13 @@ class UnavailableAnswerAdapter:
     """Default adapter indicating answer generation service is not connected."""
     def is_configured(self) -> bool:
         return False
+
+    async def plan_request(
+        self,
+        utterance: str,
+        has_current_result: bool,
+    ) -> Optional[Any]:
+        return None
 
     async def generate_answer(
         self,

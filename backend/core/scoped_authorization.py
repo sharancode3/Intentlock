@@ -27,7 +27,9 @@ class ScopedProfileResult(BaseModel):
     status_code: int = 200
     spoken_summary: str
     result_block: Optional[GenericResultBlock] = None
+    result_blocks: Optional[List[GenericResultBlock]] = None
     denial_reason: Optional[str] = None
+    clarification_reason: Optional[str] = None
 
 
 class ScopedAuthorizationService:
@@ -67,6 +69,11 @@ class ScopedAuthorizationService:
         )
 
         reporting = emp.get("reporting", {})
+        phone = (
+            emp.get("identity", {}).get("contact", {}).get("phone")
+            or emp.get("identity", {}).get("work_phone")
+            or emp.get("work_phone")
+        )
 
         return {
             "id": emp["employee_id"],
@@ -75,6 +82,7 @@ class ScopedAuthorizationService:
             "department": emp.get("employment", {}).get("department", "General"),
             "team": emp.get("employment", {}).get("sub_department") or emp.get("employment", {}).get("department"),
             "email": emp.get("identity", {}).get("work_email", ""),
+            "phone": phone,
             "active_projects": project_names,
             "status": emp.get("employment", {}).get("status", "Active"),
             "office_location": emp.get("employment", {}).get("location", "Bengaluru"),

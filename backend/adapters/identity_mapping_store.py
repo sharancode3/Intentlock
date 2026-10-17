@@ -72,7 +72,10 @@ class IdentityMappingStore:
         self._init_db()
 
     @classmethod
-    def get_instance(cls, db_path: Optional[str] = None) -> "IdentityMappingStore":
+    def get_instance(cls, db_path: Optional[str] = None) -> Any:
+        if db_path is None and settings.STORAGE_BACKEND == "postgres":
+            from backend.adapters.postgres_identity_mapping_store import PostgresIdentityMappingStore
+            return PostgresIdentityMappingStore.get_instance()
         if cls._instance is None:
             cls._instance = cls(db_path=db_path)
         return cls._instance
@@ -328,11 +331,26 @@ class IdentityMappingStore:
 
     def revoke_session(self, session_id: str) -> bool:
         with self._get_connection() as conn:
+            row = conn.execute("SELECT employee_id FROM voice_sessions WHERE session_id = ?", (session_id,)).fetchone()
+            emp_id = row["employee_id"] if row else None
             cur = conn.execute(
                 "UPDATE voice_sessions SET is_revoked = 1 WHERE session_id = ?",
                 (session_id,),
             )
+            now_dt = datetime.now(timezone.utc)
+            cutoff = (now_dt - timedelta(seconds=120)).isoformat()
+            conn.execute("DELETE FROM idempotency_records WHERE created_at < ?", (cutoff,))
+            if emp_id:
+                conn.execute("DELETE FROM idempotency_records WHERE employee_id = ?", (emp_id,))
             return cur.rowcount > 0
+
+    def cleanup_expired_records(self, cutoff_seconds: int = 120) -> int:
+        """Purges idempotency records older than cutoff_seconds."""
+        now_dt = datetime.now(timezone.utc)
+        cutoff = (now_dt - timedelta(seconds=cutoff_seconds)).isoformat()
+        with self._get_connection() as conn:
+            cur = conn.execute("DELETE FROM idempotency_records WHERE created_at < ?", (cutoff,))
+            return cur.rowcount
 
     # =========================================================================
     # Idempotency Cache API

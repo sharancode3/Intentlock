@@ -58,6 +58,8 @@ export interface EmployeeRecord {
   department?: string;
   /** Corporate email address */
   email?: string;
+  /** Work contact phone number */
+  phone?: string;
   /** Optional active project names or assignments */
   active_projects?: string[];
   /** Optional employment status if returned by backend, e.g. "Active", "On Leave" */
@@ -205,7 +207,9 @@ export interface TeamMetricChartPayload {
   metric_name?: string;
   /** Compatible alias for metric_name */
   title?: string;
-  /** Metric unit (e.g. "tickets", "hours") */
+  /** Category badge label (e.g. "Workforce Analytics", "Manager Analytics") */
+  category?: string;
+  /** Metric unit (e.g. "tickets", "hours", "employees") */
   unit?: string;
   /** Filter or department scope represented (e.g. "Engineering Team A") */
   scope_description?: string;

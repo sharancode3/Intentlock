@@ -14,6 +14,7 @@ import base64
 import hashlib
 import json
 import logging
+import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from typing import List, Optional, Dict, Any
@@ -100,6 +101,20 @@ speech_output_port: SpeechOutputPort = UnavailableSpeechOutputAdapter()
 voice_evidence_port: VoiceEvidencePort = UnavailableVoiceEvidenceAdapter()
 answer_port: AnswerGenerationPort = UnavailableAnswerAdapter()
 policy_port = FailClosedPolicyAdapter()
+
+# In-flight duplicate turn coalescing
+_in_flight_turns: Dict[str, asyncio.Event] = {}
+_in_flight_results: Dict[str, JSONResponse] = {}
+_in_flight_lock = asyncio.Lock()
+
+
+async def _release_in_flight(key: str, res: Optional[JSONResponse] = None) -> None:
+    async with _in_flight_lock:
+        if res is not None:
+            _in_flight_results[key] = res
+        if key in _in_flight_turns:
+            _in_flight_turns[key].set()
+            _in_flight_turns.pop(key, None)
 
 
 def get_speech_input_port() -> SpeechInputPort:
@@ -655,6 +670,21 @@ async def process_voice_turn(
             return JSONResponse(status_code=200, content=cached, headers={"Cache-Control": "no-store", "X-Request-Id": request_id})
         raise HTTPException(status_code=401, detail="The original verified session is no longer valid for this turn.")
 
+    # Finding 5: Coalesce concurrent in-flight duplicate requests
+    async with _in_flight_lock:
+        if replay_key in _in_flight_turns:
+            in_flight_ev = _in_flight_turns[replay_key]
+        else:
+            in_flight_ev = None
+            _in_flight_turns[replay_key] = asyncio.Event()
+
+    if in_flight_ev is not None:
+        await in_flight_ev.wait()
+        async with _in_flight_lock:
+            cached_res = _in_flight_results.get(replay_key)
+        if cached_res:
+            return cached_res
+
     logger.info(
         f"Audio turn received [{request_id}]: turn_id={clean_turn_id} bytes={total_bytes} "
         f"mime={normalized_mime} sha256={sha256_digest[:12]}..."
@@ -680,11 +710,13 @@ async def process_voice_turn(
                 retryable=False,
             ),
         )
-        return JSONResponse(
+        resp = JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content=unavailable_envelope.model_dump(),
             headers={"X-Request-Id": request_id, "Cache-Control": "no-store"},
         )
+        await _release_in_flight(replay_key, resp)
+        return resp
 
     # 7. Execute real STT and VAD pipeline
     stt_result = await stt_port.transcribe(audio_metadata, bytes(audio_buffer), clean_turn_id)
@@ -732,12 +764,10 @@ async def process_voice_turn(
         proposed = await ans_port.plan_request(transcript_text, bool(plan_state and plan_state.active_id))
         if proposed:
             intent_plan = proposed
-    if intent_plan.operation in ("help", "clarify"):
+    if intent_plan.operation == "help":
         public_text = (
             "I can show your profile, permitted direct reports, reporting tree, and scoped tickets. "
             "You can ask for a ticket chart or switch an authorized result to a table."
-            if intent_plan.operation == "help" else
-            "Please ask for a profile, direct reports, reporting tree, or tickets, and include a specific target when needed."
         )
         public_block = block("PUBLIC_FAQ", "IntentLock help", {
             "question": "Supported requests", "answer": public_text,
@@ -769,7 +799,9 @@ async def process_voice_turn(
                 if existing_for_plan and existing_for_plan.is_valid else TurnSessionInfo(),
             session_expires_at=existing_for_plan.expires_at if existing_for_plan and existing_for_plan.is_valid else None,
         )
-        return JSONResponse(status_code=200, content=response.model_dump(), headers={"Cache-Control": "no-store"})
+        resp = JSONResponse(status_code=200, content=response.model_dump(), headers={"Cache-Control": "no-store"})
+        await _release_in_flight(replay_key, resp)
+        return resp
     reusing_result = bool((plan_state and plan_state.active_id and intent_plan.operation in ("rechart", "back")) or
                           (existing_for_plan and existing_for_plan.is_valid and intent_plan.operation == "cancel"))
     if not reusing_result and stt_result.speech_duration_s is not None and stt_result.speech_duration_s < 4.2:
@@ -796,9 +828,12 @@ async def process_voice_turn(
                     teamId=existing_for_plan.team_id, expiresInSeconds=existing_for_plan.seconds_remaining))
                 if existing_for_plan and existing_for_plan.is_valid else TurnSessionInfo(),
             session_expires_at=existing_for_plan.expires_at if existing_for_plan and existing_for_plan.is_valid else None)
-        return JSONResponse(status_code=200, content=response.model_dump(), headers={"Cache-Control": "no-store"})
+        resp = JSONResponse(status_code=200, content=response.model_dump(), headers={"Cache-Control": "no-store"})
+        await _release_in_flight(replay_key, resp)
+        return resp
 
     # 8. Extract or resolve candidate employee ID and enforce claim consistency
+    store.cleanup_expired_records(cutoff_seconds=120)
     claimed_id: Optional[str] = None
     existing_sess = None
     if session_id and session_id.strip():
@@ -843,8 +878,10 @@ async def process_voice_turn(
     turn_session = TurnSessionInfo(state="ANONYMOUS", sessionId=None)
     session_expires_at: Optional[str] = None
     result_block = None
+    scoped_res: Optional[ScopedProfileResult] = None
     trust_evidence = None
     voice_timings_ms: Dict[str, float] = {}
+    reuse_snapshot: bool = False
 
     if claimed_id and mapping and mapping.enrollment_status == "ENROLLED":
         # A valid existing result can be reformatted or revisited without new
@@ -930,7 +967,10 @@ async def process_voice_turn(
                 "renderer": scoped_res.result_block.type if scoped_res.result_block else None,
             }, sort_keys=True))
 
-            turn_status = "success" if scoped_res.is_authorized else "denied"
+            if scoped_res.clarification_reason:
+                turn_status = "clarification"
+            else:
+                turn_status = "success" if scoped_res.is_authorized else "denied"
             turn_session = TurnSessionInfo(
                 state="VERIFIED",
                 sessionId=session_rec.session_id,
@@ -949,8 +989,32 @@ async def process_voice_turn(
             spoken_summary = scoped_res.spoken_summary
             safe_reply = scoped_res.spoken_summary
 
-            # The deterministic dispatcher owns the spoken factual summary.
-            # A generative answer cannot replace a denial or change its scope.
+            # Finding 5 & Requirement 8: Grounded factual narration from authorized payload when generative model is active
+            if (
+                scoped_res.is_authorized
+                and not scoped_res.clarification_reason
+                and result_block
+                and result_block.type not in ("READBACK_CONFIRMATION", "ACTION_RECEIPT", "DENIAL_BANNER")
+                and ans_port
+                and not isinstance(ans_port, UnavailableAnswerAdapter)
+                and os.getenv("INTENTLOCK_OFFLINE_TESTS") != "1"
+            ):
+                try:
+                    grounded_context = {
+                        "type": result_block.type,
+                        "title": result_block.title,
+                        "payload": result_block.payload,
+                    }
+                    ans = await ans_port.generate_answer(
+                        question=transcript_text,
+                        authorized_context=grounded_context,
+                        correlation_id=clean_turn_id,
+                    )
+                    if ans and ans.is_available and ans.answer_text and len(ans.answer_text.strip()) > 5:
+                        safe_reply = ans.answer_text.strip()
+                        spoken_summary = ans.answer_text.strip()
+                except Exception as ex:
+                    logger.warning(f"Grounded narration generation skipped: {ex}")
 
             trust_evidence = TrustEvidence(
                 freshness="reused_from_session" if reuse_snapshot else "fresh_this_turn",
@@ -1015,14 +1079,22 @@ async def process_voice_turn(
         trust_evidence = None
 
     else:
-        # Anonymous public question
+        # Anonymous public question or title claim without candidate ID
         turn_status = "unverified"
         turn_session = TurnSessionInfo(state="ANONYMOUS", sessionId=None)
-        safe_reply = (
-            f"I received your question: \"{stt_result.transcript}\". "
-            "To access your private employee profile or tickets, please state your employee ID for Detectif voice verification."
-        )
-        spoken_summary = safe_reply
+        if re.search(r"\b(?:i am|i'm)\s+(?:the\s+)?(?:cto|manager|ceo|executive|director)\b", transcript_text, re.I):
+            safe_reply = (
+                "To access executive records or verify your identity, please select or state your employee ID "
+                "(for example, EMP-4002 for CTO)."
+            )
+            spoken_summary = safe_reply
+            turn_status = "clarification"
+        else:
+            safe_reply = (
+                f"I received your question: \"{stt_result.transcript}\". "
+                "To access your private employee profile or tickets, please state your employee ID for Detectif voice verification."
+            )
+            spoken_summary = safe_reply
         result_block = None
         trust_evidence = None
 
@@ -1048,6 +1120,23 @@ async def process_voice_turn(
     }
     timings.update(voice_timings_ms)
 
+    # Section 11: Bounded, redacted turn diagnostics
+    logger.info("turn_diagnostics %s", json.dumps({
+        "correlation_id": clean_turn_id,
+        "request_id": request_id,
+        "planner_source": "model" if getattr(intent_plan, "_from_model", False) else "deterministic",
+        "operation": intent_plan.operation,
+        "scope": getattr(intent_plan, "scope", None),
+        "unresolved_constraints": [intent_plan.unresolved_location] if getattr(intent_plan, "unresolved_location", None) else [],
+        "clarification_reason": getattr(scoped_res, "clarification_reason", None) if scoped_res else None,
+        "evidence_required": bool(claimed_id and not reuse_snapshot) if claimed_id else False,
+        "evidence_reason": "new_private_read_or_action" if (claimed_id and not reuse_snapshot) else "public_or_session_reuse",
+        "verification_attempted": bool(claimed_id and mapping and mapping.enrollment_status == "ENROLLED" and not reuse_snapshot),
+        "authorization_outcome": "authorized" if (scoped_res and scoped_res.is_authorized and not getattr(scoped_res, "clarification_reason", None)) else ("clarification" if (scoped_res and getattr(scoped_res, "clarification_reason", None)) else ("denied" if turn_status == "denied" else "unverified")),
+        "result_type": result_block.type if result_block else None,
+        "status": turn_status,
+    }, sort_keys=True))
+
     turn_response = VoiceTurnResponse(
         api_version="1",
         request_id=request_id,
@@ -1061,7 +1150,7 @@ async def process_voice_turn(
         speech_audio=spoken_payload,
         speech_timings_ms=timings,
         result_block=result_block,
-        result_blocks=[result_block] if result_block else [],
+        result_blocks=scoped_res.result_blocks if (scoped_res and scoped_res.result_blocks) else ([result_block] if result_block else []),
         primary_result_id=result_block.id if result_block else None,
         trust_evidence=trust_evidence,
         error=None,
@@ -1069,11 +1158,13 @@ async def process_voice_turn(
 
     replay_store.save_idempotency_record(replay_key, sha256_digest, claimed_id or "", turn_response.model_dump())
 
-    return JSONResponse(
+    response_obj = JSONResponse(
         status_code=status.HTTP_200_OK,
         content=turn_response.model_dump(),
         headers={"X-Request-Id": request_id, "Cache-Control": "no-store"},
     )
+    await _release_in_flight(replay_key, response_obj)
+    return response_obj
 
 
 # =============================================================================

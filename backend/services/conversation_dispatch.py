@@ -25,6 +25,7 @@ Operation = Literal[
     "help", "profile", "team_table", "team_count", "org_tree",
     "ticket_list", "ticket_chart", "rechart", "back", "clarify",
     "create_ticket", "update_ticket", "comment_ticket", "confirm", "cancel",
+    "compound", "headcount", "update_contact",
 ]
 
 
@@ -45,6 +46,11 @@ class IntentPlan(BaseModel):
     value: Optional[str] = Field(default=None, max_length=500)
     from_date: Optional[date] = None
     to_date: Optional[date] = None
+    compound_plans: Optional[List["IntentPlan"]] = None
+    scope: Optional[Literal["company", "direct_reports", "reporting_tree", "department", "location"]] = None
+    location: Optional[str] = Field(default=None, max_length=64)
+    department: Optional[str] = Field(default=None, max_length=64)
+    unresolved_location: Optional[str] = Field(default=None, max_length=64)
 
 
 @dataclass
@@ -53,6 +59,7 @@ class ResultSnapshot:
     operation: str
     visible_ids: List[str] = field(default_factory=list)
     source_rows: List[dict] = field(default_factory=list)
+    base_rows: List[dict] = field(default_factory=list)
     source_kind: Optional[str] = None
     created_at: float = field(default_factory=time.time)
     filter_state: Dict[str, Any] = field(default_factory=dict)
@@ -65,13 +72,15 @@ class ConversationState:
     active_id: Optional[str] = None
     previous_id: Optional[str] = None
     selected_ticket_id: Optional[str] = None
+    last_accessed: float = field(default_factory=time.time)
 
     def remember(self, snapshot: ResultSnapshot) -> None:
+        self.last_accessed = time.time()
         if self.active_id != snapshot.block.id:
             self.previous_id = self.active_id
         self.snapshots[snapshot.block.id] = snapshot
         self.active_id = snapshot.block.id
-        while len(self.snapshots) > 8:
+        while len(self.snapshots) > 12:
             oldest = next(iter(self.snapshots))
             self.snapshots.pop(oldest)
             if self.previous_id == oldest:
@@ -85,11 +94,28 @@ class ConversationStore:
         self._states: Dict[str, ConversationState] = {}
 
     def get(self, session_id: str, actor_id: str) -> ConversationState:
+        now = time.time()
+        # Bounded cleanup of abandoned sessions (>300s since last access)
+        expired_sessions = [
+            sid for sid, s in self._states.items()
+            if now - s.last_accessed > 300
+        ]
+        for sid in expired_sessions:
+            self._states.pop(sid, None)
+
+        # LRU bound on total stored states (max 64)
+        if len(self._states) > 64:
+            sorted_states = sorted(self._states.items(), key=lambda item: item[1].last_accessed)
+            for sid, _ in sorted_states[:len(self._states) - 64]:
+                self._states.pop(sid, None)
+
         state = self._states.get(session_id)
         if state is None or state.actor_id != actor_id:
             state = ConversationState(actor_id=actor_id)
             self._states[session_id] = state
-        now = time.time()
+        state.last_accessed = now
+
+        # Prune snapshots within this state older than 300s
         state.snapshots = {key: snap for key, snap in state.snapshots.items() if now - snap.created_at < 300}
         if state.active_id not in state.snapshots:
             state.active_id = None
@@ -112,8 +138,8 @@ def block(kind: str, title: str, payload: dict, sensitive: bool = True) -> Gener
     )
 
 
-def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentPlan:
-    """Clear local commands avoid an LLM call. Unknown language is clarification."""
+def _parse_single(text: str, state: Optional[ConversationState] = None) -> IntentPlan:
+    """Parses a single intent clause without compound coordination."""
     q = re.sub(r"\s+", " ", text.strip().lower())
     ticket = re.search(r"\bTKT[-_ ]?\d{4}[-_ ]?\d{3}\b", text, re.I)
     ticket_id = re.sub(r"[_ ]", "-", ticket.group().upper()) if ticket else None
@@ -137,7 +163,26 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
                 context_ticket = active.visible_ids[0]
     if context_ticket and re.search(r"\b(?:open|show|view|details\s+for)\s+(?:this|the)\s+ticket\b", q):
         return IntentPlan(operation="ticket_list", ticket_id=context_ticket)
-    if re.search(r"\b(?:EMP|RND|EXE)[-_ ]?\d{4}\b", text, re.I) and not re.search(r"\bTKT[-_ ]?\d{4}", text, re.I) and not re.search(r"\b(tickets?|issues?)\b", q):
+    # Protected contact update recognition
+    if re.search(r"\b(?:update|change|set)\b.*\b(?:phone|contact|mobile)\b", q):
+        target_match = re.search(r"\b((?:EMP|RND|EXE)[-_ ]?\d{4})\b", text, re.I)
+        target_eid = target_match.group(1).upper().replace(" ", "-") if target_match else None
+        phone_candidates = re.findall(r"(\+?[0-9][0-9\s\-\(\)\.]{5,25}[0-9])", text)
+        phone_val = None
+        for cand in phone_candidates:
+            if len(re.sub(r"[^\d]", "", cand)) >= 7:
+                phone_val = cand.strip()
+                break
+        if not phone_val:
+            phone_val = text.strip()
+        return IntentPlan(operation="update_contact", entity=target_eid, value=phone_val)
+
+    # Finding 3a: Do not route to employee profile if SLA or ticket metrics are requested
+    if (
+        re.search(r"\b(?:EMP|RND|EXE)[-_ ]?\d{4}\b", text, re.I)
+        and not re.search(r"\bTKT[-_ ]?\d{4}", text, re.I)
+        and not re.search(r"\b(tickets?|issues?|sla|compliance|overdue|breached|workload|phone|contact|mobile)\b", q)
+    ):
         return IntentPlan(operation="profile", entity=text.strip())
     if state and state.active_id and re.search(r"\b(?:open|show|view)\s+(?:the\s+)?(?:first|second|third|fourth)\s+person\b", q):
         return IntentPlan(operation="profile", entity=text.strip())
@@ -145,10 +190,16 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
         return IntentPlan(operation="create_ticket", value=text.strip())
     if (ticket_id or context_ticket) and re.search(r"\b(add|post|leave)\b.*\bcomment\b", q):
         return IntentPlan(operation="comment_ticket", ticket_id=ticket_id or context_ticket, value=text.strip())
-    if (ticket_id or context_ticket) and re.search(r"\b(change|update|set|mark)\b", q):
+
+    # Finding 3c: Visual presentation changes must not be captured by update_ticket
+    is_presentation_intent = bool(re.search(r"\b(chart|graph|table|view|pie|bar|trend|timeline|tree)\b", q))
+    if not is_presentation_intent and (ticket_id or context_ticket) and re.search(r"\b(change|update|set|mark)\b", q):
         field = next((item for item in ("priority", "status", "description") if item in q), None)
-        return IntentPlan(operation="update_ticket", ticket_id=ticket_id or context_ticket, field=field, value=text.strip())
-    if state and state.active_id and re.search(r"\b(this|that|those|same|instead|only)\b", q) and re.search(r"\b(table|bar|pie|chart|trend|timeline)\b", q):
+        is_status_mark = bool(re.search(r"\bmark\s+(?:it|this ticket)?\s*(?:as)?\s+(resolved|closed|in progress|open|blocked)\b", q))
+        if field or is_status_mark or re.search(r"\b(priority|status|description)\b", q):
+            return IntentPlan(operation="update_ticket", ticket_id=ticket_id or context_ticket, field=field, value=text.strip())
+
+    if state and state.active_id and re.search(r"\b(this|that|those|same|instead|only|change|switch)\b", q) and re.search(r"\b(table|bar|pie|chart|trend|timeline)\b", q):
         view = "TABLE" if "table" in q else "PIE" if "pie" in q else "AREA" if "area" in q else "LINE" if "line" in q or "trend" in q or "timeline" in q else "BAR"
         group = "status" if "status" in q else "priority" if "priority" in q else None
         status = None
@@ -185,6 +236,55 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
         return IntentPlan(operation="org_tree", descendants=bool(re.search(r"\b(all|everyone|indirect|descendant|entire)\b", q)))
     if re.search(r"\b(how many|count|number of)\b.*\b(direct reports|people reporting|team members)\b", q):
         return IntentPlan(operation="team_count")
+
+    # Finding: Typed headcount & personnel count recognition
+    is_count_phrase = bool(re.search(r"\b(?:how many|count of|number of|headcount|total number of|how many total|total count)\b", q))
+    is_personnel_phrase = bool(re.search(r"\b(?:employees|people|workers|staff|members|headcount)\b", q))
+    is_ticket_word = bool(re.search(r"\b(?:tickets?|issues?|incident|incidents|sla|compliance|overdue|breached)\b", q))
+
+    if not is_ticket_word and ((is_count_phrase and is_personnel_phrase) or re.search(r"\b(?:company headcount|total headcount|workforce count|organization headcount)\b", q)):
+        if re.search(r"\b(?:report directly|reporting to me|direct reports|my direct|under me directly)\b", q):
+            return IntentPlan(operation="team_count")
+        if re.search(r"\b(?:in my (?:reporting )?tree|in my hierarchy|all (?:my )?reports|under me)\b", q):
+            return IntentPlan(operation="headcount", scope="reporting_tree")
+        dept_match = re.search(r"\b(?:in|of|for)\s+(?:the\s+)?(engineering|research|sales|product|finance|hr|legal|operations)\b", q)
+        dept = dept_match.group(1).title() if dept_match else None
+
+        location = None
+        unresolved_location = None
+        loc_match = re.search(r"\bin\s+([a-zA-Z\s]+?)(?:\?|\.|$|\b(?:i am|as the|for|with|who|where)\b)", text, re.I)
+        if loc_match:
+            candidate_loc = loc_match.group(1).strip()
+            nested_loc = re.search(r"\b(?:this |the |our )?company\s+in\s+([a-zA-Z\s]+)", candidate_loc, re.I)
+            if nested_loc:
+                candidate_loc = nested_loc.group(1).strip()
+            # Clean trailing company phrasing e.g. "Bengaluru in this company" -> "Bengaluru"
+            candidate_loc = re.sub(r"\s+(?:in|across|at)\s+(?:this|the|our)?\s*(?:company|org|organization|firm).*$", "", candidate_loc, flags=re.I).strip()
+            if candidate_loc.lower() not in ("this company", "the company", "our company", "company", "the team", "my team"):
+                candidate_loc_clean = re.sub(r"\b(?:this|the|our)\b", "", candidate_loc, flags=re.I).strip()
+                if candidate_loc_clean.lower() in ("bengaluru", "bangalore"):
+                    location = "Bengaluru"
+                elif candidate_loc_clean.lower() in (
+                    "london", "new york", "san francisco", "singapore", "mumbai",
+                    "tokyo", "berlin", "paris", "sydney", "dubai", "toronto", "seattle",
+                    "hyderabad", "delhi", "chennai", "pune", "boston", "austin", "chicago"
+                ):
+                    location = candidate_loc_clean.title()
+                elif candidate_loc_clean:
+                    location = candidate_loc_clean
+                    unresolved_location = candidate_loc_clean
+
+        is_company = bool(re.search(r"\b(?:in (?:this |the |our )?company|company[- ]wide|organization|enterprise|firm|overall|across the company|total headcount)\b", q))
+        scope = "company" if is_company else "location" if location else "department" if dept else "company"
+
+        return IntentPlan(
+            operation="headcount",
+            scope=scope,
+            location=location,
+            department=dept,
+            unresolved_location=unresolved_location,
+        )
+
     if re.search(r"\b(team|direct reports|people reporting)\b", q) and re.search(r"\b(list|table|show|who|members)\b", q) and not re.search(r"\b(tickets?|issues?)\b", q):
         return IntentPlan(operation="team_table")
     profile_requested = bool(re.search(r"\b(profile|details|skills|projects|manager|about me|who am i)\b", q))
@@ -194,6 +294,13 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
     if profile_requested and not ticket_requested:
         return IntentPlan(operation="profile", entity=text.strip())
     if ticket_requested or ticket_id:
+        # Finding 3b: Unsupported priority negation must clarify instead of inverting to positive
+        if (
+            re.search(r"\b(?:not|non|except|excluding|other than)\s+(?:a\s+)?(critical|high|medium|low|urgent)\b", q)
+            or re.search(r"\b(critical|high|medium|low)\b.*\b(?:excluded|excepted|not included)\b", q)
+        ):
+            return IntentPlan(operation="clarify")
+
         view = "AREA" if "area" in q and "time" in q else "LINE" if re.search(r"\b(trend|timeline|over time|per day|line chart)\b", q) else "PIE" if "pie" in q or "donut" in q else "BAR" if "bar" in q or "chart" in q or "graph" in q else None
         has_closed = bool(re.search(r"\bclosed\b", q))
         has_open_or_unresolved = bool(re.search(r"\b(open|unresolved|not resolved|active)\b", q))
@@ -254,6 +361,32 @@ def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentP
     return IntentPlan(operation="clarify")
 
 
+def parse_local(text: str, state: Optional[ConversationState] = None) -> IntentPlan:
+    """Compound-aware intent interpreter with fast local recognition and safe clarify fallback."""
+    q = re.sub(r"\s+", " ", text.strip().lower())
+    if not q:
+        return IntentPlan(operation="clarify")
+
+    # Finding 4: Bounded compound query parsing ("Show my profile and my tickets", etc.)
+    compound_match = re.search(r"^(.*?)\s+(?:and(?:\s+also)?|as well as)\s+(.*?)$", q, re.I)
+    if compound_match and not re.search(r"\b(between|from|since)\b", q):
+        part1 = compound_match.group(1).strip()
+        part2 = compound_match.group(2).strip()
+        not_compound = (
+            re.search(r"^(?:in progress|pending|open|closed|resolved|blocked|critical|high|medium|low)$", part1)
+            or re.search(r"^(?:in progress|pending|open|closed|resolved|blocked|critical|high|medium|low)$", part2)
+            or re.search(r"\b\d{4}-\d{2}-\d{2}\b", part1)
+            or re.search(r"\b\d{4}-\d{2}-\d{2}\b", part2)
+        )
+        if not not_compound:
+            p1 = _parse_single(part1, state)
+            p2 = _parse_single(part2, state)
+            if p1.operation not in ("clarify", "compound") and p2.operation not in ("clarify", "compound"):
+                return IntentPlan(operation="compound", compound_plans=[p1, p2])
+
+    return _parse_single(text, state)
+
+
 class ConversationDispatcher:
     def __init__(self, scoped: Optional[ScopedAuthorizationService] = None):
         self.scoped = scoped or ScopedAuthorizationService.get_instance()
@@ -264,10 +397,18 @@ class ConversationDispatcher:
 
     def _result(self, state: ConversationState, result: ScopedProfileResult, operation: str,
                 visible_ids: Optional[List[str]] = None, source_rows: Optional[List[dict]] = None,
-                source_kind: Optional[str] = None, filter_state: Optional[dict] = None) -> ScopedProfileResult:
+                source_kind: Optional[str] = None, filter_state: Optional[dict] = None,
+                base_rows: Optional[List[dict]] = None) -> ScopedProfileResult:
         if result.is_authorized and result.result_block:
-            state.remember(ResultSnapshot(result.result_block, operation, visible_ids or [], source_rows or [], source_kind,
-                                          filter_state=filter_state or {}))
+            state.remember(ResultSnapshot(
+                block=result.result_block,
+                operation=operation,
+                visible_ids=visible_ids or [],
+                source_rows=source_rows or [],
+                base_rows=base_rows or source_rows or [],
+                source_kind=source_kind,
+                filter_state=filter_state or {},
+            ))
         return result
 
     def _resolve_profile_target(self, actor_id: str, phrase: Optional[str], state: ConversationState) -> Optional[str]:
@@ -362,32 +503,88 @@ class ConversationDispatcher:
                  spoken_text: str = "", evidence_digest: str = "") -> ScopedProfileResult:
         state = conversation_store.get(session_id, actor_id)
         op = plan.operation
-        if op in ("create_ticket", "update_ticket", "comment_ticket", "confirm", "cancel"):
+
+        # Finding 4: Bounded compound operations execution
+        if op == "compound" and plan.compound_plans:
+            results: List[ScopedProfileResult] = []
+            for sub_plan in plan.compound_plans[:3]:
+                res = self.dispatch(actor_id, session_id, sub_plan, spoken_text, evidence_digest)
+                results.append(res)
+
+            blocks: List[GenericResultBlock] = [r.result_block for r in results if r.result_block]
+            if not blocks:
+                return results[0] if results else self._deny("Unable to execute compound requests.")
+
+            spoken_parts = []
+            for idx, r in enumerate(results):
+                prefix = "" if idx == 0 else "Also, "
+                if r.is_authorized:
+                    spoken_parts.append(f"{prefix}{r.spoken_summary}")
+                else:
+                    spoken_parts.append(f"For the other request: {r.spoken_summary}")
+            combined_spoken = " ".join(spoken_parts)
+
+            for b in blocks:
+                if b.id not in state.snapshots:
+                    state.remember(ResultSnapshot(block=b, operation="compound", visible_ids=[]))
+            state.active_id = blocks[0].id
+
+            return ScopedProfileResult(
+                is_authorized=True,
+                spoken_summary=combined_spoken,
+                result_block=blocks[0],
+                result_blocks=blocks,
+            )
+
+        if op in ("create_ticket", "update_ticket", "comment_ticket", "confirm", "cancel", "update_contact"):
             action_store = self.scoped.ticket_service.store
             if not action_store:
-                return self._deny("Ticket changes are unavailable in this environment.")
+                return self._deny("Actions are unavailable in this environment.")
             employee = self.scoped.knowledge.get_employee_by_id(actor_id)
             report_ids = employee.get("reporting", {}).get("direct_report_ids", []) if employee else []
             try:
                 if op == "cancel":
                     cancelled = action_store.cancel(session_id)
-                    message = "The pending ticket change was cancelled." if cancelled else "There is no pending ticket change to cancel."
+                    message = "The pending action was cancelled." if cancelled else "There is no pending action to cancel."
                     return ScopedProfileResult(is_authorized=True, spoken_summary=message,
-                        result_block=block("PUBLIC_FAQ", "Ticket action", {"answer": message}, sensitive=False))
+                        result_block=block("PUBLIC_FAQ", "Action cancelled", {"answer": message}, sensitive=False))
                 if op == "confirm":
                     receipt = action_store.confirm(actor_id, session_id, spoken_text, evidence_digest, report_ids)
                     self.scoped.ticket_service.refresh_from_store()
+                    self.scoped.knowledge.refresh_if_stale()
+                    if receipt.get("action") == "update_contact" and receipt.get("new_value"):
+                        self.scoped.knowledge.update_employee_phone_in_memory(actor_id, receipt["new_value"])
                     state.snapshots.clear()
                     state.active_id = None
                     state.previous_id = None
-                    visual = block("ACTION_RECEIPT", "Committed ticket change", {
+                    title = "Committed contact change" if receipt.get("action") == "update_contact" else "Committed ticket change"
+                    visual = block("ACTION_RECEIPT", title, {
                         "receipt": receipt, "summary": f"{receipt['action']} committed for {receipt['resource_id']}."})
                     return self._result(state, ScopedProfileResult(is_authorized=True,
                         spoken_summary=f"The change to {receipt['resource_id']} was committed as event {receipt['event_id']}.",
                         result_block=visual), op)
-                params = action_store.parse_proposal(op, spoken_text, plan.ticket_id)
+
+                if op == "update_contact":
+                    if plan.entity and plan.entity.strip().upper() != actor_id.strip().upper():
+                        return self._deny("Policy denies editing contact details for other employees. You may only update your own contact details.")
+                    actor_emp = self.scoped.knowledge.get_employee_by_id(actor_id)
+                    if not actor_emp:
+                        return self._deny("Employee record not found for verified actor.")
+                    prof_mod_policy = actor_emp.get("permissions", {}).get("profile_modification", {})
+                    if prof_mod_policy.get("effect") != "ALLOW":
+                        return self._deny("Policy denies profile modification for this account.")
+
+                # Unified typed proposal path
+                params = action_store.build_typed_proposal(
+                    operation=op,
+                    ticket_id=plan.ticket_id,
+                    field=plan.field or ("phone" if op == "update_contact" else None),
+                    value=plan.value,
+                    utterance=spoken_text,
+                )
                 draft = action_store.propose(actor_id, session_id, op, plan.ticket_id, params, report_ids, evidence_digest)
-                visual = block("READBACK_CONFIRMATION", "Ticket change readback", {
+                readback_title = "Contact update readback" if op == "update_contact" else "Ticket change readback"
+                visual = block("READBACK_CONFIRMATION", readback_title, {
                     "draft": {"action": op, "target": draft["ticket_id"], "params": params,
                               "summary_readback": draft["readback"], "expires_in_seconds": 90},
                     "confirmation_id": draft["draft_id"], "expires_at": draft["expires_at"],
@@ -450,55 +647,137 @@ class ConversationDispatcher:
             employee = self.scoped.knowledge.get_employee_by_id(actor_id)
             if not employee:
                 return self._deny("Actor profile is unavailable.")
+
+            # Finding 1 & 2: Base rows cover the full authorized scope for this query dimension
+            base_plan = IntentPlan(operation="ticket_list", ticket_id=plan.ticket_id, person_filter=plan.person_filter)
+            base_rows = self._ticket_rows(actor_id, base_plan)
+
+            # Filter candidate rows applying priority, status, person, and date constraints FIRST
+            scoped_filtered_rows = self._ticket_rows(actor_id, plan)
+
+            # Finding 2: SLA Overdue with real as-of time, typed filters applied, and honest unknown states
             if plan.sla_metric == "overdue":
-                all_rows = self.scoped.ticket_service.get_scoped_tickets_for_actor(
-                    actor_id, employee.get("reporting", {}).get("direct_report_ids", []),
-                    is_executive=actor_id == "EMP-4002",
+                now_utc = datetime.now(timezone.utc)
+                as_of_date_str = now_utc.date().isoformat()
+
+                overdue_rows = []
+                at_risk_rows = []
+                on_track_rows = []
+                closed_rows = []
+                unknown_rows = []
+
+                for t in scoped_filtered_rows:
+                    st = t.get("status")
+                    sla_info = t.get("sla") or {}
+                    sla_res = sla_info.get("resolution_status")
+                    due_date = str(t.get("due_date", "")).strip()[:10]
+
+                    if st in ("Resolved", "Closed"):
+                        closed_rows.append(t)
+                    elif sla_res == "Breached" or (due_date and due_date < as_of_date_str):
+                        overdue_rows.append(t)
+                    elif sla_res == "At Risk" or (due_date and due_date == as_of_date_str):
+                        at_risk_rows.append(t)
+                    elif sla_res == "Within SLA" or (due_date and due_date > as_of_date_str):
+                        on_track_rows.append(t)
+                    else:
+                        unknown_rows.append(t)
+
+                chart_data = [
+                    {"label": "Overdue / Breached", "count": len(overdue_rows)},
+                    {"label": "At Risk / Due Today", "count": len(at_risk_rows)},
+                    {"label": "On Track", "count": len(on_track_rows)},
+                    {"label": "Resolved / Closed", "count": len(closed_rows)},
+                ]
+                if unknown_rows:
+                    chart_data.append({"label": "Unknown / No SLA", "count": len(unknown_rows)})
+
+                kpis = {
+                    "total_tickets": len(scoped_filtered_rows),
+                    "items": [
+                        {"label": "Overdue / Breached", "value": len(overdue_rows)},
+                        {"label": "At Risk / Due Today", "value": len(at_risk_rows)},
+                        {"label": "On Track", "value": len(on_track_rows)},
+                        {"label": "Resolved / Closed", "value": len(closed_rows)},
+                    ]
+                }
+                priority_ctx = f"{plan.priority_filter} priority " if plan.priority_filter else ""
+                person_ctx = f"for {plan.person_filter} " if plan.person_filter else ""
+                title_str = f"{priority_ctx}Overdue tickets {person_ctx}".strip()
+                visual = block("TEAM_METRIC_CHART", title_str or "Overdue tickets", {
+                    "chart_type": "BAR",
+                    "title": title_str or "Overdue tickets",
+                    "unit": "tickets",
+                    "data": chart_data,
+                    "kpis": kpis,
+                })
+                spoken = (
+                    f"As of {as_of_date_str}, there are {len(overdue_rows)} overdue or breached tickets "
+                    f"out of {len(scoped_filtered_rows)} authorized {priority_ctx}tickets."
                 )
-                def is_overdue(t: dict) -> bool:
-                    if t.get("status") in ("Resolved", "Closed"):
-                        return False
-                    if t.get("sla", {}).get("resolution_status") == "Breached":
-                        return True
-                    due = t.get("due_date")
-                    if due and str(due) <= "2026-10-16":
-                        return True
-                    return False
-                rows = [t for t in all_rows if is_overdue(t)]
-                visual = block("TEAM_METRIC_CHART", "Overdue tickets", {
-                    "chart_type": "BAR", "title": "Overdue tickets", "unit": "tickets",
-                    "data": [
-                        {"label": "Overdue / Breached", "count": len(rows)},
-                        {"label": "Within SLA", "count": len(all_rows) - len(rows)}
-                    ],
+                return self._result(
+                    state,
+                    ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                    op,
+                    [r["ticket_id"] for r in overdue_rows],
+                    overdue_rows,
+                    "tickets",
+                    filter_state={"sla_metric": "overdue", "priority_filter": plan.priority_filter, "person_filter": plan.person_filter},
+                    base_rows=scoped_filtered_rows,
+                )
+
+            # Finding 2: Honest SLA compliance metrics with clear eligible denominator and preserved Unknown state
+            elif plan.sla_metric == "compliance":
+                counts = Counter()
+                eligible_count = 0
+                compliant_count = 0
+
+                for t in scoped_filtered_rows:
+                    sla_info = t.get("sla")
+                    res_status = sla_info.get("resolution_status") if isinstance(sla_info, dict) else None
+                    if res_status:
+                        counts[res_status] += 1
+                        eligible_count += 1
+                        if res_status in ("Met", "Within SLA"):
+                            compliant_count += 1
+                    else:
+                        counts["Unknown / No SLA"] += 1
+
+                compliance_rate = round(compliant_count / eligible_count * 100, 1) if eligible_count > 0 else 0.0
+                data = [{"label": k, "count": counts[k]} for k in sorted(counts)]
+
+                priority_ctx = f"{plan.priority_filter} priority " if plan.priority_filter else ""
+                person_ctx = f"for {plan.person_filter} " if plan.person_filter else ""
+                title_str = f"{priority_ctx}Ticket SLA compliance {person_ctx}".strip()
+                visual = block("TEAM_METRIC_CHART", title_str or "Ticket SLA compliance", {
+                    "chart_type": "BAR",
+                    "title": title_str or "Ticket SLA compliance",
+                    "unit": "tickets",
+                    "data": data,
                     "kpis": {
-                        "total_tickets": len(all_rows),
-                        "items": [
-                            {"label": "Overdue / Breached", "value": len(rows)},
-                            {"label": "Within SLA", "value": len(all_rows) - len(rows)}
-                        ]
+                        "total_evaluated": len(scoped_filtered_rows),
+                        "eligible_with_sla": eligible_count,
+                        "compliance_rate_pct": compliance_rate,
+                        "items": [{"label": k, "value": counts[k]} for k in sorted(counts)],
                     },
                 })
-                spoken = f"There are {len(rows)} overdue or breached tickets in your authorized scope of {len(all_rows)} tickets."
-                return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
-                                    op, [r["ticket_id"] for r in rows], rows, "tickets")
-            elif plan.sla_metric == "compliance":
-                all_rows = self.scoped.ticket_service.get_scoped_tickets_for_actor(
-                    actor_id, employee.get("reporting", {}).get("direct_report_ids", []),
-                    is_executive=actor_id == "EMP-4002",
+                breakdown_str = ", ".join(f"{k}: {counts[k]}" for k in sorted(counts))
+                spoken = (
+                    f"SLA compliance across {len(scoped_filtered_rows)} authorized {priority_ctx}tickets: "
+                    f"{compliance_rate}% compliant ({compliant_count}/{eligible_count} with targets). {breakdown_str}."
                 )
-                counts = Counter(t.get("sla", {}).get("resolution_status") or "Within SLA" for t in all_rows)
-                data = [{"label": k, "count": counts[k]} for k in sorted(counts)]
-                visual = block("TEAM_METRIC_CHART", "Ticket SLA compliance", {
-                    "chart_type": "BAR", "title": "Ticket SLA compliance", "unit": "tickets",
-                    "data": data,
-                    "kpis": {"total_tickets": len(all_rows), "items": [{"label": k, "value": counts[k]} for k in sorted(counts)]},
-                })
-                spoken = f"SLA compliance across {len(all_rows)} authorized tickets: " + ", ".join(f"{k}: {counts[k]}" for k in sorted(counts)) + "."
-                return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
-                                    op, [r["ticket_id"] for r in all_rows], all_rows, "tickets")
+                return self._result(
+                    state,
+                    ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                    op,
+                    [r["ticket_id"] for r in scoped_filtered_rows],
+                    scoped_filtered_rows,
+                    "tickets",
+                    filter_state={"sla_metric": "compliance", "priority_filter": plan.priority_filter, "person_filter": plan.person_filter},
+                    base_rows=scoped_filtered_rows,
+                )
 
-            rows = self._ticket_rows(actor_id, plan)
+            rows = scoped_filtered_rows
             if plan.ticket_id and not rows:
                 return self._deny("That ticket is unavailable within your permitted scope.")
             filter_state = {
@@ -519,18 +798,27 @@ class ConversationDispatcher:
                 })
                 spoken = f"Showing {len(rows)} authorized tickets."
             return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
-                                op, [r["ticket_id"] for r in rows], rows, "tickets", filter_state=filter_state)
+                                op, [r["ticket_id"] for r in rows], rows, "tickets", filter_state=filter_state, base_rows=base_rows)
+
+        # Finding 1: Recharting with dimension replacement against retained base_rows
         if op == "rechart":
             active = state.snapshots.get(state.active_id or "")
             if not active or active.source_kind != "tickets":
                 return self._deny("There is no current authorized ticket result to change views.")
-            rows = list(active.source_rows)
-            priority_filter = plan.priority_filter or active.filter_state.get("priority_filter")
-            status_filter = plan.status_filter or active.filter_state.get("status_filter")
-            from_date = plan.from_date or active.filter_state.get("from_date")
-            to_date = plan.to_date or active.filter_state.get("to_date")
-            group_by = plan.group_by or active.filter_state.get("group_by") or "priority"
 
+            # Base candidate rows are the full authorized scope for this ticket view
+            candidate_rows = list(active.base_rows) if active.base_rows else list(active.source_rows)
+            if not candidate_rows:
+                candidate_rows = self._ticket_rows(actor_id, IntentPlan(operation="ticket_list"))
+
+            # Replace vs intersect dimension semantics
+            priority_filter = plan.priority_filter if plan.priority_filter is not None else active.filter_state.get("priority_filter")
+            status_filter = plan.status_filter if plan.status_filter is not None else active.filter_state.get("status_filter")
+            from_date = plan.from_date if plan.from_date is not None else active.filter_state.get("from_date")
+            to_date = plan.to_date if plan.to_date is not None else active.filter_state.get("to_date")
+            group_by = plan.group_by or active.filter_state.get("group_by") or ("status" if status_filter else "priority")
+
+            rows = list(candidate_rows)
             if priority_filter:
                 rows = [r for r in rows if r.get("priority") == priority_filter]
             if status_filter:
@@ -566,5 +854,131 @@ class ConversationDispatcher:
                 "group_by": group_by,
             }
             return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
-                                op, [r["ticket_id"] for r in rows], rows, "tickets", filter_state=new_filter_state)
+                                op, [r["ticket_id"] for r in rows], rows, "tickets", filter_state=new_filter_state, base_rows=candidate_rows)
+        if op == "headcount":
+            if plan.unresolved_location:
+                loc = plan.unresolved_location
+                msg = f"I heard '{loc}' as the location. Our demo directory only covers Bengaluru. Would you like the headcount for Bengaluru?"
+                return ScopedProfileResult(
+                    is_authorized=True,
+                    status_code=200,
+                    spoken_summary=msg,
+                    result_block=None,
+                    clarification_reason="UNRESOLVED_LOCATION",
+                )
+
+            if plan.scope in ("company", "location"):
+                if actor_id != "EMP-4002":
+                    return self._deny("Access denied. Organization-wide headcount is restricted to executive leadership.")
+
+                if plan.location and plan.location.lower() not in ("bengaluru", "bangalore"):
+                    msg = f"Location '{plan.location}' has no recorded employees in our directory."
+                    return ScopedProfileResult(
+                        is_authorized=True,
+                        status_code=200,
+                        spoken_summary=msg,
+                        result_block=None,
+                        clarification_reason="LOCATION_NO_RECORDS",
+                    )
+
+                total_count = len(self.scoped.knowledge.list_all_employees())
+                visual = block("TEAM_METRIC_CHART", "Company headcount", {
+                    "chart_type": "BAR",
+                    "title": "Company headcount",
+                    "category": "Workforce Analytics",
+                    "unit": "employees",
+                    "scope_description": "Organization-wide aggregate headcount (Demo directory)",
+                    "data": [{"label": "Bengaluru (HQ)", "count": total_count}],
+                    "kpis": {
+                        "items": [
+                            {"label": "Total Headcount", "value": total_count},
+                            {"label": "Location", "value": "Bengaluru (100%)"},
+                            {"label": "Coverage", "value": f"Demo Directory ({total_count} records)"},
+                        ],
+                    },
+                })
+                spoken = f"The company currently has {total_count} employees across the Bengaluru site in the demo directory."
+                return self._result(
+                    state,
+                    ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                    op,
+                    [],
+                    [],
+                    "headcount",
+                )
+
+            if plan.scope == "direct_reports":
+                direct = self.scoped.knowledge.get_direct_reports(actor_id)
+                count = len(direct)
+                root = self.scoped.knowledge.get_employee_by_id(actor_id)
+                name = root["identity"]["full_name"] if root else "You"
+                visual = block("TEAM_METRIC_CHART", "Direct reports", {
+                    "chart_type": "BAR",
+                    "title": "Direct reports",
+                    "category": "Manager Analytics",
+                    "unit": "people",
+                    "data": [{"label": "Direct reports", "count": count}],
+                    "kpis": {"items": [{"label": "Direct reports", "value": count}]},
+                })
+                spoken = f"{name} has {count} direct report{'s' if count != 1 else ''}."
+                return self._result(
+                    state,
+                    ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                    op,
+                    [p["employee_id"] for p in direct],
+                )
+
+            if plan.scope == "reporting_tree":
+                people = self._team(actor_id, descendants=True)
+                count = len(people)
+                visual = block("TEAM_METRIC_CHART", "Reporting tree headcount", {
+                    "chart_type": "BAR",
+                    "title": "Reporting tree headcount",
+                    "category": "Manager Analytics",
+                    "unit": "people",
+                    "data": [{"label": "Reporting tree", "count": count}],
+                    "kpis": {"items": [{"label": "Total in tree", "value": count}]},
+                })
+                spoken = f"{count} employees report within your reporting structure."
+                return self._result(
+                    state,
+                    ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                    op,
+                    [p["employee_id"] for p in people],
+                )
+
+            if plan.scope == "department" and plan.department:
+                if actor_id != "EMP-4002":
+                    return self._deny("Access denied. Department-level headcount is restricted to executive leadership.")
+                dept_norm = plan.department.strip().lower()
+                emps = self.scoped.knowledge.employees_by_department.get(dept_norm, [])
+                count = len(emps)
+                visual = block("TEAM_METRIC_CHART", f"{plan.department} department headcount", {
+                    "chart_type": "BAR",
+                    "title": f"{plan.department} headcount",
+                    "category": "Workforce Analytics",
+                    "unit": "employees",
+                    "data": [{"label": plan.department, "count": count}],
+                    "kpis": {"items": [{"label": f"{plan.department} Headcount", "value": count}]},
+                })
+                spoken = f"There are {count} employees in the {plan.department} department."
+                return self._result(
+                    state,
+                    ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
+                    op,
+                    [],
+                    [],
+                    "headcount",
+                )
+
+        if op == "clarify":
+            msg = "Please ask for a profile, direct reports, reporting tree, tickets, or headcount."
+            return ScopedProfileResult(
+                is_authorized=True,
+                status_code=200,
+                spoken_summary=msg,
+                result_block=None,
+                clarification_reason="UNRECOGNIZED_REQUEST",
+            )
+
         return self._deny("I can help with profiles, direct reports, reporting trees, and scoped tickets. Please specify one of those requests.")

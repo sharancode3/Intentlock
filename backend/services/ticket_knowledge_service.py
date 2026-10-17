@@ -27,7 +27,14 @@ class TicketKnowledgeService:
             self.data_path = os.path.join(base_dir, "data", "all_tickets.json")
 
         self.is_loaded: bool = False
-        self.store = TicketActionStore(seed_path=self.data_path) if data_path is None else None
+        if data_path is None:
+            if settings.STORAGE_BACKEND == "postgres":
+                from backend.adapters.postgres_ticket_action_store import PostgresTicketActionStore
+                self.store = PostgresTicketActionStore.get_instance()
+            else:
+                self.store = TicketActionStore(seed_path=self.data_path)
+        else:
+            self.store = None
         self._raw_tickets: List[Dict[str, Any]] = []
 
         # Normalized in-memory indexes
