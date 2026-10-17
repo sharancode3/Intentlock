@@ -121,6 +121,9 @@ def make_dummy_wav():
 def setup_stage3_environment():
     """Ensure canonical enrollments for the three demo personas in mapping store."""
     store = IdentityMappingStore.get_instance()
+    with store._get_connection() as conn:
+        conn.execute("DELETE FROM idempotency_records")
+        conn.execute("DELETE FROM voice_sessions")
     # Persona A: EMP-1001 (Aarav Mehta, L1, Software Engineer)
     store.upsert_mapping("EMP-1001", "emp_1001_aarav", display_name="Aarav Mehta", enrollment_status="ENROLLED", sample_count=1)
     # Persona B: EMP-2001 (Priya Sharma, L3, Engineering Manager)
