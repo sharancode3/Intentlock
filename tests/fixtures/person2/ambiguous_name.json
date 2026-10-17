@@ -1,0 +1,20 @@
+{
+  "contract_status": "Proposed only",
+  "category": "entities",
+  "description": "Target employee name matches multiple directory records and requires disambiguation",
+  "input": {
+    "utterance": "Show John's profile",
+    "actor_id": "EMP-2001",
+    "session_state": "VERIFIED"
+  },
+  "plan": {
+    "operation": "clarify",
+    "entity": "John"
+  },
+  "expected_output": {
+    "status": "clarification",
+    "clarification_reason": "AMBIGUOUS_PERSON_NAME",
+    "result_block": null,
+    "spoken_summary": "I found multiple employees named John. Did you mean John Doe in Engineering or John Smith in Sales?"
+  }
+}

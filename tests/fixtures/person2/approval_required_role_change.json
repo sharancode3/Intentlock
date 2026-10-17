@@ -1,0 +1,21 @@
+{
+  "contract_status": "Proposed only",
+  "category": "actions",
+  "description": "Promotion or role change request requires formal HR workflow approval, not direct kiosk execution",
+  "input": {
+    "utterance": "Promote Aarav to Senior Engineer",
+    "actor_id": "EMP-2001",
+    "session_state": "VERIFIED"
+  },
+  "plan": {
+    "operation": "clarify",
+    "entity": "EMP-1001",
+    "value": "Senior Engineer"
+  },
+  "expected_output": {
+    "status": "denied",
+    "block_type": "DENIAL_BANNER",
+    "reason": "APPROVAL_WORKFLOW_REQUIRED",
+    "spoken_summary": "Designation and promotion changes cannot be executed directly at the kiosk. Please submit a promotion recommendation through the HR portal."
+  }
+}

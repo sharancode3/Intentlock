@@ -12,13 +12,24 @@ import uuid
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.core.scoped_authorization import ScopedAuthorizationService, ScopedProfileResult
 from backend.models.turn import GenericResultBlock
 from backend.services.ticket_action_store import ActionError
+from backend.services.context_service import (
+    ContextService,
+    DatasetStatus,
+    FilterActionClassification,
+    MissingRequiredReferenceError,
+    OrdinalOutOfRangeError,
+    ResourceKindMismatchError,
+    SelectionReference,
+    apply_filter_transition,
+    classify_filter_action,
+)
 
 
 Operation = Literal[
@@ -42,7 +53,7 @@ class IntentPlan(BaseModel):
     status_filter: Optional[Literal["Open", "In Progress", "Pending", "Blocked", "Resolved", "Closed", "Unresolved", "Not Closed"]] = None
     priority_filter: Optional[Literal["Critical", "High", "Medium", "Low"]] = None
     descendants: bool = False
-    field: Optional[Literal["description", "status", "priority"]] = None
+    field: Optional[Literal["description", "status", "priority", "phone"]] = None
     value: Optional[str] = Field(default=None, max_length=500)
     from_date: Optional[date] = None
     to_date: Optional[date] = None
@@ -51,6 +62,24 @@ class IntentPlan(BaseModel):
     location: Optional[str] = Field(default=None, max_length=64)
     department: Optional[str] = Field(default=None, max_length=64)
     unresolved_location: Optional[str] = Field(default=None, max_length=64)
+    actor_claim: Optional[str] = Field(default=None, max_length=32, description="Explicit employee ID claimed by speaker, e.g. EMP-4002")
+    selected_id: Optional[str] = Field(default=None, max_length=64, description="Contextual entity or ticket ID reference, e.g. selected ticket or clicked person")
+    filter_action: Optional[Literal["refine", "replace", "clear"]] = Field(default=None, description="Explicit filter mutation semantic")
+
+
+class PlannerContext(BaseModel):
+    """Bounded, safe conversational context for semantic planning.
+
+    Contains NO database credentials, NO raw audio, NO full directory dumps,
+    and NO unauthenticated client authority.
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    has_active_result: bool = False
+    source_kind: Optional[str] = None
+    selected_ticket_id: Optional[str] = None
+    selected_employee_id: Optional[str] = None
+    active_filters: Dict[str, Any] = Field(default_factory=dict)
 
 
 @dataclass
@@ -63,6 +92,16 @@ class ResultSnapshot:
     source_kind: Optional[str] = None
     created_at: float = field(default_factory=time.time)
     filter_state: Dict[str, Any] = field(default_factory=dict)
+    dataset_status: DatasetStatus = field(default=DatasetStatus.POPULATED)
+
+    def __post_init__(self) -> None:
+        if self.base_rows is not None and len(self.base_rows) == 0:
+            self.dataset_status = DatasetStatus.EMPTY_AUTHORIZED
+
+    @property
+    def filters(self) -> Dict[str, Any]:
+        """Convenience property alias for filter_state."""
+        return self.filter_state
 
 
 @dataclass
@@ -72,14 +111,64 @@ class ConversationState:
     active_id: Optional[str] = None
     previous_id: Optional[str] = None
     selected_ticket_id: Optional[str] = None
+    selected_employee_id: Optional[str] = None
+    selected_ticket: Optional[SelectionReference] = None
+    selected_employee: Optional[SelectionReference] = None
+    navigation_history: List[str] = field(default_factory=list)
+    context_version: int = 1
     last_accessed: float = field(default_factory=time.time)
+
+    @property
+    def active_snapshot(self) -> Optional[ResultSnapshot]:
+        """Convenience accessor returning the active ResultSnapshot, if present."""
+        return self.snapshots.get(self.active_id) if self.active_id else None
+
+    def select_ticket(self, ticket_id: str, source_result_id: str, order_idx: Optional[int] = None) -> None:
+        self.selected_ticket_id = ticket_id
+        self.selected_ticket = SelectionReference(
+            resource_kind="ticket",
+            resource_id=ticket_id,
+            source_result_id=source_result_id,
+            display_order_index=order_idx,
+        )
+        self.context_version += 1
+        self.last_accessed = time.time()
+
+    def select_employee(self, employee_id: str, source_result_id: str, order_idx: Optional[int] = None) -> None:
+        self.selected_employee_id = employee_id
+        self.selected_employee = SelectionReference(
+            resource_kind="employee",
+            resource_id=employee_id,
+            source_result_id=source_result_id,
+            display_order_index=order_idx,
+        )
+        self.context_version += 1
+        self.last_accessed = time.time()
+
+    def navigate_back(self) -> Optional[ResultSnapshot]:
+        if not self.navigation_history:
+            return None
+        prev_id = self.navigation_history.pop()
+        while prev_id == self.active_id and self.navigation_history:
+            prev_id = self.navigation_history.pop()
+        if prev_id != self.active_id and prev_id in self.snapshots:
+            self.previous_id = self.active_id
+            self.active_id = prev_id
+            self.context_version += 1
+            return self.snapshots[prev_id]
+        return None
 
     def remember(self, snapshot: ResultSnapshot) -> None:
         self.last_accessed = time.time()
-        if self.active_id != snapshot.block.id:
+        if self.active_id and self.active_id != snapshot.block.id:
             self.previous_id = self.active_id
+            if not self.navigation_history or self.navigation_history[-1] != self.active_id:
+                self.navigation_history.append(self.active_id)
+                if len(self.navigation_history) > 10:
+                    self.navigation_history.pop(0)
         self.snapshots[snapshot.block.id] = snapshot
         self.active_id = snapshot.block.id
+        self.context_version += 1
         while len(self.snapshots) > 12:
             oldest = next(iter(self.snapshots))
             self.snapshots.pop(oldest)
@@ -139,20 +228,13 @@ def block(kind: str, title: str, payload: dict, sensitive: bool = True) -> Gener
 
 
 def _parse_single(text: str, state: Optional[ConversationState] = None) -> IntentPlan:
-    """Parses a single intent clause without compound coordination."""
+    """Parses a single intent clause with strict negation, quotation, and mutation boundaries."""
     q = re.sub(r"\s+", " ", text.strip().lower())
     ticket = re.search(r"\bTKT[-_ ]?\d{4}[-_ ]?\d{3}\b", text, re.I)
     ticket_id = re.sub(r"[_ ]", "-", ticket.group().upper()) if ticket else None
     if not q:
         return IntentPlan(operation="clarify")
-    if re.search(r"\b(cancel|never mind|discard)\b", q):
-        return IntentPlan(operation="cancel")
-    if re.search(r"\b(i confirm|confirm the change|yes, confirm)\b", q):
-        return IntentPlan(operation="confirm")
-    if re.search(r"\b(help|what can you do|how do i use)\b", q) and not re.search(r"\b(my|ticket|team|profile)\b", q):
-        return IntentPlan(operation="help")
-    if re.search(r"\b(back to|go back|previous (view|result))\b", q):
-        return IntentPlan(operation="back")
+
     context_ticket = None
     if state:
         if state.selected_ticket_id:
@@ -161,23 +243,89 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
             active = state.snapshots.get(state.active_id)
             if active and active.source_kind == "tickets" and len(active.visible_ids) == 1:
                 context_ticket = active.visible_ids[0]
+
+    # Step 1: Ticket Comment Parsing (MUST precede cancel/confirm to protect quotes)
+    if (ticket_id or context_ticket) and re.search(r"\b(?:add|post|leave)\b.*\bcomment\b", q):
+        quote_match = re.search(r"['\"]([^'\"]+)['\"]", text)
+        if quote_match:
+            comment_val = quote_match.group(1).strip()
+        else:
+            after_comment = re.search(r"\bcomment(?:\s+is|:)?\s+([^\.]+)", text, re.I)
+            comment_val = after_comment.group(1).strip() if after_comment else text.strip()
+        return IntentPlan(operation="comment_ticket", ticket_id=ticket_id or context_ticket, value=comment_val)
+
+    # Step 2: Unquoted string for exact command and negation evaluation
+    unquoted_q = re.sub(r"['\"][^'\"]+['\"]", "", q).strip()
+
+    # Step 3: Negation, Question, and Parameter-Modification Guards
+    is_negated_cancel = bool(re.search(r"\b(?:do\s+not|don't|not|never)\s+cancel\b", unquoted_q))
+    is_negated_confirm = bool(re.search(r"\b(?:do\s+not|don't|not|never)\s+confirm\b", unquoted_q))
+    is_question_action = bool(
+        re.search(r"\b(?:what\s+happens\s+if(?:\s+i)?|can\s+i|how\s+do\s+i|should\s+i|could\s+i|will\s+it)\s+(?:confirm|cancel)\b", unquoted_q)
+        or ("?" in unquoted_q and re.search(r"\b(?:confirm|cancel)\b", unquoted_q))
+    )
+    is_param_change = bool(re.search(r"\byes,\s*but\b", unquoted_q))
+
+    # Cancel command check
+    if not is_negated_cancel and not is_question_action:
+        if re.search(r"^(?:(?:i\s+)?cancel(?:\s+(?:action|proposal|this|draft))?|abort|nevermind|discard)\.?$", unquoted_q) or (
+            re.search(r"\b(?:cancel\s+(?:the\s+)?(?:action|proposal|draft|change))\b", unquoted_q)
+            and not re.search(r"\b(?:ticket|comment|create|update)\b", unquoted_q)
+        ):
+            return IntentPlan(operation="cancel")
+
+    # Confirm command check
+    if not is_negated_confirm and not is_question_action and not is_param_change:
+        if (
+            re.search(r"\b(?:i\s+confirm|confirm\s+the\s+change|yes,\s*confirm)\b", unquoted_q)
+            or re.search(r"^(?:(?:i\s+)?confirm(?:\s+(?:action|proposal|this|change|update))?)\.?$", unquoted_q)
+        ):
+            return IntentPlan(operation="confirm")
+
+    if re.search(r"\b(help|what can you do|how do i use)\b", q) and not re.search(r"\b(my|ticket|team|profile)\b", q):
+        return IntentPlan(operation="help")
+    if re.search(r"\b(back to|go back|previous (view|result))\b", q):
+        return IntentPlan(operation="back")
+
     if context_ticket and re.search(r"\b(?:open|show|view|details\s+for)\s+(?:this|the)\s+ticket\b", q):
         return IntentPlan(operation="ticket_list", ticket_id=context_ticket)
-    # Protected contact update recognition
+
+    # Step 4: Reporting, Designation, and Application-Role Changes (Distinct from ticket/contact edits)
+    if re.search(r"\b(?:move|transfer)\b.*\bunder\b", q) or re.search(r"\bchange\s+manager\s+to\b", q):
+        return IntentPlan(operation="clarify", value="Reporting manager changes require administrator approval and cannot be executed directly via the helpdesk.")
+
+    if re.search(r"\bmake\b.*\ba\s+manager\b", q):
+        return IntentPlan(operation="clarify", value="Please specify whether you want to change their job designation, update their reporting manager, or request an authorization role change.")
+
+    if re.search(r"\brecommend\b.*\bfor\s+promotion\b", q):
+        return IntentPlan(operation="clarify", value="Promotion recommendations are recorded in performance reviews and cannot be executed as an immediate role change.")
+
+    if re.search(r"\b(?:give|grant)\b.*\b(?:admin|administrator|executive)\s+(?:access|role|permissions?)\b", q):
+        return IntentPlan(operation="clarify", value="Administrative role changes require security administrator privileges and cannot be executed via the helpdesk.")
+
+    # Step 5: Protected Contact Update Recognition
     if re.search(r"\b(?:update|change|set)\b.*\b(?:phone|contact|mobile)\b", q):
         target_match = re.search(r"\b((?:EMP|RND|EXE)[-_ ]?\d{4})\b", text, re.I)
         target_eid = target_match.group(1).upper().replace(" ", "-") if target_match else None
+        if not target_eid:
+            name_match = re.search(r"\b(?:update|change|set)\s+([A-Z][a-z]+)'s\s+(?:phone|contact|mobile)\b", text)
+            if name_match:
+                target_eid = name_match.group(1).strip()
+
+        target_digits = re.sub(r"[^\d]", "", target_eid) if target_eid else ""
         phone_candidates = re.findall(r"(\+?[0-9][0-9\s\-\(\)\.]{5,25}[0-9])", text)
         phone_val = None
         for cand in phone_candidates:
-            if len(re.sub(r"[^\d]", "", cand)) >= 7:
+            clean_digits = re.sub(r"[^\d]", "", cand)
+            if len(clean_digits) >= 7 and clean_digits != target_digits:
                 phone_val = cand.strip()
                 break
-        if not phone_val:
-            phone_val = text.strip()
-        return IntentPlan(operation="update_contact", entity=target_eid, value=phone_val)
 
-    # Finding 3a: Do not route to employee profile if SLA or ticket metrics are requested
+        if not phone_val:
+            return IntentPlan(operation="clarify", entity=target_eid, field="phone", value="Please provide the phone number to update.")
+        return IntentPlan(operation="update_contact", entity=target_eid, field="phone", value=phone_val)
+
+    # Step 6: Employee Profile Routing
     if (
         re.search(r"\b(?:EMP|RND|EXE)[-_ ]?\d{4}\b", text, re.I)
         and not re.search(r"\bTKT[-_ ]?\d{4}", text, re.I)
@@ -186,18 +334,62 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
         return IntentPlan(operation="profile", entity=text.strip())
     if state and state.active_id and re.search(r"\b(?:open|show|view)\s+(?:the\s+)?(?:first|second|third|fourth)\s+person\b", q):
         return IntentPlan(operation="profile", entity=text.strip())
-    if re.search(r"\b(create|raise|file|submit)\b.*\b(ticket|issue)\b", q) and not ticket_id:
-        return IntentPlan(operation="create_ticket", value=text.strip())
-    if (ticket_id or context_ticket) and re.search(r"\b(add|post|leave)\b.*\bcomment\b", q):
-        return IntentPlan(operation="comment_ticket", ticket_id=ticket_id or context_ticket, value=text.strip())
 
-    # Finding 3c: Visual presentation changes must not be captured by update_ticket
+    # Step 7: Ticket Creation
+    if re.search(r"\b(create|raise|file|submit)\b.*\b(ticket|issue)\b", q) and not ticket_id:
+        title_match = re.search(r"\b(?:create|raise|file|submit)\s+(?:a\s+)?(?:ticket|issue)(?:\s+(?:titled|about|for))?\s+['\"]?([^'\"\.]+)['\"]?", text, re.I)
+        val = title_match.group(1).strip() if title_match else text.strip()
+        return IntentPlan(operation="create_ticket", value=val)
+
+    # Step 8: Ticket Updates
     is_presentation_intent = bool(re.search(r"\b(chart|graph|table|view|pie|bar|trend|timeline|tree)\b", q))
     if not is_presentation_intent and (ticket_id or context_ticket) and re.search(r"\b(change|update|set|mark)\b", q):
-        field = next((item for item in ("priority", "status", "description") if item in q), None)
-        is_status_mark = bool(re.search(r"\bmark\s+(?:it|this ticket)?\s*(?:as)?\s+(resolved|closed|in progress|open|blocked)\b", q))
-        if field or is_status_mark or re.search(r"\b(priority|status|description)\b", q):
+        field = None
+        val = None
+        status_match = re.search(
+            r"\b(?:mark|set|update|change)\s+(?:(?:the\s+)?ticket\s+)?(?:TKT[-_ ]?\d{4}[-_ ]?\d{3}|it|this ticket)?\s*(?:as|status to|to)?\s*(resolved|closed|in progress|open|blocked)\b",
+            q,
+        ) or re.search(r"\b(?:as|status to|to)\s+(resolved|closed|in progress|open|blocked)\b", q)
+        priority_match = re.search(
+            r"\b(?:set|change|update)\s+(?:(?:the\s+)?ticket\s+)?(?:TKT[-_ ]?\d{4}[-_ ]?\d{3}|it|this ticket)?\s*(?:priority\s+(?:to|as)?|it to|to)?\s*(critical|urgent|high|medium|normal|low)\b",
+            q,
+        ) or re.search(r"\bpriority\s+(?:to|is)\s*(critical|urgent|high|medium|normal|low)\b", q)
+
+        if status_match:
+            field = "status"
+            raw_s = status_match.group(1).strip()
+            if raw_s in ("in progress", "in_progress"):
+                val = "In Progress"
+            elif raw_s == "resolved":
+                val = "Resolved"
+            elif raw_s == "closed":
+                val = "Closed"
+            elif raw_s == "blocked":
+                val = "Blocked"
+            else:
+                val = "Open"
+        elif priority_match:
+            field = "priority"
+            raw_p = priority_match.group(1).strip()
+            if raw_p in ("critical", "urgent"):
+                val = "Critical"
+            elif raw_p == "high":
+                val = "High"
+            elif raw_p in ("medium", "normal"):
+                val = "Medium"
+            else:
+                val = "Low"
+        elif "description" in q:
+            field = "description"
+            desc_match = re.search(r"\bdescription(?:\s+to|:)?\s+([^\.]+)", text, re.I)
+            val = desc_match.group(1).strip() if desc_match else text.strip()
+
+        if field and val:
+            return IntentPlan(operation="update_ticket", ticket_id=ticket_id or context_ticket, field=field, value=val)
+        elif field or re.search(r"\b(priority|status|description)\b", q):
+            field = field or next((item for item in ("priority", "status", "description") if item in q), None)
             return IntentPlan(operation="update_ticket", ticket_id=ticket_id or context_ticket, field=field, value=text.strip())
+
 
     if state and state.active_id and re.search(r"\b(this|that|those|same|instead|only|change|switch)\b", q) and re.search(r"\b(table|bar|pie|chart|trend|timeline)\b", q):
         view = "TABLE" if "table" in q else "PIE" if "pie" in q else "AREA" if "area" in q else "LINE" if "line" in q or "trend" in q or "timeline" in q else "BAR"
@@ -400,52 +592,70 @@ class ConversationDispatcher:
                 source_kind: Optional[str] = None, filter_state: Optional[dict] = None,
                 base_rows: Optional[List[dict]] = None) -> ScopedProfileResult:
         if result.is_authorized and result.result_block:
+            resolved_base_rows = base_rows if base_rows is not None else (source_rows if source_rows is not None else [])
             state.remember(ResultSnapshot(
                 block=result.result_block,
                 operation=operation,
                 visible_ids=visible_ids or [],
-                source_rows=source_rows or [],
-                base_rows=base_rows or source_rows or [],
+                source_rows=source_rows if source_rows is not None else [],
+                base_rows=resolved_base_rows,
                 source_kind=source_kind,
                 filter_state=filter_state or {},
             ))
         return result
 
     def _resolve_profile_target(self, actor_id: str, phrase: Optional[str], state: ConversationState) -> Optional[str]:
-        if not phrase or re.search(r"\b(?:my profile|about me|who am i|myself)\b", phrase, re.I):
-            return actor_id
-        if re.search(r"\b(?:my|the)\s+manager\b", phrase, re.I):
+        from backend.services.entity_scope_resolver import resolve_entity_reference
+
+        direct_reports = self.scoped.knowledge.get_direct_reports(actor_id) if actor_id else []
+        visible_candidates = list(direct_reports)
+        if actor_id:
             actor_emp = self.scoped.knowledge.get_employee_by_id(actor_id)
-            return actor_emp.get("reporting", {}).get("manager_id") if actor_emp else None
-        visible = [actor_id] + [e["employee_id"] for e in self.scoped.knowledge.get_direct_reports(actor_id)]
+            if actor_emp:
+                visible_candidates.append(actor_emp)
+
         active = state.snapshots.get(state.active_id or "")
-        if active:
-            visible += active.visible_ids
-            ordinal = re.search(r"\b(first|second|third|fourth) person\b", phrase, re.I)
-            if ordinal:
-                index = {"first": 0, "second": 1, "third": 2, "fourth": 3}[ordinal.group(1).lower()]
-                return active.visible_ids[index] if index < len(active.visible_ids) else None
-        visible = list(dict.fromkeys(visible))
-        for employee_id in visible:
-            employee = self.scoped.knowledge.get_employee_by_id(employee_id)
-            if not employee:
-                continue
-            name = employee.get("identity", {}).get("full_name", "")
-            first = name.split()[0] if name else ""
-            if re.search(rf"\b{re.escape(employee_id)}\b", phrase, re.I) or (first and re.search(rf"\b{re.escape(first)}\b", phrase, re.I)):
-                return employee_id
-        if re.search(r"\b(my|me|myself)\b", phrase, re.I):
-            return actor_id
+        active_ids = list(active.visible_ids) if active else []
+        for vid in active_ids:
+            vemp = self.scoped.knowledge.get_employee_by_id(vid)
+            if vemp and vemp not in visible_candidates:
+                visible_candidates.append(vemp)
+
+        def get_mgr(eid: str) -> Optional[str]:
+            emp = self.scoped.knowledge.get_employee_by_id(eid)
+            return emp.get("reporting", {}).get("manager_id") if emp else None
+
+        res = resolve_entity_reference(
+            phrase=phrase,
+            actor_id=actor_id,
+            visible_candidates=visible_candidates,
+            selected_employee_id=state.selected_employee_id,
+            selected_ticket_id=state.selected_ticket_id,
+            active_visible_ids=active_ids,
+            get_manager_func=get_mgr,
+        )
+        if res.status == "Resolved" and res.resolved_id:
+            return res.resolved_id
         return None
 
     def _team(self, actor_id: str, descendants: bool) -> List[dict]:
         direct = self.scoped.knowledge.get_direct_reports(actor_id)
-        if not descendants or actor_id != "EMP-4002":
+        if not descendants:
             return direct[:30]
-        result = list(direct)
-        for person in direct:
-            result.extend(self.scoped.knowledge.get_direct_reports(person["employee_id"]))
-        return result[:30]
+        from backend.services.entity_scope_resolver import traverse_reporting_tree
+        traversal = traverse_reporting_tree(
+            root_id=actor_id,
+            get_reports_func=self.scoped.knowledge.get_direct_reports,
+            include_root=False,
+            max_depth=5,
+            max_nodes=100,
+        )
+        all_members = []
+        for mid in traversal.member_ids:
+            m_emp = self.scoped.knowledge.get_employee_by_id(mid)
+            if m_emp:
+                all_members.append(m_emp)
+        return all_members if all_members else direct[:30]
 
     def _ticket_rows(self, actor_id: str, plan: IntentPlan) -> List[dict]:
         employee = self.scoped.knowledge.get_employee_by_id(actor_id)
@@ -544,7 +754,12 @@ class ConversationDispatcher:
             report_ids = employee.get("reporting", {}).get("direct_report_ids", []) if employee else []
             try:
                 if op == "cancel":
-                    cancelled = action_store.cancel(session_id)
+                    if hasattr(action_store, "cancel"):
+                        cancelled = action_store.cancel(session_id)
+                    elif hasattr(action_store, "cancel_pending_for_session"):
+                        cancelled = action_store.cancel_pending_for_session(session_id)
+                    else:
+                        raise ActionError("Action store does not implement cancellation interface.")
                     message = "The pending action was cancelled." if cancelled else "There is no pending action to cancel."
                     return ScopedProfileResult(is_authorized=True, spoken_summary=message,
                         result_block=block("PUBLIC_FAQ", "Action cancelled", {"answer": message}, sensitive=False))
@@ -565,6 +780,8 @@ class ConversationDispatcher:
                         result_block=visual), op)
 
                 if op == "update_contact":
+                    if not plan.value:
+                        return self._deny("Please provide the new phone number to update.")
                     if plan.entity and plan.entity.strip().upper() != actor_id.strip().upper():
                         return self._deny("Policy denies editing contact details for other employees. You may only update your own contact details.")
                     actor_emp = self.scoped.knowledge.get_employee_by_id(actor_id)
@@ -596,10 +813,13 @@ class ConversationDispatcher:
             except ActionError as exc:
                 return self._deny(str(exc))
         if op == "back":
-            previous = state.snapshots.get(state.previous_id or "")
+            previous = state.navigate_back()
+            if not previous and state.previous_id:
+                previous = state.snapshots.get(state.previous_id)
+                if previous:
+                    state.active_id, state.previous_id = previous.block.id, state.active_id
             if not previous:
                 return self._deny("There is no earlier authorized result to return to.")
-            state.active_id, state.previous_id = previous.block.id, state.active_id
             return ScopedProfileResult(is_authorized=True, spoken_summary=f"Back to {previous.block.title}.", result_block=previous.block)
         if op == "profile":
             target = self._resolve_profile_target(actor_id, plan.entity, state)
@@ -806,10 +1026,14 @@ class ConversationDispatcher:
             if not active or active.source_kind != "tickets":
                 return self._deny("There is no current authorized ticket result to change views.")
 
-            # Base candidate rows are the full authorized scope for this ticket view
-            candidate_rows = list(active.base_rows) if active.base_rows else list(active.source_rows)
-            if not candidate_rows:
-                candidate_rows = self._ticket_rows(actor_id, IntentPlan(operation="ticket_list"))
+            # Base candidate rows are the full authorized scope for this ticket view.
+            # If base_rows was explicitly captured (even if empty []), preserve it; never broaden to all tickets.
+            if active.base_rows is not None:
+                candidate_rows = list(active.base_rows)
+            elif active.source_rows is not None:
+                candidate_rows = list(active.source_rows)
+            else:
+                candidate_rows = []
 
             # Replace vs intersect dimension semantics
             priority_filter = plan.priority_filter if plan.priority_filter is not None else active.filter_state.get("priority_filter")
@@ -829,13 +1053,13 @@ class ConversationDispatcher:
                 else:
                     rows = [r for r in rows if r.get("status") == status_filter]
             if from_date or to_date:
-                def in_range(row: dict) -> bool:
+                def in_range(item: dict) -> bool:
                     try:
-                        created = date.fromisoformat(str(row.get("created_at", ""))[:10])
+                        created = date.fromisoformat(str(item.get("created_at", ""))[:10])
                         return (not from_date or created >= from_date) and (not to_date or created <= to_date)
                     except ValueError:
                         return False
-                rows = [r for r in rows if in_range(row)]
+                rows = [r for r in rows if in_range(r)]
 
             if plan.view == "TABLE":
                 visual = block("TICKET_LIST", f"Authorized tickets ({len(rows)})", {

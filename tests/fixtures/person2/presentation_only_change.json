@@ -1,0 +1,27 @@
+{
+  "contract_status": "Existing contract",
+  "category": "presentation",
+  "description": "Presentation format switch reuses existing snapshot data without re-fetching",
+  "input": {
+    "utterance": "Make this a pie chart",
+    "actor_id": "EMP-4002",
+    "session_state": "VERIFIED",
+    "context": {
+      "has_active_result": true,
+      "source_kind": "tickets",
+      "row_count": 35
+    }
+  },
+  "plan": {
+    "operation": "rechart",
+    "view": "PIE",
+    "group_by": "priority"
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "TEAM_METRIC_CHART",
+    "chart_type": "PIE",
+    "kpis": { "total_tickets": 35 },
+    "spoken_summary": "Showing 35 tickets as pie by priority."
+  }
+}

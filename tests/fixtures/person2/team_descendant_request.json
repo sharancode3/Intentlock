@@ -1,0 +1,22 @@
+{
+  "contract_status": "Existing contract",
+  "category": "entities",
+  "description": "Executive request for entire organization reporting tree",
+  "input": {
+    "utterance": "Show everyone reporting under me in the organization tree",
+    "actor_id": "EMP-4002",
+    "session_state": "VERIFIED"
+  },
+  "plan": {
+    "operation": "org_tree",
+    "descendants": true
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "ORG_TREE",
+    "root_id": "EMP-4002",
+    "direct_count": 3,
+    "descendant_count": 30,
+    "spoken_summary": "Showing 3 direct reports and 30 people in this permitted tree."
+  }
+}

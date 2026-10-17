@@ -1,0 +1,28 @@
+{
+  "contract_status": "Existing contract",
+  "category": "queries",
+  "description": "Filter dimension replacement preserves base rows and avoids false empty results",
+  "input": {
+    "utterance": "Now show Low priority instead",
+    "actor_id": "EMP-4002",
+    "session_state": "VERIFIED",
+    "context": {
+      "has_active_result": true,
+      "source_kind": "tickets",
+      "active_filters": { "priority_filter": "High" },
+      "base_row_count": 35
+    }
+  },
+  "plan": {
+    "operation": "rechart",
+    "priority_filter": "Low",
+    "filter_action": "replace"
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "TICKET_LIST",
+    "priority_filter": "Low",
+    "total_count": 5,
+    "spoken_summary": "Showing the same 5 tickets as a table."
+  }
+}

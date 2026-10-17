@@ -1,0 +1,21 @@
+{
+  "contract_status": "Agreed extension",
+  "category": "identity",
+  "description": "Explicit actor claim distinguishes caller identity from query target",
+  "input": {
+    "utterance": "My employee ID is EMP-4002. Show EMP-2001's profile.",
+    "session_state": "ANONYMOUS"
+  },
+  "plan": {
+    "operation": "profile",
+    "actor_claim": "EMP-4002",
+    "entity": "EMP-2001"
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "EMPLOYEE_PROFILE",
+    "target_resolved": "EMP-2001",
+    "verified_actor": "EMP-4002",
+    "spoken_summary": "Showing profile for Priya Sharma."
+  }
+}

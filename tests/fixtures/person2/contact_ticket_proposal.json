@@ -1,0 +1,25 @@
+{
+  "contract_status": "Existing contract",
+  "category": "actions",
+  "description": "Protected contact update proposal awaiting spoken readback confirmation",
+  "input": {
+    "utterance": "Update my phone to +91 98765 43210",
+    "actor_id": "EMP-1001",
+    "session_state": "VERIFIED"
+  },
+  "plan": {
+    "operation": "update_contact",
+    "entity": null,
+    "field": "phone",
+    "value": "+91 98765 43210"
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "READBACK_CONFIRMATION",
+    "draft_action": "update_contact",
+    "draft_target": "EMP-1001",
+    "requires_voice_confirmation": true,
+    "summary_readback": "I confirm update contact for EMP-1001: phone to +91 98765 43210",
+    "spoken_summary": "No change has been made. Please review and speak exactly: I confirm update contact for EMP-1001: phone to +91 98765 43210"
+  }
+}
