@@ -68,12 +68,12 @@ Enterprise adoption of conversational Voice AI for IT service desks, executive i
 
 ```mermaid
 flowchart LR
-    AUDIO["Spoken Audio Stream"] --> STT["Speech-to-Text Engine (Whisper)"]
+    AUDIO["Spoken Audio Stream"] --> STT["Speech-to-Text Engine: Whisper"]
     STT --> TXT["Raw Text Transcript"]
-    TXT --> LLM["Large Language Model (LLM)"]
+    TXT --> LLM["Large Language Model"]
     LLM --> EXEC["Enterprise System Execution"]
 
-    TXT -.-> VULN["CRITICAL SECURITY VULNERABILITY<br/>• Zero verification of acoustic identity<br/>• Zero detection of synthetic deepfakes<br/>• Spoken claims blindly trusted as authority"]
+    TXT -.-> VULN["CRITICAL SECURITY VULNERABILITY<br/>- Zero verification of acoustic identity<br/>- Zero detection of synthetic deepfakes<br/>- Spoken claims blindly trusted as authority"]
     style VULN fill:#FFF0F0,stroke:#D32F2F,stroke-width:2px,color:#B71C1C
 ```
 
@@ -90,26 +90,26 @@ IntentLock completely decouples semantic interpretation from acoustic authorizat
 flowchart TD
     MIC["Spoken Audio Stream"] --> VAD["Silero Neural VAD"]
     
-    subgraph IngressBiometrics ["Ingress Biometric Gate (Detectif AI)"]
-        VAD --> DF["Acoustic Spectral Analysis<br/>(Synthetic Deepfake Detection)"]
-        VAD --> SPK["1:1 Voiceprint Embedding Match<br/>(Speaker Verification)"]
+    subgraph IngressBiometrics ["Ingress Biometric Gate: Detectif AI"]
+        VAD --> DF["Acoustic Spectral Analysis<br/>Synthetic Deepfake Detection"]
+        VAD --> SPK["1:1 Voiceprint Embedding Match<br/>Speaker Verification"]
     end
 
-    DF --> EVAL{"Evidence Policy Service<br/>(Risk & Session Evaluator)"}
+    DF --> EVAL{"Evidence Policy Service<br/>Risk and Session Evaluator"}
     SPK --> EVAL
 
-    EVAL -->|Fail-Closed Rejection| DENY["403 Forbidden<br/>(Voice Verification Failed)"]
+    EVAL -->|Fail-Closed Rejection| DENY["403 Forbidden<br/>Voice Verification Failed"]
     style DENY fill:#FFF0F0,stroke:#D32F2F,stroke-width:2px,color:#B71C1C
 
-    EVAL -->|Deterministic Fast-Path| DB_RLS["PostgreSQL RLS Execution<br/>(Headcounts, Org Trees, Rosters)"]
-    EVAL -->|Contextual Safe-Path| PRE_LLM["Pre-LLM Scoped Context Isolation<br/>(Sanitized JSON Data Slices)"]
+    EVAL -->|Deterministic Fast-Path| DB_RLS["PostgreSQL RLS Execution<br/>Headcounts, Org Trees, Rosters"]
+    EVAL -->|Contextual Safe-Path| PRE_LLM["Pre-LLM Scoped Context Isolation<br/>Sanitized JSON Data Slices"]
 
-    PRE_LLM --> LLM_SAFE["OpenAI Language Model<br/>(Factual Explanation Only)"]
+    PRE_LLM --> LLM_SAFE["OpenAI Language Model<br/>Factual Explanation Only"]
     
     DB_RLS --> AUDIT["Cryptographic Mutation Audit Receipt"]
     LLM_SAFE --> AUDIT
 
-    AUDIT --> OUT["Multi-Modal UI Renderers + Synthesized 24kHz Audio"]
+    AUDIT --> OUT["Multi-Modal UI Renderers and Synthesized Audio"]
 ```
 
 ### Core Invariants
@@ -154,7 +154,7 @@ flowchart TD
     end
 
     subgraph Internal ["IntentLock Evidence Policy Engine"]
-        SENTINEL["Sentinel Credential Resolver (_UNSET)<br/>Zero Ambient Environment Key Bleed"]
+        SENTINEL["Sentinel Credential Resolver: UNSET<br/>Zero Ambient Environment Key Bleed"]
     end
 
     SENTINEL --> K1 --> DET_CORE
@@ -177,14 +177,14 @@ IntentLock features a stateful **Evidence Policy Service** (`EvidencePolicyServi
 
 ```mermaid
 flowchart TD
-    START(["Incoming Voice Turn"]) --> CHECK_ACTIVE{"Active Session Valid<br/>& Candidate Matches<br/>Verified Actor?"}
+    START(["Incoming Voice Turn"]) --> CHECK_ACTIVE{"Active Session Valid<br/>and Candidate Matches<br/>Verified Actor?"}
 
-    CHECK_ACTIVE -->|Yes: Safe Query| REUSE["Policy: REUSE<br/>0 External Calls | 0 Credits Charged<br/>Session Evidence Preserved"]
-    CHECK_ACTIVE -->|No: New Turn / Candidate Mismatch| EVAL_RISK{"Evaluate Operation Risk & Scope"}
+    CHECK_ACTIVE -->|Yes: Safe Read Query| REUSE["Policy: REUSE<br/>0 External Calls - 0 Credits Charged<br/>Session Evidence Preserved"]
+    CHECK_ACTIVE -->|No: New Turn or Mismatch| EVAL_RISK{"Evaluate Operation Risk and Scope"}
 
-    EVAL_RISK -->|State Mutation<br/>(Update / Reassign)| HIGH_RISK["Policy: COMBINED or SPEAKER<br/>Force Fresh Re-Verification<br/>100-200 Credits"]
+    EVAL_RISK -->|State Mutation: Update or Reassign| HIGH_RISK["Policy: COMBINED or SPEAKER<br/>Force Fresh Re-Verification<br/>100-200 Credits"]
     EVAL_RISK -->|Public Liveness Only| DF_ONLY["Policy: DEEPFAKE_ONLY<br/>Verify Synthetic Artifacts<br/>100 Credits"]
-    EVAL_RISK -->|Initial Login / Sensitive Entry| COMBINED["Policy: COMBINED<br/>Dual-Factor Biometric Verification<br/>200 Credits"]
+    EVAL_RISK -->|Initial Login or Sensitive Entry| COMBINED["Policy: COMBINED<br/>Dual-Factor Biometric Verification<br/>200 Credits"]
 
     REUSE --> EXECUTE(["Execute Safe Authorized Turn"])
     HIGH_RISK --> EXECUTE
@@ -292,7 +292,7 @@ IntentLock returns structured `GenericResultBlock` payloads rendered natively in
 
 | Renderer Component | Target Data Type | Interactive Features and Capabilities | Performance Guarantees |
 | :--- | :--- | :--- | :--- |
-| **`PipelineNodeGraph`** | Real-Time Telemetry | Interactive `@xyflow/react` node graph rendering live signal transitions: Ingress $\to$ VAD $\to$ Deepfake $\to$ Speaker $\to$ Policy $\to$ LLM. | Real-time Web Audio telemetry; zero UI main-thread blocking. |
+| **`PipelineNodeGraph`** | Real-Time Telemetry | Interactive `@xyflow/react` node graph rendering live signal transitions: Ingress, VAD, Deepfake, Speaker, Policy, and LLM. | Real-time Web Audio telemetry; zero UI main-thread blocking. |
 | **`OrgTreeCard`** | `ORG_TREE` | Multi-tier interactive organizational hierarchy with collapsible subtrees, direct reporting edges, and department node badges. | Deterministic relational query (< 15ms latency, 0 LLM tokens). |
 | **`DataTableCard`** | `DATA_TABLE` | 4-column workforce roster with full-text filtering, column sorting, and enriched direct manager metadata (`name (id)`). | Deterministic SQL execution (< 12ms latency, 0 LLM tokens). |
 | **`TeamMetricChartCard`** | `TEAM_METRIC_CHART`| Recharts visualization of workload per engineer, SLA health, open incident queues, and priority breakdowns. | Responsive SVG rendering with animated tooltips. |
@@ -308,44 +308,44 @@ IntentLock returns structured `GenericResultBlock` payloads rendered natively in
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Client Presentation Layer (React 19 + TypeScript)"]
-        MIC["Audio Ingress<br/>(Web Audio API 16kHz)"]
-        WORKLET["PCM Capture Worklet<br/>(Dedicated Audio Thread)"]
-        TURN_DET["Streaming Turn Detector<br/>(Pause-to-Send VAD)"]
-        UI_GRAPH["@xyflow/react<br/>Biometric Node Graph"]
-        UI_CARDS["Dynamic Multi-Modal Renderers<br/>(ORG_TREE | TABLE | CHARTS)"]
+    subgraph Client ["Client Presentation Layer: React 19 and TypeScript"]
+        MIC["Audio Ingress: Web Audio API 16kHz"]
+        WORKLET["PCM Capture Worklet: Audio Thread"]
+        TURN_DET["Streaming Turn Detector: VAD"]
+        UI_GRAPH["xyflow Biometric Node Graph"]
+        UI_CARDS["Dynamic Multi-Modal Renderers: Trees, Tables, Charts"]
     end
 
-    subgraph Ingress ["API Gateway Ingress & Audio Normalization"]
-        GATEWAY["FastAPI Gateway Ingress<br/>POST /api/v1/voice/turn"]
-        AUDIO_DEC["AudioDecoder<br/>(WAV/WebM/Opus -> 16kHz PCM)"]
-        SILERO_VAD["Silero Neural VAD<br/>(32ms Window Speech Probability)"]
+    subgraph Ingress ["API Gateway Ingress and Audio Normalization"]
+        GATEWAY["FastAPI Gateway Ingress: POST /api/v1/voice/turn"]
+        AUDIO_DEC["AudioDecoder: WAV or WebM to 16kHz PCM"]
+        SILERO_VAD["Silero Neural VAD: 32ms Window Speech Probability"]
     end
 
     subgraph Biometrics ["Tri-Key Detectif AI Biometric Gateway"]
-        EVID_POLICY{"Evidence Policy Engine<br/>(Active Session & Risk Evaluator)"}
-        DET_DF["Detectif Deepfake Analysis<br/>DETECTIF_DEEPFAKE_API_KEY"]
-        DET_SPK["Detectif 1:1 Voiceprint Match<br/>DETECTIF_SPEAKER_API_KEY"]
-        DET_COMB["Detectif Dual-Factor Ingress<br/>DETECTIF_COMBINED_API_KEY"]
-        REUSE_CACHE[("Session Evidence Cache<br/>0 Credits | 0 Latency")]
+        EVID_POLICY{"Evidence Policy Engine: Session and Risk Evaluator"}
+        DET_DF["Detectif Deepfake Analysis: DETECTIF_DEEPFAKE_API_KEY"]
+        DET_SPK["Detectif 1:1 Voiceprint Match: DETECTIF_SPEAKER_API_KEY"]
+        DET_COMB["Detectif Dual-Factor Ingress: DETECTIF_COMBINED_API_KEY"]
+        REUSE_CACHE[("Session Evidence Cache: 0 Credits - Zero Latency")]
     end
 
     subgraph Storage ["Authoritative Enterprise Persistence Layer"]
-        PG_DB[("Supabase PostgreSQL DB<br/>Row-Level Security (RLS)")]
-        ID_MAP[("Biometric Identity Store<br/>EMP-xxxx <-> spk_xxxx")]
-        AUDIT_STORE[("Immutable Audit Trail<br/>Cryptographic Receipts")]
+        PG_DB[("Supabase PostgreSQL DB: Row-Level Security RLS")]
+        ID_MAP[("Biometric Identity Store: Employee to Voiceprint Mapping")]
+        AUDIT_STORE[("Immutable Audit Trail: Cryptographic Receipts")]
     end
 
-    subgraph Dispatch ["Semantic Orchestration & Knowledge Gateway"]
-        ORCH["Semantic Orchestrator & Router"]
-        FAST_PATH{"Is Deterministic Query?<br/>(Org Tree, Roster, Count)"}
-        DET_BUILDER["Deterministic Payload Builder<br/>(100% Relational Accuracy)"]
-        PRE_LLM["Pre-LLM Scoped Context Isolator<br/>(Redact Restricted Rows)"]
-        OPENAI["OpenAI GPT-4o-mini<br/>(Factual Explanation Only)"]
-        KOKORO_TTS["Neural TTS Engine<br/>(Kokoro-82M / Cloud TTS)"]
+    subgraph Dispatch ["Semantic Orchestration and Knowledge Gateway"]
+        ORCH["Semantic Orchestrator and Router"]
+        FAST_PATH{"Is Deterministic Query: Org Tree, Roster, Count"}
+        DET_BUILDER["Deterministic Payload Builder: 100% Relational Accuracy"]
+        PRE_LLM["Pre-LLM Scoped Context Isolator: Redact Restricted Rows"]
+        OPENAI["OpenAI GPT-4o-mini: Factual Explanation Only"]
+        KOKORO_TTS["Neural TTS Engine: Kokoro-82M or Cloud TTS"]
     end
 
-    MIC --> WORKLET --> TURN_DET -->|WAV / WebM Stream| GATEWAY
+    MIC --> WORKLET --> TURN_DET -->|Audio Stream| GATEWAY
     GATEWAY --> AUDIO_DEC --> SILERO_VAD
     SILERO_VAD --> EVID_POLICY
 
@@ -356,13 +356,13 @@ flowchart TD
     ID_MAP -.->|Voiceprint ID| DET_SPK
     ID_MAP -.->|Voiceprint ID| DET_COMB
 
-    DET_DF -->|Deepfake >= 0.35| REJECT["403 Forbidden<br/>VOICE_VERIFICATION_FAILED"]
-    DET_SPK -->|Similarity < 0.70| REJECT
-    DET_COMB -->|Fail| REJECT
+    DET_DF -->|Deepfake Threshold Exceeded| REJECT["403 Forbidden<br/>VOICE_VERIFICATION_FAILED"]
+    DET_SPK -->|Speaker Similarity Failed| REJECT
+    DET_COMB -->|Verification Rejected| REJECT
 
     REUSE_CACHE --> ORCH
-    DET_COMB -->|Pass: Deepfake < 0.35 & Match >= 0.70| ORCH
-    DET_SPK -->|Pass: Match >= 0.70| ORCH
+    DET_COMB -->|Dual Biometrics Passed| ORCH
+    DET_SPK -->|Speaker Verified| ORCH
 
     ORCH --> FAST_PATH
     FAST_PATH -->|Yes| DET_BUILDER
@@ -377,7 +377,7 @@ flowchart TD
     ORCH -.->|Write Mutation Receipt| AUDIT_STORE
 
     GATEWAY -->|Structured Result Block| UI_CARDS
-    GATEWAY -->|Telemetry & Biometric Scores| UI_GRAPH
+    GATEWAY -->|Telemetry and Biometric Scores| UI_GRAPH
 ```
 
 ---
@@ -402,55 +402,55 @@ The following state machine governs how credentials and billing credits are allo
 sequenceDiagram
     autonumber
     actor Speaker as Spoken Human Speaker
-    participant Client as React 19 Client (TurnDetector)
-    participant GW as FastAPI Gateway (/api/v1/voice/turn)
-    participant VAD as AudioDecoder & Silero VAD
+    participant Client as React 19 Client
+    participant GW as FastAPI Gateway
+    participant VAD as AudioDecoder and Silero VAD
     participant Policy as Evidence Policy Engine
     participant Det as Detectif AI Biometrics
-    participant STT as Faster-Whisper / Cloud STT
-    participant DB as Supabase PostgreSQL (RLS)
+    participant STT as Speech-to-Text Engine
+    participant DB as Supabase PostgreSQL RLS
     participant LLM as OpenAI GPT-4o-mini
     participant TTS as Neural TTS Engine
 
-    Speaker->>Client: Speaks utterance ("Show open tickets for my team")
-    Note over Client: TurnDetector detects speech, streams PCM, senses 1.0s silence
-    Client->>GW: POST /api/v1/voice/turn (Audio Blob, Session Token, Claimed ID)
+    Speaker->>Client: Speaks utterance: Show open tickets for my team
+    Note over Client: TurnDetector detects speech, streams PCM, senses silence
+    Client->>GW: POST /api/v1/voice/turn with Audio Blob and Session Token
 
-    GW->>VAD: Normalize audio to 16kHz PCM & compute VAD probability
-    alt Non-speech or duration < 0.5s
+    GW->>VAD: Normalize audio to 16kHz PCM and compute VAD probability
+    alt Non-speech or duration under 0.5s
         VAD-->>GW: Non-speech detected
-        GW-->>Client: 400 Bad Request (SILENCE_REJECTED)
+        GW-->>Client: 400 Bad Request: SILENCE_REJECTED
     end
 
     GW->>Policy: Evaluate session token, candidate ID, and operation risk
-    alt Active Session Valid & Candidate Matches
-        Policy-->>GW: Policy: REUSE (0 Provider Calls, 0 Credits)
+    alt Active Session Valid and Candidate Matches
+        Policy-->>GW: Policy: REUSE with 0 Provider Calls and 0 Credits
     else New Ingress or State Mutation
         Policy->>Det: Dispatch audio via DETECTIF_COMBINED_API_KEY
-        Det-->>Policy: Verification Result (match_score=0.92, deepfake_score=0.04)
-        alt Deepfake Detected (score >= 0.35) or Speaker Mismatch (score < 0.70)
+        Det-->>Policy: Verification Result with match and deepfake scores
+        alt Deepfake Detected or Speaker Mismatch
             Policy-->>GW: Biometric Verification Failed
-            GW-->>Client: 403 Forbidden (VOICE_VERIFICATION_FAILED)
+            GW-->>Client: 403 Forbidden: VOICE_VERIFICATION_FAILED
         end
     end
 
     GW->>STT: Transcribe authenticated audio buffer
-    STT-->>GW: "Show open tickets for my team"
+    STT-->>GW: Transcript: Show open tickets for my team
 
-    GW->>DB: Query tickets bounded by Verified Employee ID (Priya Sharma: EMP-2001)
-    DB-->>GW: Return 19 team-scoped tickets (Filtered by PostgreSQL RLS)
+    GW->>DB: Query tickets bounded by Verified Employee ID EMP-2001
+    DB-->>GW: Return 19 team-scoped tickets filtered by RLS
 
     alt Deterministic UI Layout Available
-        GW->>Client: 200 OK (GenericResultBlock: TICKET_LIST, Trust Evidence, Audio TTS)
+        GW->>Client: 200 OK with TICKET_LIST block, Trust Evidence, and Audio
     else Conversational Synthesis Required
-        GW->>LLM: Dispatch sanitized context JSON + prompt
+        GW->>LLM: Dispatch sanitized context JSON and prompt
         LLM-->>GW: Concise factual summary
         GW->>TTS: Synthesize 24kHz WAV response
         TTS-->>GW: Audio stream
-        GW-->>Client: 200 OK (Audio, Structured Card, Evidence Metrics)
+        GW-->>Client: 200 OK with Audio, Structured Card, and Evidence Metrics
     end
 
-    Client->>Speaker: Plays synthesized voice & renders interactive ticket cards
+    Client->>Speaker: Plays synthesized voice and renders interactive ticket cards
 ```
 
 ---
@@ -461,43 +461,43 @@ IntentLock is engineered using **Hexagonal Architecture (Ports & Adapters)**. Th
 
 ```mermaid
 flowchart TD
-    subgraph CoreDomain ["Hexagonal Core Domain (Vendor & Framework Agnostic)"]
+    subgraph CoreDomain ["Hexagonal Core Domain: Vendor and Framework Agnostic"]
         EVID_SVC["EvidencePolicyService"]
         SCOPED_AUTH["ScopedAuthorizationService"]
         SEM_ORCH["SemanticOrchestrator"]
         DET_DISPATCH["DeterministicDispatchEngine"]
-        SEC_CTX["SecurityContext & SessionLifecycle"]
+        SEC_CTX["SecurityContext and SessionLifecycle"]
     end
 
-    subgraph InboundPorts ["Primary / Inbound Ports"]
+    subgraph InboundPorts ["Primary and Inbound Ports"]
         P_TURN["VoiceTurnPort"]
         P_SESS["SessionManagementPort"]
         P_ADMIN["AdministrativePort"]
     end
 
-    subgraph OutboundPorts ["Secondary / Outbound Ports"]
+    subgraph OutboundPorts ["Secondary and Outbound Ports"]
         P_EVID["VoiceEvidencePort"]
-        P_STT["SpeechInputPort (STT)"]
-        P_TTS["SpeechOutputPort (TTS)"]
+        P_STT["SpeechInputPort: STT"]
+        P_TTS["SpeechOutputPort: TTS"]
         P_EMP["EmployeeRepositoryPort"]
         P_TKT["TicketRepositoryPort"]
         P_LLM["AnswerGeneratorPort"]
     end
 
-    subgraph InboundAdapters ["Inbound Adapters (Driving)"]
+    subgraph InboundAdapters ["Inbound Driving Adapters"]
         A_REST["FastAPI Gateway Controllers"]
         A_WS["WebSocket Audio Streaming Preview"]
         A_CLI["Administrative Operator CLI"]
         A_UI["React 19 Interactive Client"]
     end
 
-    subgraph OutboundAdapters ["Outbound Adapters (Driven)"]
-        A_DET["DetectifVoiceEvidenceAdapter (Tri-Key)"]
-        A_STT["FasterWhisper / CloudSpeechSTTAdapter"]
-        A_TTS["KokoroTTS / CloudSpeechTTSAdapter"]
-        A_PG_EMP["PostgresEmployeeRepository (Supabase)"]
-        A_PG_TKT["PostgresTicketActionStore (Supabase)"]
-        A_LLM["OpenAIAnswerAdapter (GPT-4o-mini)"]
+    subgraph OutboundAdapters ["Outbound Driven Adapters"]
+        A_DET["DetectifVoiceEvidenceAdapter: Tri-Key"]
+        A_STT["FasterWhisper or CloudSpeechSTTAdapter"]
+        A_TTS["KokoroTTS or CloudSpeechTTSAdapter"]
+        A_PG_EMP["PostgresEmployeeRepository: Supabase"]
+        A_PG_TKT["PostgresTicketActionStore: Supabase"]
+        A_LLM["OpenAIAnswerAdapter: GPT-4o-mini"]
     end
 
     InboundAdapters --> InboundPorts
@@ -580,20 +580,20 @@ IntentLock demonstrates verified role boundaries using three canonical personas 
 
 ```mermaid
 flowchart TD
-    subgraph CTO ["Executive Tier: Arvind Rao (EMP-4002) - Chief Technology Officer"]
-        CTO_AUTH["Executive Authority: TRUE<br/>• Visibility: Organization-wide (31 employees, 42 tickets)<br/>• Capabilities: View technology budgets, audit receipts, SLA breaches<br/>• Security Invariant: Cannot bypass biometric verification"]
+    subgraph CTO ["Executive Tier: Arvind Rao EMP-4002 - Chief Technology Officer"]
+        CTO_AUTH["Executive Authority: TRUE<br/>- Visibility: Organization-wide with 31 employees and 42 tickets<br/>- Capabilities: View technology budgets, audit receipts, SLA breaches<br/>- Security Invariant: Cannot bypass biometric verification"]
     end
 
-    subgraph DIR ["Director Tier: Marcus Vance (EMP-3001) - Engineering Director"]
-        DIR_AUTH["Executive Authority: FALSE<br/>• Visibility: Engineering organization (14 personnel)<br/>• Reports to: Arvind Rao (EMP-4002)"]
+    subgraph DIR ["Director Tier: Marcus Vance EMP-3001 - Engineering Director"]
+        DIR_AUTH["Executive Authority: FALSE<br/>- Visibility: Engineering organization with 14 personnel<br/>- Reports to: Arvind Rao EMP-4002"]
     end
 
-    subgraph MGR ["Management Tier: Priya Sharma (EMP-2001) - Engineering Manager"]
-        MGR_AUTH["Executive Authority: FALSE<br/>• Visibility: Direct team (Aarav, Elena, Marcus), 19 team tickets<br/>• Capabilities: Reassign team tickets, approve escalations<br/>• Reports to: Marcus Vance (EMP-3001)"]
+    subgraph MGR ["Management Tier: Priya Sharma EMP-2001 - Engineering Manager"]
+        MGR_AUTH["Executive Authority: FALSE<br/>- Visibility: Direct team with 19 team tickets<br/>- Capabilities: Reassign team tickets, approve escalations<br/>- Reports to: Marcus Vance EMP-3001"]
     end
 
-    subgraph IC ["Contributor Tier: Aarav Mehta (EMP-1001) - Software Engineer"]
-        IC_AUTH["Executive Authority: FALSE<br/>• Visibility: Self profile, 8 assigned/requested engineering tickets<br/>• Prohibited: Peer compensation, manager private notes, executive tickets<br/>• Reports to: Priya Sharma (EMP-2001)"]
+    subgraph IC ["Contributor Tier: Aarav Mehta EMP-1001 - Software Engineer"]
+        IC_AUTH["Executive Authority: FALSE<br/>- Visibility: Self profile, 8 assigned and requested engineering tickets<br/>- Prohibited: Peer compensation, manager private notes, executive tickets<br/>- Reports to: Priya Sharma EMP-2001"]
     end
 
     CTO --> DIR --> MGR --> IC
