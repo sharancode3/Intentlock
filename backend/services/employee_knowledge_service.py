@@ -60,13 +60,15 @@ class EmployeeKnowledgeService:
                 self._raw_employees = repo.list_all_employees()
                 self._cached_revision = repo.get_directory_revision()
             except Exception as exc:
-                logger.warning(f"Failed to query Supabase Postgres ({exc}). Falling back to local dataset.")
-                self._raw_employees = []
-
-            if not self._raw_employees and os.path.exists(self.data_path):
-                logger.warning("Postgres returned 0 employees. Using local JSON dataset as fallback.")
-                with open(self.data_path, "r", encoding="utf-8") as f:
-                    self._raw_employees = json.load(f)
+                if os.getenv("INTENTLOCK_OFFLINE_TESTS") == "1":
+                    logger.warning(f"Failed to query Supabase Postgres ({exc}) in test mode. Using local dataset.")
+                    self._raw_employees = []
+                    if os.path.exists(self.data_path):
+                        with open(self.data_path, "r", encoding="utf-8") as f:
+                            self._raw_employees = json.load(f)
+                else:
+                    logger.error("Failed to query canonical employees from Supabase Postgres: %s", exc)
+                    raise RuntimeError("Database unavailable: failed to query employees from PostgreSQL.") from exc
         else:
             if not os.path.exists(self.data_path):
                 raise FileNotFoundError(
@@ -104,13 +106,16 @@ class EmployeeKnowledgeService:
         self.is_loaded = False
         self.load_data()
 
-    def update_employee_phone_in_memory(self, employee_id: str, new_phone: str) -> None:
+    def update_employee_phone_in_memory(self, employee_id: str, new_phone: str, version: Optional[int] = None) -> None:
         """Update an employee's phone number in the in-memory cache (for testing or local cache sync)."""
         emp = self.employees_by_id.get(employee_id)
         if emp:
             emp.setdefault("identity", {})["work_phone"] = new_phone
             emp["identity"].setdefault("contact", {})["phone"] = new_phone
-            emp["version"] = emp.get("version", 1) + 1
+            if version is not None:
+                emp["version"] = version
+            else:
+                emp["version"] = emp.get("version", 1) + 1
 
     def _build_indexes(self) -> None:
         """Build normalized indexes over the raw in-memory employee records."""

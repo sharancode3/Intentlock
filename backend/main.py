@@ -73,6 +73,12 @@ from backend.services.claim_extractor import extract_actor_claim
 from backend.services.semantic_orchestrator import interpret_request
 from backend.services.employee_visibility_service import EmployeeVisibilityService
 from backend.services.ollama_knowledge_service import OllamaKnowledgeService
+from backend.services.evidence_policy_service import (
+    EvidencePolicyService,
+    EvidencePolicyContext,
+    EvidenceCheckMode,
+    EvidencePolicyDecision,
+)
 from backend.models.knowledge import (
     KnowledgeQueryRequest,
     KnowledgeQueryResponse,
@@ -919,15 +925,61 @@ async def process_voice_turn(
     voice_timings_ms: Dict[str, float] = {}
     reuse_snapshot: bool = False
 
+    policy_svc = EvidencePolicyService.get_instance()
+    policy_ctx = EvidencePolicyContext(
+        actor_id=existing_sess.employee_id if existing_sess and existing_sess.is_valid else None,
+        candidate_employee_id=candidate_employee_id,
+        spoken_claim_id=spoken_claim_id,
+        session_id=session_id,
+        session_valid=bool(existing_sess and existing_sess.is_valid),
+        session_age_s=existing_sess.age_seconds if existing_sess else 0.0,
+        session_actor_id=existing_sess.employee_id if existing_sess else None,
+        operation=intent_plan.operation if intent_plan else "query",
+        is_mutation=bool(intent_plan and intent_plan.operation in ("confirm", "update_contact", "create_ticket", "update_ticket_status", "close_ticket")),
+        has_audio=bool(audio_buffer and len(audio_buffer) > 0),
+    )
+    policy_decision = policy_svc.evaluate_turn_requirements(policy_ctx, enrollment_mapping=mapping)
+
     if claimed_id and mapping and mapping.enrollment_status == "ENROLLED":
-        # A valid existing result can be reformatted or revisited without new
-        # biometric evidence. Any new private read still requires fresh evidence.
-        reuse_snapshot = bool(existing_sess and existing_sess.is_valid and
-                              ((plan_state and intent_plan.operation in ("rechart", "back")) or intent_plan.operation == "cancel"))
-        voice_res = VoiceEvidenceResult() if reuse_snapshot else await voice_port.verify_evidence(
-            audio_metadata=audio_metadata, audio_bytes=bytes(audio_buffer),
-            candidate_speaker_id=mapping.provider_speaker_id, correlation_id=clean_turn_id,
+        reuse_snapshot = (
+            policy_decision.mode in (EvidenceCheckMode.REUSE, EvidenceCheckMode.NO_CHECK)
+            and bool(existing_sess and existing_sess.is_valid)
         )
+        if reuse_snapshot:
+            voice_res = VoiceEvidenceResult(is_available=True, is_idempotent_replay=True)
+        elif policy_decision.mode in (EvidenceCheckMode.DENIED, EvidenceCheckMode.UNAVAILABLE):
+            voice_res = VoiceEvidenceResult(
+                is_available=False,
+                error_code=policy_decision.reason_code,
+                error_message=policy_decision.reason_description,
+                account_alias=mapping.account_alias if mapping else None,
+                audio_digest=sha256_digest,
+            )
+        else:
+            verify_mode = (
+                policy_decision.mode.value
+                if policy_decision.mode in (EvidenceCheckMode.COMBINED, EvidenceCheckMode.SPEAKER_ONLY, EvidenceCheckMode.DEEPFAKE_ONLY)
+                else "combined"
+            )
+            import inspect
+            sig = inspect.signature(voice_port.verify_evidence)
+            accepts_mode = "mode" in sig.parameters or any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
+
+            if accepts_mode:
+                voice_res = await voice_port.verify_evidence(
+                    audio_metadata=audio_metadata,
+                    audio_bytes=bytes(audio_buffer),
+                    candidate_speaker_id=mapping.provider_speaker_id if verify_mode != "deepfake" else None,
+                    correlation_id=clean_turn_id,
+                    mode=verify_mode,
+                )
+            else:
+                voice_res = await voice_port.verify_evidence(
+                    audio_metadata=audio_metadata,
+                    audio_bytes=bytes(audio_buffer),
+                    candidate_speaker_id=mapping.provider_speaker_id,
+                    correlation_id=clean_turn_id,
+                )
         if voice_res.latency_ms:
             voice_timings_ms["detectif_ms"] = voice_res.latency_ms
 
@@ -947,8 +999,10 @@ async def process_voice_turn(
             "authenticity_verdict": voice_res.deepfake_verdict, "deepfake_score": voice_res.deepfake_score,
             "deepfake_threshold": voice_res.deepfake_threshold, "provider_error": voice_res.error_code,
             "identity_correspondence": provider_identity_ok,
-            "evidence_freshness": "reused_from_session" if reuse_snapshot else "fresh_this_turn",
+            "evidence_freshness": policy_decision.evidence_freshness if reuse_snapshot else ("fresh_this_turn" if voice_res.is_available else "none"),
             "operation": intent_plan.operation,
+            "policy_mode": policy_decision.mode.value,
+            "policy_reason": policy_decision.reason_code,
         }, sort_keys=True))
         if reuse_snapshot or (voice_res.is_dual_verified and provider_identity_ok):
             # Dual verification succeeded: MATCH + REAL

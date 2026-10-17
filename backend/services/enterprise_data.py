@@ -37,6 +37,8 @@ class EnterpriseDataRepository:
             self.data_dir = base_dir / "data"
 
         self.is_loaded: bool = False
+        self._cached_directory_revision: Optional[int] = None
+        self._cached_ticket_revision: Optional[int] = None
 
         # Raw containers
         self.employees: List[Dict[str, Any]] = []
@@ -218,36 +220,118 @@ class EnterpriseDataRepository:
             if aid:
                 self.tickets_by_assignee.setdefault(aid, []).append(t)
 
-    def update_employee_field(self, employee_id: str, field: str, new_value: Any) -> None:
+    def is_postgres_active(self) -> bool:
+        if os.getenv("INTENTLOCK_OFFLINE_TESTS") == "1":
+            return False
+        try:
+            from backend.core.config import settings
+            from backend.adapters.postgres_client import PostgresClient
+            return bool(settings.STORAGE_BACKEND == "postgres" or PostgresClient.get_instance().is_configured)
+        except Exception:
+            return False
+
+    def sync_from_postgres(self) -> bool:
+        """
+        Synchronize enterprise data from authoritative PostgreSQL tables if configured.
+        Loads employees, tickets, departments, teams, and projects from the database.
+        """
+        if not self.is_postgres_active():
+            return False
+        try:
+            from backend.adapters.postgres_employee_repository import PostgresEmployeeRepository
+            from backend.adapters.postgres_ticket_action_store import PostgresTicketActionStore
+
+            emp_repo = PostgresEmployeeRepository.get_instance()
+            tkt_store = PostgresTicketActionStore.get_instance()
+
+            db_employees = emp_repo.list_all_employees()
+            db_tickets = tkt_store.list_tickets()
+            db_depts = emp_repo.list_departments()
+            db_teams = emp_repo.list_teams()
+            db_projects = emp_repo.list_projects()
+
+            if db_employees:
+                self.employees = db_employees
+            if db_tickets:
+                self.tickets = db_tickets
+            if db_depts:
+                self.departments = db_depts
+            if db_teams:
+                self.teams = db_teams
+            if db_projects:
+                self.projects = db_projects
+
+            self._cached_directory_revision = emp_repo.get_directory_revision()
+            self._cached_ticket_revision = emp_repo.get_ticket_revision()
+
+            self._build_indexes()
+            logger.info(
+                "EnterpriseDataRepository synced from Postgres: %d employees, %d tickets, %d teams, %d projects, %d departments (dir_rev=%s, tkt_rev=%s).",
+                len(self.employees), len(self.tickets), len(self.teams), len(self.projects), len(self.departments),
+                self._cached_directory_revision, self._cached_ticket_revision
+            )
+            return True
+        except Exception as exc:
+            logger.warning("Failed to sync EnterpriseDataRepository from Postgres: %s", exc)
+            return False
+
+    def refresh_if_stale(self) -> bool:
+        """Checks directory and ticket revisions in DB. If changed, refreshes cache."""
+        if not self.is_postgres_active():
+            return False
+        try:
+            from backend.adapters.postgres_employee_repository import PostgresEmployeeRepository
+            emp_repo = PostgresEmployeeRepository.get_instance()
+            dir_rev = emp_repo.get_directory_revision()
+            tkt_rev = emp_repo.get_ticket_revision()
+
+            if (self._cached_directory_revision is None or dir_rev != self._cached_directory_revision or
+                self._cached_ticket_revision is None or tkt_rev != self._cached_ticket_revision):
+                logger.info("EnterpriseDataRepository detected stale revisions (dir: %s -> %s, tkt: %s -> %s). Refreshing...",
+                            self._cached_directory_revision, dir_rev, self._cached_ticket_revision, tkt_rev)
+                return self.sync_from_postgres()
+            return False
+        except Exception as exc:
+            logger.warning("Failed checking revision staleness: %s", exc)
+            return False
+
+    def update_employee_field(self, employee_id: str, field: str, new_value: Any, version: Optional[int] = None) -> None:
         """Update an employee field in-memory so enterprise query indexes reflect committed actions."""
         emp = self.employees_by_id.get(employee_id)
         if emp:
             if field in ("work_phone", "phone"):
                 emp.setdefault("identity", {})["work_phone"] = new_value
+                emp["identity"].setdefault("contact", {})["phone"] = new_value
             elif field in emp.get("identity", {}):
                 emp["identity"][field] = new_value
             elif field in emp.get("employment", {}):
                 emp["employment"][field] = new_value
+            if version is not None:
+                emp["version"] = version
             # Also update raw list item
             for idx, e in enumerate(self.employees):
                 if e.get("employee_id") == employee_id:
                     self.employees[idx] = emp
                     break
 
-    def update_ticket_field(self, ticket_id: str, field: str, new_value: Any) -> None:
+    def update_ticket_field(self, ticket_id: str, field: str, new_value: Any, version: Optional[int] = None) -> None:
         """Update a ticket field in-memory so enterprise query indexes reflect committed actions."""
         tkt = self.tickets_by_id.get(ticket_id)
         if tkt:
             tkt[field] = new_value
+            if version is not None:
+                tkt["version"] = version
             for idx, t in enumerate(self.tickets):
                 if t.get("ticket_id") == ticket_id:
                     self.tickets[idx] = t
                     break
 
     def reload(self) -> None:
-        """Force re-reading of canonical JSON datasets and rebuilding indexes."""
+        """Force re-reading of canonical datasets and rebuilding indexes."""
         self.is_loaded = False
         self.load_data()
+        if self.is_postgres_active():
+            self.sync_from_postgres()
 
 
 enterprise_repo = EnterpriseDataRepository.get_instance()

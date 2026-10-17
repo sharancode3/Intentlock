@@ -62,6 +62,14 @@ class VoiceSessionRecord(BaseModel):
         except Exception:
             return 0
 
+    @property
+    def age_seconds(self) -> float:
+        try:
+            created = datetime.fromisoformat(self.created_at)
+            return max(0.0, (datetime.now(timezone.utc) - created).total_seconds())
+        except Exception:
+            return 0.0
+
 
 class IdentityMappingStore:
     _instance: Optional["IdentityMappingStore"] = None

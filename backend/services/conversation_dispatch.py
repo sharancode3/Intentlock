@@ -768,16 +768,22 @@ class ConversationDispatcher:
                     self.scoped.ticket_service.refresh_from_store()
                     self.scoped.knowledge.refresh_if_stale()
                     if receipt.get("action") == "update_contact" and receipt.get("new_value"):
-                        self.scoped.knowledge.update_employee_phone_in_memory(actor_id, receipt["new_value"])
+                        self.scoped.knowledge.update_employee_phone_in_memory(
+                            actor_id, receipt["new_value"], version=receipt.get("version")
+                        )
                         try:
                             from backend.services.enterprise_data import enterprise_repo
-                            enterprise_repo.update_employee_field(actor_id, "work_phone", receipt["new_value"])
+                            enterprise_repo.update_employee_field(
+                                actor_id, "work_phone", receipt["new_value"], version=receipt.get("version")
+                            )
                         except Exception:
                             pass
                     elif receipt.get("action") in ("update_ticket_status", "close_ticket") and receipt.get("new_value"):
                         try:
                             from backend.services.enterprise_data import enterprise_repo
-                            enterprise_repo.update_ticket_field(receipt["resource_id"], "status", receipt["new_value"])
+                            enterprise_repo.update_ticket_field(
+                                receipt["resource_id"], "status", receipt["new_value"], version=receipt.get("version")
+                            )
                         except Exception:
                             pass
                     state.snapshots.clear()

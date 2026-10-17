@@ -100,6 +100,14 @@ class PostgresEmployeeRepository:
             row.get("date_of_joining")
             or extra.get("employment", {}).get("date_of_joining")
         )
+        team_id = (
+            row.get("team_id")
+            or extra.get("employment", {}).get("team_id")
+        )
+        dept_id = (
+            row.get("department_id")
+            or extra.get("employment", {}).get("department_id")
+        )
 
         security_scope = _ensure_json(
             row.get("security_scope"), extra.get("security_scope", {})
@@ -126,7 +134,9 @@ class PostgresEmployeeRepository:
             },
             "employment": {
                 "department": row.get("department", ""),
+                "department_id": dept_id,
                 "sub_department": sub_dept,
+                "team_id": team_id,
                 "designation": row.get("designation", ""),
                 "organizational_level": row.get("organizational_level", "L1"),
                 "research_level": research_lvl,
@@ -264,3 +274,115 @@ class PostgresEmployeeRepository:
         expected_version: int,
     ) -> Tuple[int, Dict[str, Any]]:
         return self.client.run(self.update_contact_phone_async(actor_id, target_id, new_phone, expected_version))
+
+    # =========================================================================
+    # Ticket Invalidation Revision
+    # =========================================================================
+
+    async def get_ticket_revision_async(self) -> int:
+        """Fetch current ticket invalidation revision."""
+        async with self.client.acquire() as conn:
+            rev = await conn.fetchval(
+                "SELECT revision FROM directory_metadata WHERE key = 'ticket_revision'"
+            )
+            return int(rev or 1)
+
+    def get_ticket_revision(self) -> int:
+        return self.client.run(self.get_ticket_revision_async())
+
+    async def bump_ticket_revision_async(self) -> int:
+        async with self.client.acquire() as conn:
+            rev = await conn.fetchval("""
+                INSERT INTO directory_metadata (key, revision, updated_at)
+                VALUES ('ticket_revision', 2, NOW())
+                ON CONFLICT (key) DO UPDATE
+                SET revision = directory_metadata.revision + 1, updated_at = NOW()
+                RETURNING revision;
+            """)
+            return int(rev or 2)
+
+    def bump_ticket_revision(self) -> int:
+        return self.client.run(self.bump_ticket_revision_async())
+
+    # =========================================================================
+    # Departments, Teams, Projects Projections
+    # =========================================================================
+
+    async def list_departments_async(self) -> List[Dict[str, Any]]:
+        async with self.client.acquire() as conn:
+            has_table = await conn.fetchval(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='departments')"
+            )
+            if not has_table:
+                return []
+            rows = await conn.fetch("SELECT * FROM departments ORDER BY department_id ASC")
+            res = []
+            for r in rows:
+                d = dict(r)
+                aliases = d.get("aliases")
+                d["aliases"] = json.loads(aliases) if isinstance(aliases, str) else (aliases or [])
+                res.append(d)
+            return res
+
+    def list_departments(self) -> List[Dict[str, Any]]:
+        return self.client.run(self.list_departments_async())
+
+    async def list_teams_async(self) -> List[Dict[str, Any]]:
+        async with self.client.acquire() as conn:
+            has_table = await conn.fetchval(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='teams')"
+            )
+            if not has_table:
+                return []
+            rows = await conn.fetch("SELECT * FROM teams ORDER BY team_id ASC")
+            res = []
+            for r in rows:
+                t = dict(r)
+                resp = t.get("responsibilities")
+                tech = t.get("technologies")
+                t["responsibilities"] = json.loads(resp) if isinstance(resp, str) else (resp or [])
+                t["technologies"] = json.loads(tech) if isinstance(tech, str) else (tech or [])
+                res.append(t)
+            return res
+
+    def list_teams(self) -> List[Dict[str, Any]]:
+        return self.client.run(self.list_teams_async())
+
+    async def list_projects_async(self) -> List[Dict[str, Any]]:
+        async with self.client.acquire() as conn:
+            has_table = await conn.fetchval(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='projects')"
+            )
+            if not has_table:
+                return []
+            rows = await conn.fetch("SELECT * FROM projects ORDER BY project_id ASC")
+            res = []
+            for r in rows:
+                p = dict(r)
+                for k in ("aliases", "technologies", "objectives", "responsibilities"):
+                    val = p.get(k)
+                    p[k] = json.loads(val) if isinstance(val, str) else (val or [])
+                res.append(p)
+            return res
+
+    def list_projects(self) -> List[Dict[str, Any]]:
+        return self.client.run(self.list_projects_async())
+
+    async def list_project_memberships_async(self, project_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        async with self.client.acquire() as conn:
+            has_table = await conn.fetchval(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='project_memberships')"
+            )
+            if not has_table:
+                return []
+            if project_id:
+                rows = await conn.fetch(
+                    "SELECT * FROM project_memberships WHERE project_id = $1 ORDER BY employee_id ASC", project_id
+                )
+            else:
+                rows = await conn.fetch("SELECT * FROM project_memberships ORDER BY project_id, employee_id ASC")
+            return [dict(r) for r in rows]
+
+    def list_project_memberships(self, project_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        return self.client.run(self.list_project_memberships_async(project_id))
+

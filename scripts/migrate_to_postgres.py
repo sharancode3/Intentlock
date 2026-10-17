@@ -1,7 +1,8 @@
 """
 IntentLock — Supabase Postgres Schema Migration & Data Importer
 Applies versioned migrations with advisory locking, validates employee graph integrity,
-and imports canonical employees, authoritative tickets, and speaker mappings additively.
+and imports canonical employees, authoritative tickets, departments, teams, projects,
+and speaker mappings additively and reconciles missing relation fields non-destructively.
 Supports strictly read-only dry-run and controlled repair mode.
 """
 
@@ -61,22 +62,17 @@ def validate_employee_graph(employees: List[Dict[str, Any]]) -> Tuple[bool, List
         curr = eid
         while curr:
             if curr in visited:
-                errors.append(f"Reporting cycle detected starting at employee {curr}")
+                errors.append(f"Reporting cycle detected starting at employee {eid}")
                 break
             visited.add(curr)
-            curr = emp_map[curr].get("reporting", {}).get("manager_id") if curr in emp_map else None
+            curr = emp_map.get(curr, {}).get("reporting", {}).get("manager_id")
 
-    return len(errors) == 0, errors
+    return (len(errors) == 0, errors)
 
 
-async def run_migration(
-    db_url: str,
-    dry_run: bool = True,
-    repair_mode: bool = False,
-) -> Dict[str, Any]:
+async def run_migration(db_url: str, dry_run: bool = False, repair_mode: bool = False) -> Dict[str, Any]:
     logger.info("Connecting to Supabase Postgres (dry_run=%s, repair=%s)...", dry_run, repair_mode)
-    sanitized_url = sanitize(db_url)
-    logger.info("Target: %s", sanitized_url)
+    logger.info("Target: %s", sanitize(db_url))
 
     conn = await asyncpg.connect(db_url, ssl="require", timeout=15.0)
     report: Dict[str, Any] = {
@@ -86,8 +82,13 @@ async def run_migration(
         "migrations_pending": [],
         "employees_found_in_seed": 0,
         "employees_imported": 0,
-        "employees_repaired": 0,
+        "employees_reconciled": 0,
         "tickets_imported": 0,
+        "tickets_reconciled": 0,
+        "departments_imported": 0,
+        "teams_imported": 0,
+        "projects_imported": 0,
+        "memberships_imported": 0,
         "mappings_imported": 0,
         "unmigrated_ephemeral_states": {
             "active_sessions": "Excluded by policy (Section 7)",
@@ -99,11 +100,11 @@ async def run_migration(
     }
 
     try:
-        # Acquire advisory transaction lock (or session lock for dry run)
+        # Acquire advisory transaction lock
         logger.info("Acquiring Postgres migration advisory lock...")
         await conn.execute("SELECT pg_advisory_lock($1)", ADVISORY_LOCK_ID)
 
-        # 1. Inspect existing migrations table without modifying DB in dry-run
+        # 1. Inspect existing migrations table
         table_exists = await conn.fetchval("""
             SELECT EXISTS (
                 SELECT 1 FROM information_schema.tables 
@@ -120,6 +121,7 @@ async def run_migration(
             ("001_initial_schema", "001_initial_schema.sql", "Initial Canonical Schema & RLS"),
             ("002_schema_enhancements", "002_schema_enhancements.sql", "Canonical Employee Schema Enhancements"),
             ("003_actor_rls_policies", "003_actor_rls_policies.sql", "Actor-Aware Row Level Security Policies"),
+            ("004_departments_teams_projects_and_rls_repair", "004_departments_teams_projects_and_rls_repair.sql", "Departments, Teams, Projects, Memberships & RLS Repair"),
         ]
 
         # 2. Check pending migrations
@@ -145,8 +147,32 @@ async def run_migration(
             raise ValueError(f"Employee dataset graph validation failed: {graph_errors}")
         logger.info("Validated %d canonical employees (graph is 100%% cycle-free).", len(employees))
 
-        # 4. Prepare Employee Records with 100% field preservation
+        # 4. Prepare Department, Team, Project records
+        data_dir = os.path.join(settings.BASE_DIR, "backend", "data")
+        dept_file = os.path.join(data_dir, "departments.json")
+        team_file = os.path.join(data_dir, "teams.json")
+        proj_file = os.path.join(data_dir, "projects.json")
+
+        departments = []
+        if os.path.exists(dept_file):
+            with open(dept_file, "r", encoding="utf-8") as f:
+                departments = json.load(f)
+
+        teams = []
+        if os.path.exists(team_file):
+            with open(team_file, "r", encoding="utf-8") as f:
+                teams = json.load(f)
+
+        projects = []
+        if os.path.exists(proj_file):
+            with open(proj_file, "r", encoding="utf-8") as f:
+                projects = json.load(f)
+
+        team_name_to_id = {t["name"].lower(): t["team_id"] for t in teams}
+
+        # 5. Prepare Employee Records with 100% field preservation
         emp_records_to_insert = []
+        memberships_to_insert = []
         for e in employees:
             eid = e["employee_id"]
             identity = e.get("identity", {})
@@ -155,13 +181,25 @@ async def run_migration(
             policy = e.get("permissions", {})
             contact = identity.get("contact", {})
 
-            # Source work_email is authoritative; fall back to contact.email or internal domain
             canonical_email = (
                 identity.get("work_email")
                 or contact.get("email")
                 or f"{eid.lower()}@intentlock-demo.example"
             )
             work_phone = contact.get("phone") or identity.get("work_phone") or None
+
+            # Project memberships
+            proj_data = e.get("projects", {})
+            for p in proj_data.get("current", []):
+                pid = p.get("project_id")
+                if pid:
+                    memberships_to_insert.append((
+                        pid,
+                        eid,
+                        p.get("role", "Contributor"),
+                        p.get("status", "Active"),
+                        int(p.get("allocation_percent", 0)),
+                    ))
 
             emp_records_to_insert.append({
                 "employee_id": eid,
@@ -195,9 +233,19 @@ async def run_migration(
                 "voice_authority": json.dumps(e.get("voice_authority", {})),
                 "recent_activity": json.dumps(e.get("recent_activity", [])),
                 "extra_data": json.dumps(e),
+                "team_id": employment.get("team_id"),
+                "department_id": employment.get("department_id"),
             })
 
-        # 5. Read tickets from configured APP_DB_PATH
+        # 6. Read tickets and reconcile relationship attributes
+        seed_ticket_meta: Dict[str, Dict[str, Any]] = {}
+        ticket_seed_file = os.path.join(data_dir, "all_tickets.json")
+        if os.path.exists(ticket_seed_file):
+            with open(ticket_seed_file, "r", encoding="utf-8") as f:
+                raw_seed_tickets = json.load(f)
+            for st in raw_seed_tickets:
+                seed_ticket_meta[st["ticket_id"]] = st
+
         sqlite_tickets_db = settings.APP_DB_PATH
         tickets_to_insert = []
         if os.path.exists(sqlite_tickets_db):
@@ -207,6 +255,18 @@ async def run_migration(
                 rows = scur.execute("SELECT ticket_id, version, document FROM tickets").fetchall()
                 for tid, ver, doc_str in rows:
                     doc = json.loads(doc_str)
+                    seed_meta = seed_ticket_meta.get(tid, {})
+                    proj_id = doc.get("project_id") or seed_meta.get("project_id")
+                    dept_id = doc.get("department_id") or seed_meta.get("department_id")
+                    owner_team = doc.get("owner_team") or seed_meta.get("owner_team")
+                    owner_team_id = team_name_to_id.get(owner_team.lower()) if owner_team else None
+
+                    # Enrich doc with IDs
+                    if proj_id:
+                        doc["project_id"] = proj_id
+                    if dept_id:
+                        doc["department_id"] = dept_id
+
                     tickets_to_insert.append((
                         tid,
                         ver,
@@ -222,36 +282,40 @@ async def run_migration(
                         doc.get("department") or None,
                         doc.get("project") or None,
                         json.dumps(doc),
+                        proj_id,
+                        dept_id,
+                        owner_team_id,
                     ))
                 logger.info("Loaded %d authoritative tickets from %s.", len(tickets_to_insert), sqlite_tickets_db)
             except Exception as exc:
                 logger.warning("Could not read tickets table from %s: %s", sqlite_tickets_db, exc)
             finally:
                 scon.close()
-        else:
-            ticket_file = os.path.join(settings.BASE_DIR, "backend", "data", "all_tickets.json")
-            if os.path.exists(ticket_file):
-                with open(ticket_file, "r", encoding="utf-8") as f:
-                    seed_tickets = json.load(f)
-                for doc in seed_tickets:
-                    tickets_to_insert.append((
-                        doc["ticket_id"],
-                        1,
-                        doc.get("title", ""),
-                        doc.get("description", ""),
-                        doc.get("ticket_type", "General"),
-                        doc.get("category", "Support"),
-                        doc.get("status", "Open"),
-                        doc.get("priority", "Medium"),
-                        doc.get("requester_id", ""),
-                        doc.get("assignee_id") or None,
-                        doc.get("created_by", ""),
-                        doc.get("department") or None,
-                        doc.get("project") or None,
-                        json.dumps(doc),
-                    ))
+        elif seed_ticket_meta:
+            for tid, doc in seed_ticket_meta.items():
+                owner_team = doc.get("owner_team")
+                owner_team_id = team_name_to_id.get(owner_team.lower()) if owner_team else None
+                tickets_to_insert.append((
+                    tid,
+                    1,
+                    doc.get("title", ""),
+                    doc.get("description", ""),
+                    doc.get("ticket_type", "General"),
+                    doc.get("category", "Support"),
+                    doc.get("status", "Open"),
+                    doc.get("priority", "Medium"),
+                    doc.get("requester_id", ""),
+                    doc.get("assignee_id") or None,
+                    doc.get("created_by", ""),
+                    doc.get("department") or None,
+                    doc.get("project") or None,
+                    json.dumps(doc),
+                    doc.get("project_id"),
+                    doc.get("department_id"),
+                    owner_team_id,
+                ))
 
-        # 6. Read speaker mappings from configured MAPPING_DB_PATH
+        # 7. Read speaker mappings
         sqlite_mappings_db = settings.MAPPING_DB_PATH
         mappings_to_insert = []
         if os.path.exists(sqlite_mappings_db):
@@ -271,7 +335,7 @@ async def run_migration(
             finally:
                 icon.close()
 
-        # 7. Execute in a Single Atomic Transaction if not dry-run
+        # 8. Execute in a Single Atomic Transaction if not dry-run
         if not dry_run:
             async with conn.transaction():
                 # Apply migrations
@@ -300,44 +364,103 @@ async def run_migration(
                         )
                         report["migrations_applied"].append(filename)
 
-                # Insert/Repair Employees
+                # Insert Departments
+                for d in departments:
+                    await conn.execute("""
+                        INSERT INTO departments (
+                            department_id, name, aliases, description, status,
+                            department_type, head_id, executive_owner_id, parent_department_id
+                        ) VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7, $8, $9)
+                        ON CONFLICT (department_id) DO NOTHING;
+                    """,
+                        d["department_id"], d["name"], json.dumps(d.get("aliases", [])),
+                        d.get("description"), d.get("status", "Active"), d.get("department_type", "Technical"),
+                        d.get("head_id"), d.get("executive_owner_id"), d.get("parent_department_id"),
+                    )
+                    report["departments_imported"] += 1
+
+                # Insert Teams
+                for t in teams:
+                    await conn.execute("""
+                        INSERT INTO teams (
+                            team_id, name, description, department, department_id,
+                            team_lead_id, manager_id, location, responsibilities,
+                            technologies, status
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11)
+                        ON CONFLICT (team_id) DO NOTHING;
+                    """,
+                        t["team_id"], t["name"], t.get("description"), t.get("department", "Engineering"),
+                        t.get("department_id"), t.get("team_lead_id"), t.get("manager_id"),
+                        t.get("location", "Bengaluru"), json.dumps(t.get("responsibilities", [])),
+                        json.dumps(t.get("technologies", [])), t.get("status", "Active"),
+                    )
+                    report["teams_imported"] += 1
+
+                # Insert Projects
+                for p in projects:
+                    await conn.execute("""
+                        INSERT INTO projects (
+                            project_id, name, aliases, description, status,
+                            project_type, owning_team_id, owning_department_id,
+                            project_manager_id, project_lead_id, department,
+                            technologies, objectives, responsibilities, start_date, target_end_date
+                        ) VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, $13::jsonb, $14::jsonb, $15, $16)
+                        ON CONFLICT (project_id) DO NOTHING;
+                    """,
+                        p["project_id"], p["name"], json.dumps(p.get("aliases", [])),
+                        p.get("description"), p.get("status", "Active"), p.get("project_type", "Product Development"),
+                        p.get("owning_team_id"), p.get("owning_department_id"), p.get("project_manager_id"),
+                        p.get("project_lead_id"), p.get("department"), json.dumps(p.get("technologies", [])),
+                        json.dumps(p.get("objectives", [])), json.dumps(p.get("responsibilities", [])),
+                        p.get("start_date"), p.get("target_end_date"),
+                    )
+                    report["projects_imported"] += 1
+
+                # Insert Project Memberships
+                for m in memberships_to_insert:
+                    await conn.execute("""
+                        INSERT INTO project_memberships (
+                            project_id, employee_id, role, status, allocation_percent
+                        ) VALUES ($1, $2, $3, $4, $5)
+                        ON CONFLICT (project_id, employee_id) DO NOTHING;
+                    """, *m)
+                    report["memberships_imported"] += 1
+
+                # Insert / Reconcile Employees
                 for rec in emp_records_to_insert:
-                    if repair_mode:
-                        # Controlled repair: update email if placeholder/missing, fill extra fields
-                        # Do NOT overwrite designation, organizational_level, policy, or active phone updates
-                        res = await conn.execute("""
+                    # Check if employee exists
+                    existing_row = await conn.fetchrow(
+                        "SELECT employee_id, work_phone, version, team_id, department_id, projects FROM employees WHERE employee_id = $1",
+                        rec["employee_id"],
+                    )
+                    if existing_row:
+                        # Non-destructive backfill:
+                        # 1. Backfill team_id / department_id if missing
+                        # 2. Backfill project_ids into projects jsonb if missing
+                        # 3. NEVER overwrite work_phone or version!
+                        projects_json = rec["projects"]
+                        curr_projects_str = str(existing_row["projects"])
+                        if "project_id" in curr_projects_str:
+                            projects_to_set = existing_row["projects"]
+                        else:
+                            projects_to_set = json.loads(projects_json)
+
+                        await conn.execute("""
                             UPDATE employees SET
-                                work_email = CASE 
-                                    WHEN work_email LIKE '%@intentlock.internal' THEN $2
-                                    ELSE work_email
-                                END,
-                                employment_status = $3,
-                                employment_type = $4,
-                                date_of_joining = $5,
-                                sub_department = $6,
-                                research_level = $7,
-                                security_scope = $8::jsonb,
-                                voice_authority = $9::jsonb,
-                                recent_activity = $10::jsonb,
-                                extra_data = $11::jsonb
+                                team_id = COALESCE(employees.team_id, $2),
+                                department_id = COALESCE(employees.department_id, $3),
+                                projects = $4::jsonb,
+                                extra_data = $5::jsonb
                             WHERE employee_id = $1
                         """,
                             rec["employee_id"],
-                            rec["work_email"],
-                            rec["employment_status"],
-                            rec["employment_type"],
-                            rec["date_of_joining"],
-                            rec["sub_department"],
-                            rec["research_level"],
-                            rec["security_scope"],
-                            rec["voice_authority"],
-                            rec["recent_activity"],
+                            rec["team_id"],
+                            rec["department_id"],
+                            json.dumps(projects_to_set) if isinstance(projects_to_set, (dict, list)) else projects_to_set,
                             rec["extra_data"],
                         )
-                        if res and int(res.split()[-1]) > 0:
-                            report["employees_repaired"] += 1
+                        report["employees_reconciled"] += 1
                     else:
-                        # Additive non-destructive insert: DO NOTHING ON CONFLICT
                         await conn.execute("""
                             INSERT INTO employees (
                                 employee_id, version, full_name, preferred_name, work_email,
@@ -347,12 +470,14 @@ async def run_migration(
                                 executive_authority, policy, provenance,
                                 employment_status, employment_type, date_of_joining,
                                 sub_department, research_level, security_scope,
-                                voice_authority, recent_activity, extra_data
+                                voice_authority, recent_activity, extra_data,
+                                team_id, department_id
                             ) VALUES (
                                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
                                 $13::jsonb, $14::jsonb, $15::jsonb, $16::jsonb, $17::jsonb,
                                 $18::jsonb, $19::jsonb, $20::jsonb, $21::jsonb, $22::jsonb,
-                                $23, $24, $25, $26, $27, $28::jsonb, $29::jsonb, $30::jsonb, $31::jsonb
+                                $23, $24, $25, $26, $27, $28::jsonb, $29::jsonb, $30::jsonb, $31::jsonb,
+                                $32, $33
                             )
                             ON CONFLICT (employee_id) DO NOTHING;
                         """,
@@ -363,32 +488,52 @@ async def run_migration(
                             rec["responsibilities"], rec["achievements"], rec["research"], rec["executive_authority"],
                             rec["policy"], rec["provenance"], rec["employment_status"], rec["employment_type"],
                             rec["date_of_joining"], rec["sub_department"], rec["research_level"],
-                            rec["security_scope"], rec["voice_authority"], rec["recent_activity"], rec["extra_data"]
+                            rec["security_scope"], rec["voice_authority"], rec["recent_activity"], rec["extra_data"],
+                            rec["team_id"], rec["department_id"],
                         )
                         report["employees_imported"] += 1
 
-                # Link manager_ids if inserting new records
-                if not repair_mode:
-                    for rec in emp_records_to_insert:
-                        if rec["manager_id"]:
-                            await conn.execute(
-                                "UPDATE employees SET manager_id = $1 WHERE employee_id = $2 AND manager_id IS NULL",
-                                rec["manager_id"], rec["employee_id"]
-                            )
-
-                # Insert tickets additively
+                # Reconcile tickets: insert new tickets, backfill relationship columns for existing
                 for trec in tickets_to_insert:
-                    await conn.execute("""
-                        INSERT INTO tickets (
-                            ticket_id, version, title, description, ticket_type, category,
-                            status, priority, requester_id, assignee_id, created_by,
-                            department, project, document
-                        ) VALUES (
-                            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb
-                        )
-                        ON CONFLICT (ticket_id) DO NOTHING;
-                    """, *trec)
-                    report["tickets_imported"] += 1
+                    tid = trec[0]
+                    proj_id = trec[14]
+                    dept_id = trec[15]
+                    team_id = trec[16]
+                    trow = await conn.fetchrow("SELECT ticket_id, project_id, department_id, document FROM tickets WHERE ticket_id = $1", tid)
+                    if trow:
+                        doc = trow["document"]
+                        if isinstance(doc, str):
+                            doc = json.loads(doc)
+                        needs_update = False
+                        if not trow["project_id"] and proj_id:
+                            doc["project_id"] = proj_id
+                            needs_update = True
+                        if not trow["department_id"] and dept_id:
+                            doc["department_id"] = dept_id
+                            needs_update = True
+
+                        if needs_update:
+                            await conn.execute("""
+                                UPDATE tickets SET
+                                    project_id = COALESCE(tickets.project_id, $2),
+                                    department_id = COALESCE(tickets.department_id, $3),
+                                    owner_team_id = COALESCE(tickets.owner_team_id, $4),
+                                    document = $5::jsonb
+                                WHERE ticket_id = $1
+                            """, tid, proj_id, dept_id, team_id, json.dumps(doc))
+                            report["tickets_reconciled"] += 1
+                    else:
+                        await conn.execute("""
+                            INSERT INTO tickets (
+                                ticket_id, version, title, description, ticket_type, category,
+                                status, priority, requester_id, assignee_id, created_by,
+                                department, project, document, project_id, department_id, owner_team_id
+                            ) VALUES (
+                                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb, $15, $16, $17
+                            )
+                            ON CONFLICT (ticket_id) DO NOTHING;
+                        """, *trec)
+                        report["tickets_imported"] += 1
 
                 # Insert speaker mappings additively
                 for mrec in mappings_to_insert:
@@ -401,29 +546,71 @@ async def run_migration(
                     """, mrec[0], mrec[1], mrec[2], mrec[3], mrec[4], mrec[5])
                     report["mappings_imported"] += 1
 
+                # Advance directory_revision and ticket_revision markers
+                await conn.execute("""
+                    INSERT INTO directory_metadata (key, revision, updated_at)
+                    VALUES ('directory_revision', 2, NOW())
+                    ON CONFLICT (key) DO UPDATE
+                    SET revision = directory_metadata.revision + 1, updated_at = NOW();
+                """)
+                await conn.execute("""
+                    INSERT INTO directory_metadata (key, revision, updated_at)
+                    VALUES ('ticket_revision', 2, NOW())
+                    ON CONFLICT (key) DO UPDATE
+                    SET revision = directory_metadata.revision + 1, updated_at = NOW();
+                """)
+
                 # Post-migration verification counts
                 post_emp_count = await conn.fetchval("SELECT COUNT(*) FROM employees")
                 post_tkt_count = await conn.fetchval("SELECT COUNT(*) FROM tickets")
                 post_map_count = await conn.fetchval("SELECT COUNT(*) FROM speaker_mappings")
+                post_dept_count = await conn.fetchval("SELECT COUNT(*) FROM departments")
+                post_team_count = await conn.fetchval("SELECT COUNT(*) FROM teams")
+                post_proj_count = await conn.fetchval("SELECT COUNT(*) FROM projects")
+                post_mem_count = await conn.fetchval("SELECT COUNT(*) FROM project_memberships")
+
                 report["db_final_counts"] = {
                     "employees": post_emp_count,
                     "tickets": post_tkt_count,
                     "speaker_mappings": post_map_count,
+                    "departments": post_dept_count,
+                    "teams": post_team_count,
+                    "projects": post_proj_count,
+                    "project_memberships": post_mem_count,
                 }
         else:
             # Strictly read-only dry-run report
             curr_emp_count = await conn.fetchval("SELECT COUNT(*) FROM employees") if table_exists else 0
             curr_tkt_count = await conn.fetchval("SELECT COUNT(*) FROM tickets") if table_exists else 0
             curr_map_count = await conn.fetchval("SELECT COUNT(*) FROM speaker_mappings") if table_exists else 0
+
+            # Check if new tables exist
+            has_depts = await conn.fetchval("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='departments')")
+            has_teams = await conn.fetchval("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='teams')")
+            has_projs = await conn.fetchval("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='projects')")
+            has_mems = await conn.fetchval("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='project_memberships')")
+
             report["db_current_counts"] = {
                 "employees": curr_emp_count,
                 "tickets": curr_tkt_count,
                 "speaker_mappings": curr_map_count,
+                "departments": await conn.fetchval("SELECT COUNT(*) FROM departments") if has_depts else 0,
+                "teams": await conn.fetchval("SELECT COUNT(*) FROM teams") if has_teams else 0,
+                "projects": await conn.fetchval("SELECT COUNT(*) FROM projects") if has_projs else 0,
+                "project_memberships": await conn.fetchval("SELECT COUNT(*) FROM project_memberships") if has_mems else 0,
+            }
+            report["planned_reconciliation"] = {
+                "departments_to_add": len(departments),
+                "teams_to_add": len(teams),
+                "projects_to_add": len(projects),
+                "memberships_to_add": len(memberships_to_insert),
+                "employees_to_reconcile": len(emp_records_to_insert),
+                "tickets_to_reconcile": len(tickets_to_insert),
             }
             report["dry_run_summary"] = (
-                f"Would apply {len(report['migrations_pending'])} pending migrations, "
-                f"reconcile {len(emp_records_to_insert)} employees, "
-                f"{len(tickets_to_insert)} tickets, and {len(mappings_to_insert)} mappings."
+                f"Would apply {len(report['migrations_pending'])} pending migration(s): {report['migrations_pending']}. "
+                f"Would reconcile {len(departments)} departments, {len(teams)} teams, {len(projects)} projects, "
+                f"{len(memberships_to_insert)} memberships, {len(emp_records_to_insert)} employees, and {len(tickets_to_insert)} tickets."
             )
 
     except Exception as exc:

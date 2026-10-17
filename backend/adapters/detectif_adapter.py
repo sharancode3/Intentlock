@@ -38,21 +38,37 @@ class DetectifHTTPClient:
         self,
         base_url: Optional[str] = None,
         api_key: Any = _UNSET,
+        speaker_api_key: Optional[str] = None,
+        deepfake_api_key: Optional[str] = None,
+        combined_api_key: Optional[str] = None,
         timeout: Optional[float] = None,
         transport: Optional[httpx.AsyncBaseTransport] = None,
     ):
         self.base_url = (base_url or settings.DETECTIF_BASE_URL).rstrip("/")
         self.api_key = settings.DETECTIF_API_KEY if api_key is _UNSET else api_key
+        self.speaker_api_key = speaker_api_key or settings.DETECTIF_SPEAKER_API_KEY
+        self.deepfake_api_key = deepfake_api_key or settings.DETECTIF_DEEPFAKE_API_KEY
+        self.combined_api_key = combined_api_key or settings.DETECTIF_COMBINED_API_KEY
         self.timeout = timeout or settings.DETECTIF_TIMEOUT_SECONDS
         self.transport = transport
         self._client: Optional[httpx.AsyncClient] = None
 
+    def get_api_key_for_mode(self, mode: str) -> Optional[str]:
+        """Returns the appropriate scoped credential for the mode, falling back to base api_key."""
+        if mode == "speaker":
+            return self.speaker_api_key or self.api_key
+        elif mode == "deepfake":
+            return self.deepfake_api_key or self.api_key
+        elif mode == "combined":
+            return self.combined_api_key or self.api_key
+        return self.api_key
 
     def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
             headers = {"Accept": "application/json"}
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
+                headers["x-api-key"] = self.api_key
             self._client = httpx.AsyncClient(
                 base_url=self.base_url,
                 headers=headers,
@@ -77,8 +93,8 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
         self.client_wrapper = http_client or DetectifHTTPClient()
         self.account_alias = account_alias or settings.DETECTIF_ACCOUNT_ALIAS
 
-    def is_configured(self) -> bool:
-        return bool(self.client_wrapper.api_key)
+    def is_configured(self, mode: str = "combined") -> bool:
+        return bool(self.client_wrapper.get_api_key_for_mode(mode))
 
     async def verify_evidence(
         self,
@@ -86,46 +102,50 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
         audio_bytes: bytes,
         candidate_speaker_id: Optional[str],
         correlation_id: str,
+        mode: str = "combined",
     ) -> VoiceEvidenceResult:
         """
-        Execute combined speaker verification and synthetic-speech check.
-        Requires audio duration > 4.0 seconds for deepfake verification.
+        Execute mode-aware biometric verification:
+        - mode="speaker": speaker-only verification via POST /speakers/verify (detect_deepfake=false)
+        - mode="deepfake": deepfake-only detection via POST /deepfake/detect
+        - mode="combined": combined verification via POST /speakers/verify (detect_deepfake=true)
         """
         t0 = time.perf_counter()
 
-        if not self.is_configured():
+        if not self.is_configured(mode):
             return VoiceEvidenceResult(
                 is_available=False,
                 error_code="DETECTIF_UNCONFIGURED",
-                error_message="Detectif API key is not configured on this server.",
+                error_message=f"Detectif API key is not configured on this server for mode '{mode}'.",
                 account_alias=self.account_alias,
                 audio_digest=audio_metadata.sha256_digest,
             )
 
-        if not candidate_speaker_id:
+        if mode in ("combined", "speaker") and not candidate_speaker_id:
             return VoiceEvidenceResult(
                 is_available=True,
                 decision="no_match",
-                deepfake_verdict="not_sure",
+                deepfake_verdict="not_sure" if mode == "combined" else None,
                 error_code="NO_CANDIDATE_SPEAKER",
                 error_message="A candidate speaker ID or employee ID is required for verification.",
                 account_alias=self.account_alias,
                 audio_digest=audio_metadata.sha256_digest,
             )
 
-        # Preflight validation: Combined call requires audio > 4.0s
+        # Preflight validation: Audio duration bounds before provider calls
+        min_duration = 4.0 if mode == "combined" else (3.0 if mode == "deepfake" else 1.0)
         try:
             pcm = AudioDecoder.decode_to_16k_mono(audio_bytes, max_duration_s=60.0, min_duration_s=0.1)
             duration_s = len(pcm) / 16000.0
-            if duration_s <= 4.0:
+            if duration_s <= min_duration:
                 latency_ms = (time.perf_counter() - t0) * 1000.0
                 return VoiceEvidenceResult(
                     is_available=True,
-                    decision="no_match",
-                    deepfake_verdict="not_sure",
+                    decision="no_match" if mode in ("combined", "speaker") else None,
+                    deepfake_verdict="not_sure" if mode in ("combined", "deepfake") else None,
                     latency_ms=round(latency_ms, 2),
                     error_code="AUDIO_TOO_SHORT",
-                    error_message=f"Combined verification requires audio longer than 4.0s (received {duration_s:.1f}s).",
+                    error_message=f"{mode.capitalize()} verification requires audio longer than {min_duration:.1f}s (received {duration_s:.1f}s).",
                     account_alias=self.account_alias,
                     audio_digest=audio_metadata.sha256_digest,
                 )
@@ -133,8 +153,8 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
             latency_ms = (time.perf_counter() - t0) * 1000.0
             return VoiceEvidenceResult(
                 is_available=True,
-                decision="no_match",
-                deepfake_verdict="not_sure",
+                decision="no_match" if mode in ("combined", "speaker") else None,
+                deepfake_verdict="not_sure" if mode in ("combined", "deepfake") else None,
                 latency_ms=round(latency_ms, 2),
                 error_code="DECODE_ERROR",
                 error_message=f"Failed to decode audio: {str(e)}",
@@ -142,26 +162,41 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
                 audio_digest=audio_metadata.sha256_digest,
             )
 
-        # Deterministic Idempotency Key bound to turn audio digest, candidate, account, and operation ID
+        # Deterministic Idempotency Key bound to turn audio digest, candidate, account, op_id, and mode
         op_id = correlation_id or f"op_{int(time.time() * 1000)}"
         idempotency_key = hashlib.sha256(
-            f"{audio_metadata.sha256_digest}:{candidate_speaker_id}:{self.account_alias}:{op_id}".encode()
+            f"{audio_metadata.sha256_digest}:{candidate_speaker_id or 'none'}:{self.account_alias}:{op_id}:{mode}".encode()
         ).hexdigest()
 
-        # Build multipart payload
+        # Build request parameters according to mode
         files = {
             "file": (audio_metadata.safe_filename, audio_bytes, audio_metadata.normalized_mime_type)
         }
-        data = {
-            "speaker_id": candidate_speaker_id,
-            "detect_deepfake": "true",
-        }
+        resolved_key = self.client_wrapper.get_api_key_for_mode(mode)
         headers = {
             "Idempotency-Key": idempotency_key,
             "X-Correlation-Id": correlation_id,
         }
+        if resolved_key:
+            headers["Authorization"] = f"Bearer {resolved_key}"
+            headers["x-api-key"] = resolved_key
 
-        # Resilient execution with retry on 429/503
+        if mode == "deepfake":
+            endpoint = "/deepfake/detect"
+            data = None
+        elif mode == "speaker":
+            endpoint = "/speakers/verify"
+            data = {
+                "speaker_id": candidate_speaker_id,
+                "detect_deepfake": "false",
+            }
+        else:  # combined
+            endpoint = "/speakers/verify"
+            data = {
+                "speaker_id": candidate_speaker_id,
+                "detect_deepfake": "true",
+            }
+
         client = self.client_wrapper._get_client()
         max_retries = settings.DETECTIF_MAX_RETRIES
         resp = None
@@ -169,7 +204,7 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
         for attempt in range(max_retries + 1):
             try:
                 resp = await client.post(
-                    "/speakers/verify",
+                    endpoint,
                     data=data,
                     files=files,
                     headers=headers,
@@ -229,14 +264,48 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
                     audio_digest=audio_metadata.sha256_digest,
                 )
 
-            # Extract fields
+            is_replay = bool(
+                resp.headers.get("x-idempotent-replay") == "true" or payload.get("is_replay")
+            )
+            raw_model = payload.get("model_version")
+
+            if mode == "deepfake":
+                df_obj = payload.get("deepfake") if isinstance(payload.get("deepfake"), dict) else payload
+                deepfake_verdict = df_obj.get("verdict", "not_sure")
+                deepfake_score = df_obj.get("score")
+                deepfake_thresh = df_obj.get("threshold", 0.5)
+                deepfake_error = df_obj.get("error")
+                raw_model = df_obj.get("model") or raw_model
+                model_ver_str = str(raw_model) if raw_model is not None and not isinstance(raw_model, (dict, list)) else "detectif_v1"
+
+                logger.info(
+                    f"Detectif deepfake check completed in {latency_ms:.1f}ms: "
+                    f"verdict={deepfake_verdict} (score={deepfake_score})"
+                )
+
+                return VoiceEvidenceResult(
+                    is_available=True,
+                    decision=None,
+                    deepfake_verdict=deepfake_verdict,
+                    deepfake_score=deepfake_score,
+                    deepfake_threshold=deepfake_thresh,
+                    deepfake_error=deepfake_error,
+                    speaker_id=None,
+                    request_id=payload.get("request_id") or resp.headers.get("x-request-id"),
+                    model_version=model_ver_str,
+                    account_alias=self.account_alias,
+                    audio_digest=audio_metadata.sha256_digest,
+                    is_idempotent_replay=is_replay,
+                    latency_ms=round(latency_ms, 2),
+                )
+
+            # Speaker or Combined
             result_obj = payload.get("result", {})
             decision = result_obj.get("decision")  # "match" | "no_match"
             similarity = result_obj.get("similarity")
             sim_threshold = result_obj.get("threshold")
 
             returned_speaker_id = payload.get("speaker_id")
-            # Enforce Identity Correspondence: returned speaker_id must match requested candidate
             if not returned_speaker_id or returned_speaker_id.strip() != candidate_speaker_id.strip():
                 logger.error(
                     f"Identity correspondence failure: requested {candidate_speaker_id} but provider returned {returned_speaker_id}"
@@ -244,7 +313,7 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
                 return VoiceEvidenceResult(
                     is_available=True,
                     decision="no_match",
-                    deepfake_verdict="not_sure",
+                    deepfake_verdict="not_sure" if mode == "combined" else None,
                     latency_ms=round(latency_ms, 2),
                     error_code="IDENTITY_CORRESPONDENCE_MISMATCH",
                     error_message="Provider speaker_id does not match mapped candidate ID.",
@@ -252,7 +321,31 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
                     audio_digest=audio_metadata.sha256_digest,
                 )
 
-            # Deepfake member
+            if mode == "speaker":
+                model_ver_str = str(raw_model) if raw_model is not None and not isinstance(raw_model, (dict, list)) else "detectif_v1"
+                logger.info(
+                    f"Detectif speaker verify completed in {latency_ms:.1f}ms: "
+                    f"speaker={decision} (sim={similarity})"
+                )
+                return VoiceEvidenceResult(
+                    is_available=True,
+                    decision=decision,
+                    similarity_score=similarity,
+                    similarity_threshold=sim_threshold,
+                    deepfake_verdict=None,
+                    deepfake_score=None,
+                    deepfake_threshold=None,
+                    deepfake_error=None,
+                    speaker_id=returned_speaker_id,
+                    request_id=payload.get("request_id") or resp.headers.get("x-request-id"),
+                    model_version=model_ver_str,
+                    account_alias=self.account_alias,
+                    audio_digest=audio_metadata.sha256_digest,
+                    is_idempotent_replay=is_replay,
+                    latency_ms=round(latency_ms, 2),
+                )
+
+            # Combined
             deepfake_obj = payload.get("deepfake")
             if not isinstance(deepfake_obj, dict):
                 deepfake_verdict = "not_sure"
@@ -260,14 +353,10 @@ class DetectifVoiceEvidenceAdapter(VoiceEvidencePort):
                 deepfake_thresh = 0.5
                 deepfake_error = "MISSING_DEEPFAKE_MEMBER"
             else:
-                deepfake_verdict = deepfake_obj.get("verdict")  # "real" | "fake" | "not_sure"
+                deepfake_verdict = deepfake_obj.get("verdict")
                 deepfake_score = deepfake_obj.get("score")
                 deepfake_thresh = deepfake_obj.get("threshold")
                 deepfake_error = deepfake_obj.get("error")
-
-            is_replay = bool(
-                resp.headers.get("x-idempotent-replay") == "true" or payload.get("is_replay")
-            )
 
             logger.info(
                 f"Detectif verify completed in {latency_ms:.1f}ms: "

@@ -73,18 +73,27 @@ class TicketKnowledgeService:
             return
 
         logger.info(f"Loading canonical ticket dataset from {self.data_path}...")
-        if self.store:
+        self._cached_revision = 1
+        if settings.STORAGE_BACKEND == "postgres":
+            from backend.adapters.postgres_employee_repository import PostgresEmployeeRepository
+            repo = PostgresEmployeeRepository.get_instance()
             try:
-                self._raw_tickets = self.store.list_tickets()
+                self._raw_tickets = self.store.list_tickets() if self.store else []
+                self._cached_revision = repo.get_ticket_revision()
             except Exception as exc:
-                logger.warning(f"Failed to query tickets from store ({exc}). Falling back to local dataset.")
-                self._raw_tickets = []
-            if not self._raw_tickets and os.path.exists(self.data_path):
+                if os.getenv("INTENTLOCK_OFFLINE_TESTS") == "1":
+                    logger.warning(f"Failed to query tickets from store in test mode ({exc}). Using local dataset.")
+                    with open(self.data_path, "r", encoding="utf-8") as f:
+                        self._raw_tickets = json.load(f)
+                else:
+                    logger.error(f"Postgres ticket repository unavailable: {exc}")
+                    raise RuntimeError("Database unavailable: failed to query tickets from PostgreSQL store.") from exc
+        else:
+            if self.store:
+                self._raw_tickets = self.store.list_tickets()
+            else:
                 with open(self.data_path, "r", encoding="utf-8") as f:
                     self._raw_tickets = json.load(f)
-        else:
-            with open(self.data_path, "r", encoding="utf-8") as f:
-                self._raw_tickets = json.load(f)
 
         self._build_indexes()
         self.is_loaded = True
@@ -94,6 +103,24 @@ class TicketKnowledgeService:
         if self.store:
             self._raw_tickets = self.store.list_tickets()
             self._build_indexes()
+
+    def refresh_if_stale(self) -> None:
+        """Checks ticket revision and reloads indexes if another process or transaction mutated records."""
+        if settings.STORAGE_BACKEND == "postgres":
+            from backend.adapters.postgres_employee_repository import PostgresEmployeeRepository
+            repo = PostgresEmployeeRepository.get_instance()
+            try:
+                rev = repo.get_ticket_revision()
+                if rev != getattr(self, "_cached_revision", 1):
+                    if self.store:
+                        self._raw_tickets = self.store.list_tickets()
+                        self._build_indexes()
+                        self._cached_revision = rev
+                        logger.info("Ticket cache invalidated and reloaded to revision %s.", rev)
+            except Exception as exc:
+                logger.warning("Ticket revision check failed: %s", exc)
+        else:
+            self.refresh_from_store()
 
     def _build_indexes(self) -> None:
         self.tickets_by_id.clear()

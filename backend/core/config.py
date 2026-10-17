@@ -68,6 +68,9 @@ class Settings(BaseSettings):
     # DetectifAI Biometric Settings (Stage 2)
     DETECTIF_BASE_URL: str = os.getenv("DETECTIF_BASE_URL", "https://platform.detectif.ai/v1")
     DETECTIF_API_KEY: Optional[str] = os.getenv("DETECTIF_API_KEY", None)
+    DETECTIF_SPEAKER_API_KEY: Optional[str] = os.getenv("DETECTIF_SPEAKER_API_KEY", None)
+    DETECTIF_DEEPFAKE_API_KEY: Optional[str] = os.getenv("DETECTIF_DEEPFAKE_API_KEY", None)
+    DETECTIF_COMBINED_API_KEY: Optional[str] = os.getenv("DETECTIF_COMBINED_API_KEY", None)
     DETECTIF_ACCOUNT_ALIAS: str = os.getenv("DETECTIF_ACCOUNT_ALIAS", "primary_account")
     DETECTIF_TIMEOUT_SECONDS: float = float(os.getenv("DETECTIF_TIMEOUT_SECONDS", "15.0"))
     DETECTIF_MAX_RETRIES: int = int(os.getenv("DETECTIF_MAX_RETRIES", "2"))
@@ -134,7 +137,15 @@ class Settings(BaseSettings):
         """Returns non-sensitive configuration summary with redacted secrets."""
         return {
             "environment": self.ENVIRONMENT,
-            "detectif_configured": bool(self.DETECTIF_API_KEY),
+            "detectif_configured": bool(
+                self.DETECTIF_API_KEY
+                or self.DETECTIF_SPEAKER_API_KEY
+                or self.DETECTIF_DEEPFAKE_API_KEY
+                or self.DETECTIF_COMBINED_API_KEY
+            ),
+            "detectif_speaker_configured": bool(self.DETECTIF_SPEAKER_API_KEY or self.DETECTIF_API_KEY),
+            "detectif_deepfake_configured": bool(self.DETECTIF_DEEPFAKE_API_KEY or self.DETECTIF_API_KEY),
+            "detectif_combined_configured": bool(self.DETECTIF_COMBINED_API_KEY or self.DETECTIF_API_KEY),
             "detectif_base_url": self.DETECTIF_BASE_URL,
             "detectif_account_alias": self.DETECTIF_ACCOUNT_ALIAS,
             "llm_provider": self.LLM_PROVIDER,

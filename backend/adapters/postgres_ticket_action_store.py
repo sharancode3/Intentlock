@@ -544,6 +544,16 @@ class PostgresTicketActionStore:
                     trow["version"],
                 )
 
+            # Bump ticket revision in directory_metadata for cross-worker cache invalidation
+            await conn.execute(
+                """
+                INSERT INTO directory_metadata (key, revision, updated_at)
+                VALUES ('ticket_revision', 2, NOW())
+                ON CONFLICT (key) DO UPDATE
+                SET revision = directory_metadata.revision + 1, updated_at = NOW()
+                """
+            )
+
             # Consume grant atomically
             await conn.execute(
                 "UPDATE action_grants SET consumed_at = NOW() WHERE grant_id = $1", grant_id

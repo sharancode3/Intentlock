@@ -111,6 +111,7 @@ class VoiceEvidencePort(Protocol):
         audio_bytes: bytes,
         candidate_speaker_id: Optional[str],
         correlation_id: str,
+        mode: str = "combined",
     ) -> VoiceEvidenceResult:
         ...
 
@@ -188,6 +189,7 @@ class UnavailableVoiceEvidenceAdapter:
         audio_bytes: bytes,
         candidate_speaker_id: Optional[str],
         correlation_id: str,
+        mode: str = "combined",
     ) -> VoiceEvidenceResult:
         return VoiceEvidenceResult(
             is_available=False,
