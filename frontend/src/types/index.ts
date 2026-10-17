@@ -60,9 +60,14 @@ export type TurnStatusType =
   | 'transcribing'
   | 'reasoning'
   | 'verifying'
+  | 'verification_required'
   | 'clarification'
+  | 'confirmation_pending'
+  | 'executing'
+  | 'committed'
   | 'result_ready'
   | 'denial'
+  | 'provider_unavailable'
   | 'error';
 
 export interface TurnStatusNotice {
@@ -181,6 +186,84 @@ export interface WorkspaceCallbacks {
 }
 
 // ============================================================================
-// 7. Typed Result Payloads (Stage 1 Contracts)
+// 7. Shared Coordination Contracts (Persons 1, 2, 3)
+// ============================================================================
+
+export interface TrustEvidenceSummary {
+  speaker_decision?: 'PASS' | 'FAIL' | 'SKIPPED' | 'UNAVAILABLE' | string;
+  authenticity_verdict?: 'PASS' | 'FAIL' | 'UNCERTAIN' | 'SKIPPED' | string;
+  reason?: string;
+  speaker_score?: number;
+  authenticity_score?: number;
+}
+
+export interface VoiceTurnResponse {
+  transcript?: string;
+  assistant_message?: string;
+  status: 'success' | 'clarification' | 'denial' | 'error' | string;
+  session?: SessionInfo;
+  session_expires_at?: string;
+  result_block?: GenericResultBlock | null;
+  result_blocks?: GenericResultBlock[];
+  primary_result_id?: string | null;
+  speech_audio?: {
+    base64_audio: string;
+    mime_type: string;
+  };
+  trust_evidence?: TrustEvidenceSummary;
+  error?: {
+    code?: string;
+    message?: string;
+  };
+}
+
+export interface ResultActionRequest {
+  action: string;
+  source_result_id: string;
+  target_id?: string | number;
+  view?: string;
+  group_by?: string;
+  parameters?: Record<string, unknown>;
+}
+
+export interface ResultActionResponse {
+  status: 'success' | 'clarification' | 'denial' | 'error' | string;
+  assistant_message?: string;
+  result_block?: GenericResultBlock | null;
+  result_blocks?: GenericResultBlock[];
+  primary_result_id?: string | null;
+  detail?: string;
+  error?: {
+    code?: string;
+    message?: string;
+  };
+}
+
+export interface SelectedEntityContext {
+  type: 'employee' | 'ticket' | 'result';
+  id: string;
+  name?: string;
+  sourceResultId: string;
+  timestamp?: string;
+}
+
+export interface ActiveConversationContext {
+  activeResultId?: string | null;
+  activeResultType?: ResultBlockType | null;
+  selectedEntity?: SelectedEntityContext | null;
+  displayedOrder?: string[];
+}
+
+export interface SpeechTimingMetrics {
+  micActivationMs?: number;
+  speechStartToPreviewMs?: number;
+  speechEndToFinalizeMs?: number;
+  finalizeToSubmissionMs?: number;
+  responseToPlaybackMs?: number;
+}
+
+// ============================================================================
+// 8. Typed Result Payloads (Stage 1 Contracts)
 // ============================================================================
 export * from './payloads';
+

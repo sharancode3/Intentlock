@@ -1,6 +1,8 @@
+/* oxlint-disable react/only-export-components */
 import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import '@xyflow/react/dist/style.css'
 // Bootstrap custom result card renderers into ResultRendererRegistry
 import './components/renderers'
 import LiveApp from './LiveApp.tsx'

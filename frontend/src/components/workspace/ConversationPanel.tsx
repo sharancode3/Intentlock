@@ -91,8 +91,8 @@ export const ConversationPanel: React.FC<ConversationPanelProps> = ({
                 Speak naturally to ask about your profile, assigned projects, or permitted team information.
               </p>
               <p className="text-xs text-ink-muted dark:text-slate-400 bg-white dark:bg-slate-800/80 p-2.5 rounded border border-slate-200 dark:border-slate-700">
-                <strong>Private records require voice verification.</strong> Choose your claimed employee ID and ask a full question (e.g.{' '}
-                <em>"My employee ID is EMP-1001. Show my profile and current projects."</em>).
+                <strong>Private records require voice verification.</strong> State your employee ID naturally when speaking (e.g.{' '}
+                <em>"My employee ID is EMP-1001. Show my workspace."</em>). Public helpdesk assistance is available without authentication.
               </p>
             </div>
           </div>

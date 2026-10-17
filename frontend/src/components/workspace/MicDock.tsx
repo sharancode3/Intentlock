@@ -10,6 +10,8 @@ interface MicDockProps {
   onTextSubmitted?: (text: string) => void;
   disabled?: boolean;
   disabledReason?: string;
+  isPlayingAudio?: boolean;
+  onStopAudio?: () => void;
   className?: string;
 }
 
@@ -19,6 +21,8 @@ export const MicDock: React.FC<MicDockProps> = ({
   onLiveTranscript, previewEnabled = true,
   disabled = false,
   disabledReason,
+  isPlayingAudio = false,
+  onStopAudio,
   className = '',
 }) => {
   const [typedInput, setTypedInput] = React.useState('');
@@ -38,6 +42,13 @@ export const MicDock: React.FC<MicDockProps> = ({
     onAudioCaptured,
     onLiveTranscript, previewEnabled, disabled,
   });
+
+  const handleInterruptAndSpeak = () => {
+    onStopAudio?.();
+    setTimeout(() => {
+      void startRecording();
+    }, 60);
+  };
 
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
@@ -111,20 +122,32 @@ export const MicDock: React.FC<MicDockProps> = ({
         ) : (
           /* Idle Action: Prominent High-Contrast Primary Mic Button */
           <div className="w-full flex flex-col items-center gap-2">
-            <button
-              type="button"
-              disabled={disabled || permissionState === 'unsupported'}
-              onClick={() => { if (isArmed) cancelRecording(); else void startRecording(); }}
-              className={`w-full sm:w-auto px-6 py-2.5 rounded-flat-lg font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-none min-h-[46px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-700 ${
-                disabled || permissionState === 'unsupported'
-                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
-                  : 'bg-brand-700 hover:bg-brand-800 active:bg-brand-900 text-white border border-brand-800'
-              }`}
-              aria-label={disabled ? disabledReason || 'Microphone unavailable' : 'Tap to speak into kiosk microphone'}
-            >
-              <Mic className="w-5 h-5 shrink-0" aria-hidden="true" />
-              <span>{disabled ? disabledReason || 'Microphone Unavailable' : isArmed ? 'Stop Listening' : 'Start Conversation'}</span>
-            </button>
+            {isPlayingAudio && onStopAudio ? (
+              <button
+                type="button"
+                onClick={handleInterruptAndSpeak}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-flat-lg font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-none min-h-[46px] bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white border border-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                aria-label="Stop assistant audio and speak new request"
+              >
+                <Square className="w-4 h-4 fill-white shrink-0" aria-hidden="true" />
+                <span>Stop &amp; Speak</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={disabled || permissionState === 'unsupported'}
+                onClick={() => { if (isArmed) cancelRecording(); else void startRecording(); }}
+                className={`w-full sm:w-auto px-6 py-2.5 rounded-flat-lg font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-none min-h-[46px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-700 ${
+                  disabled || permissionState === 'unsupported'
+                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
+                    : 'bg-brand-700 hover:bg-brand-800 active:bg-brand-900 text-white border border-brand-800'
+                }`}
+                aria-label={disabled ? disabledReason || 'Microphone unavailable' : 'Tap to speak into kiosk microphone'}
+              >
+                <Mic className="w-5 h-5 shrink-0" aria-hidden="true" />
+                <span>{disabled ? disabledReason || 'Microphone Unavailable' : isArmed ? 'Stop Listening' : 'Start Conversation'}</span>
+              </button>
+            )}
 
             {/* Typed Test Input Fallback */}
             {onTextSubmitted && (

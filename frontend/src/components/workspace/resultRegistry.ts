@@ -1,9 +1,10 @@
 import React from 'react';
-import type { GenericResultBlock, ResultBlockType } from '../../types';
+import type { GenericResultBlock, ResultBlockType, SelectedEntityContext } from '../../types';
 
 export interface ResultRendererProps<T = Record<string, unknown>> {
   block: GenericResultBlock & { payload: T };
   onAction?: (actionVerb: string, parameters: Record<string, unknown>) => void;
+  selectedEntity?: SelectedEntityContext | null;
 }
 
 export type CustomRendererComponent = React.ComponentType<ResultRendererProps>;
@@ -20,8 +21,15 @@ export function registerResultRenderer(type: ResultBlockType, component: CustomR
 }
 
 /**
+ * Check if a custom renderer is registered for a specific ResultBlockType.
+ */
+export function hasResultRenderer(type: string): boolean {
+  return Boolean(RENDERER_REGISTRY[type as ResultBlockType]);
+}
+
+/**
  * Get the registered custom renderer for a specific ResultBlockType.
  */
-export function getResultRenderer(type: ResultBlockType): CustomRendererComponent | undefined {
-  return RENDERER_REGISTRY[type];
+export function getResultRenderer(type: string): CustomRendererComponent | undefined {
+  return RENDERER_REGISTRY[type as ResultBlockType];
 }

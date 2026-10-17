@@ -66,9 +66,14 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
         {isVerified ? (
           <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-flat bg-state-successBg border border-state-successBorder text-emerald-900 dark:bg-emerald-950/50 dark:border-emerald-800 dark:text-emerald-200 text-xs sm:text-sm font-medium">
             <ShieldCheck className="w-4 h-4 text-state-success shrink-0" aria-hidden="true" />
-            <div className="flex items-center gap-1.5 truncate max-w-[130px] sm:max-w-[180px]">
+            <div className="flex items-center gap-1.5 truncate max-w-[130px] sm:max-w-[220px]">
               <span className="truncate font-semibold">{session.actor?.fullName}</span>
               <span className="text-xs opacity-75 hidden md:inline">({session.actor?.employeeId})</span>
+              {session.actor?.role && (
+                <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-emerald-200/80 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 hidden sm:inline">
+                  {session.actor.role}
+                </span>
+              )}
             </div>
             {session.actor && session.actor.expiresInSeconds > 0 && (
               <span className="inline-flex items-center gap-1 text-[11px] font-mono px-1.5 py-0.5 rounded bg-emerald-100/80 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
