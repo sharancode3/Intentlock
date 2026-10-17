@@ -206,7 +206,7 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
         if not self.is_configured():
             return AnswerResult(
                 is_available=False,
-                answer_text="",
+                answer_text="OpenAI answer generation is currently unconfigured. Displaying authorized record card.",
                 grounded=False,
                 error_message="OPENAI_API_KEY is not set.",
             )
@@ -287,7 +287,7 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
             logger.warning(f"OpenAI rate limit on {correlation_id}: RATE_LIMIT_EXCEEDED")
             return AnswerResult(
                 is_available=False,
-                answer_text="",
+                answer_text="Answer generation service is currently experiencing high load. Please try again shortly.",
                 grounded=False,
                 latency_ms=round(latency_ms, 2),
                 error_message="RATE_LIMIT_EXCEEDED",
@@ -297,7 +297,7 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
             logger.warning(f"OpenAI timeout on {correlation_id}: TIMEOUT")
             return AnswerResult(
                 is_available=False,
-                answer_text="",
+                answer_text="Answer generation timed out. Please try again.",
                 grounded=False,
                 latency_ms=round(latency_ms, 2),
                 error_message="TIMEOUT",
@@ -308,7 +308,7 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
             logger.error(f"OpenAI generation error on {correlation_id}: {err_type}")
             return AnswerResult(
                 is_available=False,
-                answer_text="",
+                answer_text="Unable to generate AI answer. Displaying authorized record card.",
                 grounded=False,
                 latency_ms=round(latency_ms, 2),
                 error_message=f"OPENAI_ERROR: {err_type}",

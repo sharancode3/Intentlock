@@ -41,7 +41,7 @@ async def test_unconfigured_adapter_fails_closed(unconfigured_adapter):
         correlation_id="turn-test-1",
     )
     assert res.is_available is False
-    assert res.answer_text == ""
+    assert "unconfigured" in res.answer_text.lower()
     assert res.grounded is False
     assert "OPENAI_API_KEY is not set" in res.error_message
 
