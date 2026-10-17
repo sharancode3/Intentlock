@@ -401,32 +401,28 @@ The following state machine governs how credentials and billing credits are allo
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Speaker as Spoken Human Speaker
+    actor Speaker as Spoken Speaker
     participant Client as React 19 Client
     participant GW as FastAPI Gateway
-    participant VAD as AudioDecoder and Silero VAD
     participant Policy as Evidence Policy Engine
     participant Det as Detectif AI Biometrics
-    participant STT as Speech-to-Text Engine
     participant DB as Supabase PostgreSQL RLS
-    participant LLM as OpenAI GPT-4o-mini
-    participant TTS as Neural TTS Engine
+    participant LLM as OpenAI Reasoning Engine
 
     Speaker->>Client: Speaks utterance: Show open tickets for my team
     Note over Client: TurnDetector detects speech, streams PCM, senses silence
     Client->>GW: POST /api/v1/voice/turn with Audio Blob and Session Token
 
-    GW->>VAD: Normalize audio to 16kHz PCM and compute VAD probability
+    GW->>GW: Normalize audio to 16kHz PCM and compute VAD probability
     alt Non-speech or duration under 0.5s
-        VAD-->>GW: Non-speech detected
         GW-->>Client: 400 Bad Request: SILENCE_REJECTED
     end
 
     GW->>Policy: Evaluate session token, candidate ID, and operation risk
     alt Active Session Valid and Candidate Matches
-        Policy-->>GW: Policy: REUSE with 0 Provider Calls and 0 Credits
+        Policy-->>GW: Policy: REUSE (0 Provider Calls, 0 Credits)
     else New Ingress or State Mutation
-        Policy->>Det: Dispatch audio via DETECTIF_COMBINED_API_KEY
+        Policy->>Det: Authenticate via DETECTIF_COMBINED_API_KEY
         Det-->>Policy: Verification Result with match and deepfake scores
         alt Deepfake Detected or Speaker Mismatch
             Policy-->>GW: Biometric Verification Failed
@@ -434,20 +430,16 @@ sequenceDiagram
         end
     end
 
-    GW->>STT: Transcribe authenticated audio buffer
-    STT-->>GW: Transcript: Show open tickets for my team
-
+    GW->>GW: Transcribe authenticated audio buffer (STT)
     GW->>DB: Query tickets bounded by Verified Employee ID EMP-2001
     DB-->>GW: Return 19 team-scoped tickets filtered by RLS
 
     alt Deterministic UI Layout Available
-        GW->>Client: 200 OK with TICKET_LIST block, Trust Evidence, and Audio
+        GW->>Client: 200 OK (TICKET_LIST block, Trust Evidence, Synthesized Audio)
     else Conversational Synthesis Required
-        GW->>LLM: Dispatch sanitized context JSON and prompt
+        GW->>LLM: Dispatch sanitized context JSON and query
         LLM-->>GW: Concise factual summary
-        GW->>TTS: Synthesize 24kHz WAV response
-        TTS-->>GW: Audio stream
-        GW-->>Client: 200 OK with Audio, Structured Card, and Evidence Metrics
+        GW-->>Client: 200 OK (Synthesized Audio, Structured Card, Evidence Metrics)
     end
 
     Client->>Speaker: Plays synthesized voice and renders interactive ticket cards
@@ -461,49 +453,79 @@ IntentLock is engineered using **Hexagonal Architecture (Ports & Adapters)**. Th
 
 ```mermaid
 flowchart TD
-    subgraph CoreDomain ["Hexagonal Core Domain: Vendor and Framework Agnostic"]
-        EVID_SVC["EvidencePolicyService"]
-        SCOPED_AUTH["ScopedAuthorizationService"]
-        SEM_ORCH["SemanticOrchestrator"]
-        DET_DISPATCH["DeterministicDispatchEngine"]
-        SEC_CTX["SecurityContext and SessionLifecycle"]
+    subgraph DrivingLayer ["1. Inbound Driving Layer (Clients and Gateway)"]
+        direction LR
+        subgraph DrivingWeb ["Gateway Ingress"]
+            direction TB
+            A_REST["FastAPI Gateway Controllers<br/>POST /api/v1/voice/turn"]
+            A_WS["WebSocket Audio Streaming Bridge<br/>Real-Time Voice Preview"]
+        end
+        subgraph DrivingClients ["Operator Clients"]
+            direction TB
+            A_UI["React 19 Interactive Console<br/>Biometric Telemetry and Cards"]
+            A_CLI["Administrative Operator CLI<br/>Voiceprint Enrollment Utility"]
+        end
     end
 
-    subgraph InboundPorts ["Primary and Inbound Ports"]
-        P_TURN["VoiceTurnPort"]
-        P_SESS["SessionManagementPort"]
-        P_ADMIN["AdministrativePort"]
+    subgraph PrimaryPorts ["2. Primary Inbound Ports"]
+        direction LR
+        P_TURN["VoiceTurnPort<br/>Audio Normalization and Ingress"]
+        P_SESS["SessionManagementPort<br/>Lifecycle and Token Revocation"]
+        P_ADMIN["AdministrativePort<br/>Identity and Biometric Enrollment"]
     end
 
-    subgraph OutboundPorts ["Secondary and Outbound Ports"]
-        P_EVID["VoiceEvidencePort"]
-        P_STT["SpeechInputPort: STT"]
-        P_TTS["SpeechOutputPort: TTS"]
-        P_EMP["EmployeeRepositoryPort"]
-        P_TKT["TicketRepositoryPort"]
-        P_LLM["AnswerGeneratorPort"]
+    subgraph CoreDomain ["3. Hexagonal Core Domain (Authoritative Security and Logic)"]
+        direction TB
+        subgraph PolicyEngines ["Security and Policy Engines"]
+            direction LR
+            EVID_SVC["EvidencePolicyService<br/>Tri-Key Credential Routing"]
+            SCOPED_AUTH["ScopedAuthorizationService<br/>Pre-LLM Context Sanitization"]
+        end
+        subgraph ExecutionEngines ["Dispatch and Execution Engines"]
+            direction LR
+            SEM_ORCH["SemanticOrchestrator<br/>Fast-Path Intent Classifier"]
+            DET_DISPATCH["DeterministicDispatchEngine<br/>Relational Query Builders"]
+        end
+        SEC_CTX["SecurityContext and Ephemeral Session Storage"]
+        PolicyEngines --> ExecutionEngines --> SEC_CTX
     end
 
-    subgraph InboundAdapters ["Inbound Driving Adapters"]
-        A_REST["FastAPI Gateway Controllers"]
-        A_WS["WebSocket Audio Streaming Preview"]
-        A_CLI["Administrative Operator CLI"]
-        A_UI["React 19 Interactive Client"]
+    subgraph SecondaryPorts ["4. Secondary Outbound Ports"]
+        direction LR
+        subgraph PortsData ["Data and Identity Ports"]
+            direction TB
+            P_EVID["VoiceEvidencePort"]
+            P_EMP["EmployeeRepositoryPort"]
+            P_TKT["TicketRepositoryPort"]
+        end
+        subgraph PortsAI ["Speech and AI Ports"]
+            direction TB
+            P_STT["SpeechInputPort: STT"]
+            P_TTS["SpeechOutputPort: TTS"]
+            P_LLM["AnswerGeneratorPort"]
+        end
     end
 
-    subgraph OutboundAdapters ["Outbound Driven Adapters"]
-        A_DET["DetectifVoiceEvidenceAdapter: Tri-Key"]
-        A_STT["FasterWhisper or CloudSpeechSTTAdapter"]
-        A_TTS["KokoroTTS or CloudSpeechTTSAdapter"]
-        A_PG_EMP["PostgresEmployeeRepository: Supabase"]
-        A_PG_TKT["PostgresTicketActionStore: Supabase"]
-        A_LLM["OpenAIAnswerAdapter: GPT-4o-mini"]
+    subgraph DrivenLayer ["5. Outbound Driven Adapters (Infrastructure and Vendors)"]
+        direction LR
+        subgraph AdaptersSecurity ["Biometrics and Persistence"]
+            direction TB
+            A_DET["DetectifVoiceEvidenceAdapter<br/>Tri-Key Biometrics: Speaker, Deepfake, Combined"]
+            A_PG_EMP["PostgresEmployeeRepository<br/>Supabase PostgreSQL with RLS"]
+            A_PG_TKT["PostgresTicketActionStore<br/>Cryptographic Audit Receipts"]
+        end
+        subgraph AdaptersAI ["Speech and Reasoning"]
+            direction TB
+            A_STT["FasterWhisper or CloudSpeechSTTAdapter<br/>int8 Quantized Transcription"]
+            A_TTS["KokoroTTS or CloudSpeechTTSAdapter<br/>24kHz Neural Synthesis"]
+            A_LLM["OpenAIAnswerAdapter<br/>GPT-4o-mini Grounded Reasoner"]
+        end
     end
 
-    InboundAdapters --> InboundPorts
-    InboundPorts --> CoreDomain
-    CoreDomain --> OutboundPorts
-    OutboundPorts --> OutboundAdapters
+    DrivingLayer --> PrimaryPorts
+    PrimaryPorts --> CoreDomain
+    CoreDomain --> SecondaryPorts
+    SecondaryPorts --> DrivenLayer
 ```
 
 ---
