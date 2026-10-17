@@ -117,7 +117,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-002",
@@ -203,7 +205,9 @@
       "root_cause": "Strict single-line regex ^[a-zA-Z0-9 ]+$ rejected newline characters in address lines.",
       "resolution_action": "Merged PR #138 and deployed hotfix to staging.",
       "resolved_by": "EMP-1001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-003",
@@ -291,7 +295,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-IAD",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-004",
@@ -385,7 +391,9 @@
       "root_cause": "Embedded webviews enforce third-party cookie restrictions under Strict mode.",
       "resolution_action": "Configured path-specific cookie serializer in backend.",
       "resolved_by": "EMP-1001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-005",
@@ -471,7 +479,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-006",
@@ -575,7 +585,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-007",
@@ -688,7 +700,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-DATA-SHARD",
+    "department_id": "DEPT-CLOUD"
   },
   {
     "ticket_id": "TKT-2026-008",
@@ -785,7 +799,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-009",
@@ -870,7 +886,9 @@
       "root_cause": "Dangling layer cache consumed 95% of /var/lib/docker volume.",
       "resolution_action": "Configured nightly prune job and expanded runner disk quota to 100GB.",
       "resolved_by": "EMP-1001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-010",
@@ -955,7 +973,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-011",
@@ -1049,7 +1069,9 @@
       "root_cause": "Inconsistent error format between FastAPI HTTPException and custom exception handlers.",
       "resolution_action": "Centralized global exception handler in backend/main.py.",
       "resolved_by": "EMP-1001"
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-012",
@@ -1145,7 +1167,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-013",
@@ -1231,7 +1255,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-014",
@@ -1368,7 +1394,9 @@
       "root_cause": "Asynchronous replication lag between primary and read replica caused auth service to read expired token state.",
       "resolution_action": "Updated connection pool to enforce write_and_read_primary=True for auth service session checks.",
       "resolved_by": "EMP-1001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-015",
@@ -1464,7 +1492,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-016",
@@ -1555,7 +1585,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-017",
@@ -1640,7 +1672,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-018",
@@ -1728,7 +1762,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-019",
@@ -1846,7 +1882,9 @@
       "root_cause": "Migration script did not run prior to application pod startup, causing ORM query crashes.",
       "resolution_action": "Executed helm rollback and mandated pre-install migration helm hook for future releases.",
       "resolved_by": "EMP-2001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-020",
@@ -1932,7 +1970,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-021",
@@ -2020,7 +2060,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-022",
@@ -2108,7 +2150,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-023",
@@ -2194,7 +2238,9 @@
       "root_cause": "Default-deny ingress network policy omitted port 6379 selector.",
       "resolution_action": "Patched networkpolicy.yaml in gitops repository.",
       "resolved_by": "EMP-2001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-024",
@@ -2280,7 +2326,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-025",
@@ -2375,7 +2423,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-SEC-SESSION",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-026",
@@ -2466,7 +2516,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-DATA-SHARD",
+    "department_id": "DEPT-CLOUD"
   },
   {
     "ticket_id": "TKT-2026-027",
@@ -2554,7 +2606,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-028",
@@ -2656,7 +2710,9 @@
       "root_cause": "Contractors required staging network access for mobile device test runs.",
       "resolution_action": "Enrolled profiles with 14-day auto-expiry in WireGuard manager.",
       "resolved_by": "EMP-2001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-029",
@@ -2742,7 +2798,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-030",
@@ -2836,7 +2894,9 @@
       "root_cause": "Different serialization middlewares in web vs mobile gateways.",
       "resolution_action": "Centralized timestamp serializer in shared base model.",
       "resolved_by": "EMP-2001"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-031",
@@ -2935,7 +2995,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-SEC-IDARCH",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-032",
@@ -3022,7 +3084,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-033",
@@ -3110,7 +3174,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-CLOUD-INFRA",
+    "department_id": "DEPT-CLOUD"
   },
   {
     "ticket_id": "TKT-2026-034",
@@ -3221,7 +3287,9 @@
       "root_cause": "Asynchronous replication delay caused stale session reads.",
       "resolution_action": "Authorized Redis configuration patch and scheduled long-term sharding.",
       "resolved_by": "EMP-4002"
-    }
+    },
+    "project_id": "PRJ-ENG-CSP",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-035",
@@ -3311,7 +3379,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-036",
@@ -3405,7 +3475,9 @@
       "root_cause": "Need to prevent microservice failure modes during Day 1 demonstration.",
       "resolution_action": "Documented in System_Architecture.md and approved.",
       "resolved_by": "EMP-4002"
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-037",
@@ -3491,7 +3563,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-SEC-SESSION",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-038",
@@ -3578,7 +3652,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-DATA-SHARD",
+    "department_id": "DEPT-CLOUD"
   },
   {
     "ticket_id": "TKT-2026-039",
@@ -3665,7 +3741,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-CLOUD-INFRA",
+    "department_id": "DEPT-CLOUD"
   },
   {
     "ticket_id": "TKT-2026-040",
@@ -3750,7 +3828,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-041",
@@ -3838,7 +3918,9 @@
       "root_cause": null,
       "resolution_action": null,
       "resolved_by": null
-    }
+    },
+    "project_id": "PRJ-INTENTLOCK",
+    "department_id": "DEPT-ENG"
   },
   {
     "ticket_id": "TKT-2026-042",
@@ -3933,6 +4015,8 @@
       "root_cause": "Initial SDK configuration defaulted to global multi-tenant endpoint.",
       "resolution_action": "Bound DETECTIF_API_ENDPOINT in backend/core/config.py to regional sovereign gateway.",
       "resolved_by": "EMP-4002"
-    }
+    },
+    "project_id": "PRJ-SEC-IDARCH",
+    "department_id": "DEPT-ENG"
   }
 ]

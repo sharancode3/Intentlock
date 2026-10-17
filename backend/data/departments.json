@@ -1,0 +1,237 @@
+[
+  {
+    "department_id": "DEPT-ENG",
+    "name": "Engineering",
+    "aliases": [
+      "Eng",
+      "Application Engineering Department",
+      "Software Engineering"
+    ],
+    "description": "Core software engineering organization delivering enterprise web applications, customer portal services, and internal engineering platforms.",
+    "status": "Active",
+    "department_type": "Technical",
+    "head_id": "EMP-3001",
+    "executive_owner_id": "EMP-4002",
+    "parent_department_id": null,
+    "team_ids": [
+      "TEAM-ENG-APP"
+    ],
+    "member_ids": [
+      "EMP-1001",
+      "EMP-1501",
+      "EMP-2001",
+      "EMP-3001"
+    ]
+  },
+  {
+    "department_id": "DEPT-DESIGN",
+    "name": "Product Design",
+    "aliases": [
+      "Design",
+      "Experience Design",
+      "Product & Design",
+      "UX/UI Design"
+    ],
+    "description": "Product design and user experience organization responsible for design systems, accessible user interfaces, and interaction design.",
+    "status": "Active",
+    "department_type": "Design",
+    "head_id": "EMP-3002",
+    "executive_owner_id": "EMP-4001",
+    "parent_department_id": null,
+    "team_ids": [
+      "TEAM-DESIGN"
+    ],
+    "member_ids": [
+      "EMP-1002",
+      "EMP-1502",
+      "EMP-2002"
+    ]
+  },
+  {
+    "department_id": "DEPT-QA",
+    "name": "Quality Assurance",
+    "aliases": [
+      "QA",
+      "Quality Engineering",
+      "QE",
+      "Product Quality"
+    ],
+    "description": "Quality assurance organization responsible for end-to-end test automation, release regression verification, and software reliability validation.",
+    "status": "Active",
+    "department_type": "Quality",
+    "head_id": "EMP-3001",
+    "executive_owner_id": "EMP-4002",
+    "parent_department_id": null,
+    "team_ids": [
+      "TEAM-QA"
+    ],
+    "member_ids": [
+      "EMP-1003",
+      "EMP-1503",
+      "EMP-2003"
+    ]
+  },
+  {
+    "department_id": "DEPT-DATA",
+    "name": "Data & Analytics",
+    "aliases": [
+      "Data Analytics",
+      "Analytics",
+      "BI & Analytics",
+      "Business Intelligence"
+    ],
+    "description": "Data analytics and business intelligence organization providing executive metrics, operational telemetry, customer insights, and KPI governance.",
+    "status": "Active",
+    "department_type": "Data",
+    "head_id": "EMP-3002",
+    "executive_owner_id": "EMP-4001",
+    "parent_department_id": null,
+    "team_ids": [
+      "TEAM-DATA"
+    ],
+    "member_ids": [
+      "EMP-1004",
+      "EMP-1504",
+      "EMP-2004",
+      "EMP-3002"
+    ]
+  },
+  {
+    "department_id": "DEPT-CLOUD",
+    "name": "Cloud Engineering",
+    "aliases": [
+      "Cloud",
+      "Platform Engineering",
+      "Platform Operations",
+      "DevOps",
+      "Infrastructure"
+    ],
+    "description": "Cloud engineering and platform operations organization managing scalable cloud infrastructure, database sharding, container orchestration, and CI/CD pipelines.",
+    "status": "Active",
+    "department_type": "Technical",
+    "head_id": "EMP-3001",
+    "executive_owner_id": "EMP-4002",
+    "parent_department_id": null,
+    "team_ids": [
+      "TEAM-CLOUD"
+    ],
+    "member_ids": [
+      "EMP-1005",
+      "EMP-1505",
+      "EMP-2005"
+    ]
+  },
+  {
+    "department_id": "DEPT-RND",
+    "name": "Research & Development",
+    "aliases": [
+      "R&D",
+      "Research",
+      "AI Research Lab",
+      "Advanced Technology Lab"
+    ],
+    "description": "Advanced artificial intelligence, voice biometrics, agent intelligence, and applied security research organization advancing cutting-edge safety and verification protocols.",
+    "status": "Active",
+    "department_type": "Research",
+    "head_id": "RND-5001",
+    "executive_owner_id": "EMP-4002",
+    "parent_department_id": null,
+    "team_ids": [
+      "TEAM-RND-SPEECH",
+      "TEAM-RND-AGENT",
+      "TEAM-RND-SEC",
+      "TEAM-RND-HCAI"
+    ],
+    "member_ids": [
+      "RND-5001",
+      "RND-5002",
+      "RND-5003",
+      "RND-5004",
+      "RND-5005"
+    ]
+  },
+  {
+    "department_id": "DEPT-SEC",
+    "name": "Information Security",
+    "aliases": [
+      "InfoSec",
+      "Security",
+      "Enterprise Security",
+      "Cybersecurity"
+    ],
+    "description": "Information security governance organization responsible for enterprise risk management, zero-trust security compliance, access auditing, and cyber assurance.",
+    "status": "Active",
+    "department_type": "Security",
+    "head_id": "EMP-3005",
+    "executive_owner_id": "EMP-4001",
+    "parent_department_id": null,
+    "team_ids": [],
+    "member_ids": [
+      "EMP-3005"
+    ]
+  },
+  {
+    "department_id": "DEPT-HR",
+    "name": "Human Resources",
+    "aliases": [
+      "HR",
+      "People Operations",
+      "People & Culture",
+      "Talent"
+    ],
+    "description": "Human resources organization responsible for people strategy, workforce planning, talent development, employee relations, and organizational culture.",
+    "status": "Active",
+    "department_type": "People",
+    "head_id": "EMP-3003",
+    "executive_owner_id": "EMP-4003",
+    "parent_department_id": null,
+    "team_ids": [],
+    "member_ids": [
+      "EMP-3003"
+    ]
+  },
+  {
+    "department_id": "DEPT-OPS",
+    "name": "Operations",
+    "aliases": [
+      "Ops",
+      "Enterprise Operations",
+      "Business Operations"
+    ],
+    "description": "Enterprise operations organization responsible for corporate governance, operational compliance, procurement coordination, and facilities management.",
+    "status": "Active",
+    "department_type": "Operations",
+    "head_id": "EMP-3004",
+    "executive_owner_id": "EMP-4001",
+    "parent_department_id": null,
+    "team_ids": [],
+    "member_ids": [
+      "EMP-3004"
+    ]
+  },
+  {
+    "department_id": "DEPT-EXEC",
+    "name": "Executive Management",
+    "aliases": [
+      "Executive Office",
+      "Executive Team",
+      "Leadership",
+      "C-Suite"
+    ],
+    "description": "Executive management and governance council providing overall strategic leadership, enterprise administration, capital allocation, and executive operational oversight.",
+    "status": "Active",
+    "department_type": "Executive",
+    "head_id": "EXE-0001",
+    "executive_owner_id": "EXE-0001",
+    "parent_department_id": null,
+    "team_ids": [],
+    "member_ids": [
+      "EMP-4001",
+      "EMP-4002",
+      "EMP-4003",
+      "EMP-4004",
+      "EMP-4005",
+      "EXE-0001"
+    ]
+  }
+]

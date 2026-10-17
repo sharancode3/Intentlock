@@ -1,0 +1,1676 @@
+[
+  {
+    "project_id": "PRJ-ENG-CSP",
+    "name": "Customer Support Portal",
+    "aliases": [
+      "CSP",
+      "Support Portal"
+    ],
+    "description": "Internal customer-support web application providing ticket management, live agent workflows, and authenticated customer-support service operations.",
+    "status": "Active",
+    "project_type": "Product Development",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-QA",
+      "TEAM-DESIGN"
+    ],
+    "project_manager_id": "EMP-2001",
+    "project_lead_id": "EMP-1501",
+    "member_ids": [
+      "EMP-1001",
+      "EMP-1501"
+    ],
+    "department": "Engineering",
+    "technologies": [
+      "Python",
+      "FastAPI",
+      "React",
+      "PostgreSQL",
+      "REST APIs"
+    ],
+    "objectives": [
+      "Deliver responsive customer support ticket handling",
+      "Maintain session token reliability and authentication workflows",
+      "Integrate automated API validation and database query caching"
+    ],
+    "responsibilities": [
+      "Develop REST API endpoints and data access services",
+      "Build React frontend views and connect real-time notification streams",
+      "Maintain automated API integration test coverage"
+    ],
+    "start_date": "2025-08-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-QA",
+      "DEPT-DESIGN"
+    ]
+  },
+  {
+    "project_id": "PRJ-ENG-IAD",
+    "name": "Internal Analytics Dashboard",
+    "aliases": [
+      "IAD",
+      "Analytics Dashboard"
+    ],
+    "description": "Web-based analytical dashboard interface visualizing employee metrics, system KPIs, and operational trends for engineering management.",
+    "status": "Active",
+    "project_type": "Product Development",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-DATA"
+    ],
+    "project_manager_id": "EMP-2001",
+    "project_lead_id": "EMP-1501",
+    "member_ids": [
+      "EMP-1001"
+    ],
+    "department": "Engineering",
+    "technologies": [
+      "React",
+      "TypeScript",
+      "FastAPI",
+      "Chart.js",
+      "PostgreSQL"
+    ],
+    "objectives": [
+      "Provide real-time visualization of engineering and operational KPIs",
+      "Deliver fast, responsive filtering and dataset aggregations",
+      "Maintain reusable chart and metric components"
+    ],
+    "responsibilities": [
+      "Implement frontend visualization components and responsive charts",
+      "Integrate dashboard metrics with backend reporting endpoints"
+    ],
+    "start_date": "2025-09-15",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-DATA"
+    ]
+  },
+  {
+    "project_id": "PRJ-ENG-AUTH",
+    "name": "Authentication Modernization",
+    "aliases": [
+      "Auth Modernization",
+      "IAM Upgrade",
+      "Authentication Modernization QA"
+    ],
+    "description": "Modernization of enterprise identity, token verification, session lifecycle security, and role-based access control.",
+    "status": "Active",
+    "project_type": "Platform Engineering",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-QA"
+    ],
+    "project_manager_id": "EMP-2001",
+    "project_lead_id": "EMP-1501",
+    "member_ids": [
+      "EMP-1003",
+      "EMP-1501",
+      "EMP-1503"
+    ],
+    "department": "Engineering",
+    "technologies": [
+      "OAuth2",
+      "JWT",
+      "FastAPI",
+      "Python",
+      "Redis",
+      "PostgreSQL"
+    ],
+    "objectives": [
+      "Upgrade token rotation and cryptographic verification",
+      "Eliminate concurrent refresh token race conditions",
+      "Automate security and regression testing for authentication flows"
+    ],
+    "responsibilities": [
+      "Refactor authentication token exchange and error envelopes",
+      "Execute end-to-end regression and token validation tests"
+    ],
+    "start_date": "2025-10-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-QA"
+    ]
+  },
+  {
+    "project_id": "PRJ-ENG-EQI",
+    "name": "Engineering Quality Initiative",
+    "aliases": [
+      "EQI",
+      "Engineering Quality"
+    ],
+    "description": "Cross-team engineering initiative establishing code review standards, API guidelines, linting enforcement, and CI automated verification.",
+    "status": "Active",
+    "project_type": "Quality Engineering",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-QA"
+    ],
+    "project_manager_id": "EMP-2001",
+    "project_lead_id": "EMP-1501",
+    "member_ids": [
+      "EMP-1501"
+    ],
+    "department": "Engineering",
+    "technologies": [
+      "Git",
+      "PyTest",
+      "CI/CD",
+      "Static Analysis",
+      "Code Review Tooling"
+    ],
+    "objectives": [
+      "Standardize API design principles and architectural reviews",
+      "Accelerate code review turnaround and reduce production defect escapes"
+    ],
+    "responsibilities": [
+      "Lead engineering quality reviews and mentor developers on best practices"
+    ],
+    "start_date": "2026-01-10",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-QA"
+    ]
+  },
+  {
+    "project_id": "PRJ-ENG-PLAT",
+    "name": "Platform Modernization",
+    "aliases": [
+      "Platform Architecture Modernization"
+    ],
+    "description": "Architectural replatforming to decouple monolithic backend modules into scalable, resilient services.",
+    "status": "Active",
+    "project_type": "Platform Engineering",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-CLOUD"
+    ],
+    "project_manager_id": "EMP-2001",
+    "project_lead_id": "EMP-1501",
+    "member_ids": [],
+    "department": "Engineering",
+    "technologies": [
+      "Python",
+      "FastAPI",
+      "PostgreSQL",
+      "Docker",
+      "Microservices"
+    ],
+    "objectives": [
+      "Improve system scalability, modularity, and database performance"
+    ],
+    "responsibilities": [
+      "Oversee service decoupling and platform architectural governance"
+    ],
+    "start_date": "2025-06-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-CLOUD"
+    ]
+  },
+  {
+    "project_id": "PRJ-INTENTLOCK",
+    "name": "IntentLock Platform",
+    "aliases": [
+      "IntentLock",
+      "IntentLock Kiosk"
+    ],
+    "description": "Voice-first intelligent organizational helpdesk kiosk integrating real-time speech verification, policy-scoped authorization, and dynamic UI rendering.",
+    "status": "Active",
+    "project_type": "Product Development",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-RND-SPEECH",
+      "TEAM-RND-AGENT",
+      "TEAM-CLOUD"
+    ],
+    "project_manager_id": "EMP-2001",
+    "project_lead_id": "EMP-1501",
+    "member_ids": [
+      "EMP-1001",
+      "EMP-1501"
+    ],
+    "department": "Engineering",
+    "technologies": [
+      "FastAPI",
+      "React",
+      "DetectifAI",
+      "Faster-Whisper",
+      "Kokoro",
+      "PostgreSQL"
+    ],
+    "objectives": [
+      "Deliver secure, voice-authenticated kiosk access for organizational data",
+      "Enforce strict biometric dual-verification before private record access",
+      "Provide sub-second voice query response latency"
+    ],
+    "responsibilities": [
+      "Develop voice turn ingress gateway and audio streaming interfaces",
+      "Maintain verified session state and protected execution contracts"
+    ],
+    "start_date": "2026-01-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-RND",
+      "DEPT-CLOUD"
+    ]
+  },
+  {
+    "project_id": "PRJ-DATA-SHARD",
+    "name": "Core Database Sharding",
+    "aliases": [
+      "Database Sharding",
+      "DB Sharding"
+    ],
+    "description": "PostgreSQL database partitioning and sharding architecture to ensure high throughput and horizontal scalability.",
+    "status": "Active",
+    "project_type": "Infrastructure",
+    "owning_team_id": "TEAM-CLOUD",
+    "contributing_team_ids": [
+      "TEAM-CLOUD",
+      "TEAM-ENG-APP"
+    ],
+    "project_manager_id": "EMP-2005",
+    "project_lead_id": "EMP-1505",
+    "member_ids": [
+      "EMP-1001"
+    ],
+    "department": "Cloud Engineering",
+    "technologies": [
+      "PostgreSQL",
+      "PgBouncer",
+      "SQL",
+      "Database Partitioning"
+    ],
+    "objectives": [
+      "Optimize database connection pooling and slow query performance",
+      "Implement multi-tenant read replica routing"
+    ],
+    "responsibilities": [
+      "Tune index performance and optimize query execution plans"
+    ],
+    "start_date": "2025-11-01",
+    "target_end_date": "2026-10-31",
+    "owning_department_id": "DEPT-CLOUD",
+    "contributing_department_ids": [
+      "DEPT-CLOUD",
+      "DEPT-ENG"
+    ]
+  },
+  {
+    "project_id": "PRJ-SEC-SESSION",
+    "name": "Session Security Modernization",
+    "aliases": [
+      "Session Security"
+    ],
+    "description": "Cryptographic session binding, anti-fixation protection, and bounded TTL replay prevention for enterprise users.",
+    "status": "Active",
+    "project_type": "Platform Engineering",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-2001",
+    "project_lead_id": "EMP-1501",
+    "member_ids": [],
+    "department": "Engineering",
+    "technologies": [
+      "Cryptography",
+      "Redis",
+      "FastAPI",
+      "Security Tokens"
+    ],
+    "objectives": [
+      "Cryptographically bind session tokens to caller biometrics and client IDs",
+      "Implement immediate session revocation across distributed nodes"
+    ],
+    "responsibilities": [
+      "Design session token generation and secure revocation protocols"
+    ],
+    "start_date": "2026-02-01",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-SEC-IDARCH",
+    "name": "Identity & Security Architecture",
+    "aliases": [
+      "Identity Architecture",
+      "Enterprise Identity"
+    ],
+    "description": "Enterprise-wide zero-trust identity architecture, SSO federation, cross-region key distribution, and audit integrity.",
+    "status": "Active",
+    "project_type": "Platform Engineering",
+    "owning_team_id": "TEAM-ENG-APP",
+    "contributing_team_ids": [
+      "TEAM-ENG-APP",
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-3005",
+    "project_lead_id": null,
+    "member_ids": [],
+    "department": "Information Security",
+    "technologies": [
+      "Zero Trust",
+      "SAML",
+      "OIDC",
+      "Public Key Infrastructure (PKI)"
+    ],
+    "objectives": [
+      "Establish enterprise zero-trust identity verification standards",
+      "Ensure cross-region session resilience and security audit durability"
+    ],
+    "responsibilities": [
+      "Architect enterprise identity federation and key management protocols"
+    ],
+    "start_date": "2025-05-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-ENG",
+    "contributing_department_ids": [
+      "DEPT-ENG",
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-CLOUD-INFRA",
+    "name": "Cloud Infrastructure Modernization",
+    "aliases": [
+      "Cloud Modernization",
+      "Infra Modernization"
+    ],
+    "description": "Core cloud infrastructure upgrade migrating legacy services to Kubernetes, automated container scaling, and modern edge API gateways.",
+    "status": "Active",
+    "project_type": "Infrastructure",
+    "owning_team_id": "TEAM-CLOUD",
+    "contributing_team_ids": [
+      "TEAM-CLOUD"
+    ],
+    "project_manager_id": "EMP-2005",
+    "project_lead_id": "EMP-1505",
+    "member_ids": [
+      "EMP-1505"
+    ],
+    "department": "Cloud Engineering",
+    "technologies": [
+      "Kubernetes",
+      "Docker",
+      "Terraform",
+      "AWS",
+      "API Gateway"
+    ],
+    "objectives": [
+      "Migrate core gateway routing to scalable cloud infrastructure",
+      "Ensure 99.99% availability during live production migrations"
+    ],
+    "responsibilities": [
+      "Provision container clusters and configure edge ingress gateways"
+    ],
+    "start_date": "2025-07-01",
+    "target_end_date": "2026-10-31",
+    "owning_department_id": "DEPT-CLOUD",
+    "contributing_department_ids": [
+      "DEPT-CLOUD"
+    ]
+  },
+  {
+    "project_id": "PRJ-DES-MOB",
+    "name": "Mobile App Redesign",
+    "aliases": [
+      "Mobile Redesign"
+    ],
+    "description": "Complete overhaul of the mobile employee self-service application with modern navigation, dark mode, and responsive layouts.",
+    "status": "Active",
+    "project_type": "Product Development",
+    "owning_team_id": "TEAM-DESIGN",
+    "contributing_team_ids": [
+      "TEAM-DESIGN"
+    ],
+    "project_manager_id": "EMP-2002",
+    "project_lead_id": "EMP-1502",
+    "member_ids": [
+      "EMP-1002",
+      "EMP-1502"
+    ],
+    "department": "Product Design",
+    "technologies": [
+      "Figma",
+      "Design Systems",
+      "iOS",
+      "Android",
+      "UI Prototyping"
+    ],
+    "objectives": [
+      "Redesign mobile navigation workflows for enhanced usability",
+      "Deliver accessible, touch-optimized design components"
+    ],
+    "responsibilities": [
+      "Create high-fidelity wireframes and prototype interactive user journeys"
+    ],
+    "start_date": "2025-09-01",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-DESIGN",
+    "contributing_department_ids": [
+      "DEPT-DESIGN"
+    ]
+  },
+  {
+    "project_id": "PRJ-DES-UDS",
+    "name": "Unified Design System",
+    "aliases": [
+      "Design System"
+    ],
+    "description": "Shared component library, color tokens, and accessibility guidelines across web and kiosk digital surfaces.",
+    "status": "Active",
+    "project_type": "Product Development",
+    "owning_team_id": "TEAM-DESIGN",
+    "contributing_team_ids": [
+      "TEAM-DESIGN",
+      "TEAM-ENG-APP"
+    ],
+    "project_manager_id": "EMP-2002",
+    "project_lead_id": "EMP-1502",
+    "member_ids": [
+      "EMP-1002",
+      "EMP-1502"
+    ],
+    "department": "Product Design",
+    "technologies": [
+      "Figma",
+      "CSS Tokens",
+      "React Components",
+      "Accessibility (a11y)"
+    ],
+    "objectives": [
+      "Standardize typography, colors, and layout components across all apps",
+      "Ensure full WCAG 2.1 AA accessibility compliance"
+    ],
+    "responsibilities": [
+      "Design and document reusable UI components and token hierarchies"
+    ],
+    "start_date": "2025-10-15",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-DESIGN",
+    "contributing_department_ids": [
+      "DEPT-DESIGN",
+      "DEPT-ENG"
+    ]
+  },
+  {
+    "project_id": "PRJ-DES-ACC",
+    "name": "Accessibility Improvement Program",
+    "aliases": [
+      "Accessibility Program",
+      "a11y Program"
+    ],
+    "description": "Auditing and remediation of digital interfaces to ensure compliance with screen readers, high contrast, and accessible voice UI.",
+    "status": "Active",
+    "project_type": "Product Development",
+    "owning_team_id": "TEAM-DESIGN",
+    "contributing_team_ids": [
+      "TEAM-DESIGN"
+    ],
+    "project_manager_id": "EMP-2002",
+    "project_lead_id": "EMP-1502",
+    "member_ids": [
+      "EMP-1502"
+    ],
+    "department": "Product Design",
+    "technologies": [
+      "Screen Readers",
+      "ARIA",
+      "Color Contrast",
+      "Accessibility Auditing"
+    ],
+    "objectives": [
+      "Achieve WCAG accessibility certification across public and kiosk interfaces"
+    ],
+    "responsibilities": [
+      "Conduct accessibility audits and guide component remediation"
+    ],
+    "start_date": "2026-01-01",
+    "target_end_date": "2026-09-30",
+    "owning_department_id": "DEPT-DESIGN",
+    "contributing_department_ids": [
+      "DEPT-DESIGN"
+    ]
+  },
+  {
+    "project_id": "PRJ-QA-REG",
+    "name": "Regression Automation Program",
+    "aliases": [
+      "Regression Automation",
+      "QA Automation"
+    ],
+    "description": "End-to-end regression test automation suite verifying critical user journeys, APIs, and edge performance.",
+    "status": "Active",
+    "project_type": "Quality Engineering",
+    "owning_team_id": "TEAM-QA",
+    "contributing_team_ids": [
+      "TEAM-QA"
+    ],
+    "project_manager_id": "EMP-2003",
+    "project_lead_id": "EMP-1503",
+    "member_ids": [
+      "EMP-1003",
+      "EMP-1503"
+    ],
+    "department": "Quality Assurance",
+    "technologies": [
+      "Cypress",
+      "Selenium",
+      "PyTest",
+      "API Test Automation",
+      "Jenkins"
+    ],
+    "objectives": [
+      "Automate 90% of core regression test scenarios",
+      "Reduce regression test execution turnaround from 24h to 2h"
+    ],
+    "responsibilities": [
+      "Implement automated UI and API regression scripts and monitor CI runs"
+    ],
+    "start_date": "2025-08-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-QA",
+    "contributing_department_ids": [
+      "DEPT-QA"
+    ]
+  },
+  {
+    "project_id": "PRJ-QA-REL",
+    "name": "Release Quality Program",
+    "aliases": [
+      "Release Certification",
+      "Quality Strategy"
+    ],
+    "description": "Framework for deployment qualification, release health criteria, canary verification, and production rollback readiness.",
+    "status": "Active",
+    "project_type": "Quality Engineering",
+    "owning_team_id": "TEAM-QA",
+    "contributing_team_ids": [
+      "TEAM-QA",
+      "TEAM-CLOUD"
+    ],
+    "project_manager_id": "EMP-2003",
+    "project_lead_id": "EMP-1503",
+    "member_ids": [
+      "EMP-1503"
+    ],
+    "department": "Quality Assurance",
+    "technologies": [
+      "Release Gates",
+      "TestRail",
+      "Canary Deployment",
+      "CI/CD"
+    ],
+    "objectives": [
+      "Ensure zero high-severity defect escapes during bi-weekly production releases"
+    ],
+    "responsibilities": [
+      "Establish release acceptance gates and certify build health"
+    ],
+    "start_date": "2025-11-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-QA",
+    "contributing_department_ids": [
+      "DEPT-QA",
+      "DEPT-CLOUD"
+    ]
+  },
+  {
+    "project_id": "PRJ-DATA-CUST",
+    "name": "Customer Analytics",
+    "aliases": [
+      "Customer Analytics Platform",
+      "Customer Insights"
+    ],
+    "description": "Analytics platform calculating user engagement metrics, churn indicators, and operational service utilization.",
+    "status": "Active",
+    "project_type": "Analytics",
+    "owning_team_id": "TEAM-DATA",
+    "contributing_team_ids": [
+      "TEAM-DATA"
+    ],
+    "project_manager_id": "EMP-2004",
+    "project_lead_id": "EMP-1504",
+    "member_ids": [
+      "EMP-1004",
+      "EMP-1504"
+    ],
+    "department": "Data & Analytics",
+    "technologies": [
+      "Python",
+      "SQL",
+      "Snowflake",
+      "dbt",
+      "Power BI"
+    ],
+    "objectives": [
+      "Build reliable data pipelines for user engagement metrics",
+      "Deliver automated cohort and operational service usage reporting"
+    ],
+    "responsibilities": [
+      "Design analytical data models, aggregate metrics, and publish reports"
+    ],
+    "start_date": "2025-09-01",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-DATA",
+    "contributing_department_ids": [
+      "DEPT-DATA"
+    ]
+  },
+  {
+    "project_id": "PRJ-DATA-OPS",
+    "name": "Operations Dashboard",
+    "aliases": [
+      "Operations Reporting",
+      "Business Intelligence"
+    ],
+    "description": "Executive and managerial operational intelligence dashboards monitoring service delivery, staffing, and ticket trends.",
+    "status": "Active",
+    "project_type": "Analytics",
+    "owning_team_id": "TEAM-DATA",
+    "contributing_team_ids": [
+      "TEAM-DATA"
+    ],
+    "project_manager_id": "EMP-2004",
+    "project_lead_id": "EMP-1504",
+    "member_ids": [
+      "EMP-1004",
+      "EMP-1504"
+    ],
+    "department": "Data & Analytics",
+    "technologies": [
+      "Power BI",
+      "SQL",
+      "ETL Pipelines",
+      "Data Warehousing"
+    ],
+    "objectives": [
+      "Automate daily operational KPI reporting for department heads",
+      "Provide self-service visualization for support ticket backlogs"
+    ],
+    "responsibilities": [
+      "Maintain operational reporting pipelines and data freshness monitors"
+    ],
+    "start_date": "2025-10-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-DATA",
+    "contributing_department_ids": [
+      "DEPT-DATA"
+    ]
+  },
+  {
+    "project_id": "PRJ-DATA-KPI",
+    "name": "KPI Governance",
+    "aliases": [
+      "Metrics Governance"
+    ],
+    "description": "Enterprise KPI standardization, metric dictionary definitions, and automated verification of organizational measurements.",
+    "status": "Active",
+    "project_type": "Analytics",
+    "owning_team_id": "TEAM-DATA",
+    "contributing_team_ids": [
+      "TEAM-DATA"
+    ],
+    "project_manager_id": "EMP-2004",
+    "project_lead_id": "EMP-1504",
+    "member_ids": [
+      "EMP-1504"
+    ],
+    "department": "Data & Analytics",
+    "technologies": [
+      "Data Governance",
+      "SQL",
+      "Metadata Management",
+      "Reporting Rules"
+    ],
+    "objectives": [
+      "Standardize departmental KPI definitions to prevent conflicting metric calculations"
+    ],
+    "responsibilities": [
+      "Audit cross-departmental reporting metrics and maintain KPI dictionary"
+    ],
+    "start_date": "2026-01-15",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-DATA",
+    "contributing_department_ids": [
+      "DEPT-DATA"
+    ]
+  },
+  {
+    "project_id": "PRJ-CLOUD-CICD",
+    "name": "CI/CD Modernization",
+    "aliases": [
+      "CI/CD Pipeline",
+      "Build Pipeline Modernization"
+    ],
+    "description": "Automation of build, test, and container deployment pipelines with fast caching and security vulnerability scanning.",
+    "status": "Active",
+    "project_type": "Infrastructure",
+    "owning_team_id": "TEAM-CLOUD",
+    "contributing_team_ids": [
+      "TEAM-CLOUD"
+    ],
+    "project_manager_id": "EMP-2005",
+    "project_lead_id": "EMP-1505",
+    "member_ids": [
+      "EMP-1005",
+      "EMP-1505"
+    ],
+    "department": "Cloud Engineering",
+    "technologies": [
+      "GitHub Actions",
+      "Docker",
+      "Kubernetes",
+      "Trivy",
+      "Bash"
+    ],
+    "objectives": [
+      "Reduce automated build-and-test cycle duration by 50%",
+      "Integrate automated vulnerability scanning into pull request workflows"
+    ],
+    "responsibilities": [
+      "Maintain CI runner infrastructure and optimize build caching strategies"
+    ],
+    "start_date": "2025-08-15",
+    "target_end_date": "2026-10-31",
+    "owning_department_id": "DEPT-CLOUD",
+    "contributing_department_ids": [
+      "DEPT-CLOUD"
+    ]
+  },
+  {
+    "project_id": "PRJ-CLOUD-MON",
+    "name": "Monitoring Platform",
+    "aliases": [
+      "Observability Platform",
+      "Infrastructure Reliability"
+    ],
+    "description": "Centralized metrics collection, distributed tracing, log aggregation, and real-time incident alerting.",
+    "status": "Active",
+    "project_type": "Infrastructure",
+    "owning_team_id": "TEAM-CLOUD",
+    "contributing_team_ids": [
+      "TEAM-CLOUD"
+    ],
+    "project_manager_id": "EMP-2005",
+    "project_lead_id": "EMP-1505",
+    "member_ids": [
+      "EMP-1005",
+      "EMP-1505"
+    ],
+    "department": "Cloud Engineering",
+    "technologies": [
+      "Prometheus",
+      "Grafana",
+      "OpenTelemetry",
+      "Elasticsearch",
+      "Alertmanager"
+    ],
+    "objectives": [
+      "Provide sub-minute alerting on production service errors and latency spikes",
+      "Enable distributed end-to-end request tracing across all API microservices"
+    ],
+    "responsibilities": [
+      "Configure Prometheus monitoring agents and design Grafana dashboards"
+    ],
+    "start_date": "2025-09-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-CLOUD",
+    "contributing_department_ids": [
+      "DEPT-CLOUD"
+    ]
+  },
+  {
+    "project_id": "PRJ-CLOUD-DEVENV",
+    "name": "Developer Environment Reliability",
+    "aliases": [
+      "Dev Environment",
+      "Developer Platform"
+    ],
+    "description": "Standardized containerized local developer environments, mock API servers, and automated developer setup scripts.",
+    "status": "Active",
+    "project_type": "Infrastructure",
+    "owning_team_id": "TEAM-CLOUD",
+    "contributing_team_ids": [
+      "TEAM-CLOUD",
+      "TEAM-ENG-APP"
+    ],
+    "project_manager_id": "EMP-2005",
+    "project_lead_id": "EMP-1505",
+    "member_ids": [
+      "EMP-1505"
+    ],
+    "department": "Cloud Engineering",
+    "technologies": [
+      "Docker Compose",
+      "DevContainers",
+      "Shell Scripting",
+      "Python"
+    ],
+    "objectives": [
+      "Reduce new developer environment onboarding time to under 30 minutes"
+    ],
+    "responsibilities": [
+      "Maintain containerized development stacks and local test dependencies"
+    ],
+    "start_date": "2026-01-01",
+    "target_end_date": "2026-09-30",
+    "owning_department_id": "DEPT-CLOUD",
+    "contributing_department_ids": [
+      "DEPT-CLOUD",
+      "DEPT-ENG"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-VOICEAUTH",
+    "name": "Voice Authenticity Benchmark",
+    "aliases": [
+      "Voice Authenticity",
+      "Synthetic Speech Benchmark"
+    ],
+    "description": "Evaluation of neural deepfake detection algorithms, synthetic speech artifact detection, and acoustic anti-spoofing resilience.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-SPEECH",
+    "contributing_team_ids": [
+      "TEAM-RND-SPEECH"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5002"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "PyTorch",
+      "Audio DSP",
+      "Deepfake Detection",
+      "Acoustic Modeling"
+    ],
+    "objectives": [
+      "Benchmark synthetic voice detection false-positive rates on noisy audio",
+      "Evaluate model performance against voice clone generators"
+    ],
+    "responsibilities": [
+      "Train and evaluate anti-spoofing classification models on speech benchmarks"
+    ],
+    "start_date": "2025-08-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-SPEAKER",
+    "name": "Speaker Verification Evaluation",
+    "aliases": [
+      "Speaker Verification",
+      "Biometric Voice Evaluation"
+    ],
+    "description": "Assessment of text-dependent and text-independent speaker recognition embeddings, cosine thresholding, and biometric verification accuracy.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-SPEECH",
+    "contributing_team_ids": [
+      "TEAM-RND-SPEECH"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5002"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Speaker Embeddings",
+      "Cosine Similarity",
+      "PyTorch",
+      "DetectifAI"
+    ],
+    "objectives": [
+      "Calibrate speaker verification similarity thresholds to minimize equal error rate (EER)",
+      "Validate biometric verification accuracy on 5-second audio captures"
+    ],
+    "responsibilities": [
+      "Execute speaker verification benchmarking experiments and calibration curves"
+    ],
+    "start_date": "2025-09-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-REPLAY",
+    "name": "Replay Attack Test Harness",
+    "aliases": [
+      "Replay Attack Research",
+      "Replay Harness"
+    ],
+    "description": "Simulation harness evaluating acoustic replay vulnerabilities, recording device distortion, and physical playback countermeasures.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-SPEECH",
+    "contributing_team_ids": [
+      "TEAM-RND-SPEECH"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5002"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Acoustic Analysis",
+      "Replay Detection",
+      "DSP Filtering",
+      "PyTorch"
+    ],
+    "objectives": [
+      "Identify acoustic replay artifacts across varying microphone transducers",
+      "Develop countermeasures for physical speaker playback spoofing"
+    ],
+    "responsibilities": [
+      "Build replay attack simulation datasets and evaluate detection filters"
+    ],
+    "start_date": "2025-10-01",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-BROWSER",
+    "name": "Browser Voice Capture Quality Study",
+    "aliases": [
+      "Browser Voice Capture Quality Study.",
+      "Web Audio Capture Study"
+    ],
+    "description": "Investigation into web browser WebRTC/WebM audio capture codecs, sample rate resampling, and VAD sensitivity.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-SPEECH",
+    "contributing_team_ids": [
+      "TEAM-RND-SPEECH"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5002"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "WebRTC",
+      "Opus Codec",
+      "Web Audio API",
+      "Silero VAD"
+    ],
+    "objectives": [
+      "Quantify transcription accuracy variance across browser microphone inputs",
+      "Optimize streaming VAD chunk boundaries for low-latency web capture"
+    ],
+    "responsibilities": [
+      "Collect and analyze client-side WebM/Opus audio quality metrics"
+    ],
+    "start_date": "2026-01-10",
+    "target_end_date": "2026-10-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-INTENT",
+    "name": "Intent Extraction Benchmark",
+    "aliases": [
+      "Intent Benchmark",
+      "Semantic Extraction"
+    ],
+    "description": "Evaluation of structured intent planning from conversational voice queries, entity resolution, and prompt grounding.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-AGENT",
+    "contributing_team_ids": [
+      "TEAM-RND-AGENT"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5003"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "NLP",
+      "LLM Evaluation",
+      "Pydantic",
+      "Semantic Parsing",
+      "Python"
+    ],
+    "objectives": [
+      "Evaluate intent extraction accuracy across complex organizational inquiries",
+      "Benchmark local and cloud LLM plan generation reliability"
+    ],
+    "responsibilities": [
+      "Construct conversational intent evaluation test suites and benchmark accuracy"
+    ],
+    "start_date": "2025-08-15",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-TOOLAGENT",
+    "name": "Protected Tool-Use Agent",
+    "aliases": [
+      "Protected Tool Agent",
+      "Secure Agent Tool Execution"
+    ],
+    "description": "Architectural framework for sandboxed AI agent tool execution with explicit single-use authorization grants and immutable audit logs.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-AGENT",
+    "contributing_team_ids": [
+      "TEAM-RND-AGENT",
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5003"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Agent Sandbox",
+      "Python",
+      "Tool Use",
+      "Authorization Guardrails"
+    ],
+    "objectives": [
+      "Prevent arbitrary tool execution without explicit human spoken confirmation",
+      "Implement single-use ActionGrant minting and verification before execution"
+    ],
+    "responsibilities": [
+      "Design sandboxed execution boundaries and action grant validation tests"
+    ],
+    "start_date": "2025-09-15",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-HANDSHAKE",
+    "name": "Agent-to-Agent Handshake Prototype",
+    "aliases": [
+      "Agent Handshake",
+      "A2A Handshake"
+    ],
+    "description": "Cryptographic authentication handshake protocols enabling autonomous AI agents to negotiate authenticated data access.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-AGENT",
+    "contributing_team_ids": [
+      "TEAM-RND-AGENT",
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5003"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Mutual TLS (mTLS)",
+      "Signed Envelopes",
+      "Cryptographic Handshakes"
+    ],
+    "objectives": [
+      "Demonstrate secure zero-trust identity exchange between cooperating AI agents"
+    ],
+    "responsibilities": [
+      "Prototype agent-to-agent challenge-response protocols and verify security guarantees"
+    ],
+    "start_date": "2025-10-15",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-AUTHEXPLAIN",
+    "name": "Authorization Explanation Layer",
+    "aliases": [
+      "Authorization Explanation Layer.",
+      "Explainable Auth"
+    ],
+    "description": "Natural language explainability engine generating truthful justifications for access denials and permission boundaries.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-AGENT",
+    "contributing_team_ids": [
+      "TEAM-RND-AGENT"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5003"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Explainable AI",
+      "Policy Engine",
+      "Python",
+      "Natural Language Generation"
+    ],
+    "objectives": [
+      "Generate user-friendly, audit-compliant explanations for denied operations",
+      "Eliminate unhelpful generic error messages during access boundary denials"
+    ],
+    "responsibilities": [
+      "Build explainability templates mapped to deterministic RBAC policy decisions"
+    ],
+    "start_date": "2026-01-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-SEC-A2AAUTH",
+    "name": "Agent-to-Agent Authentication",
+    "aliases": [
+      "A2A Authentication"
+    ],
+    "description": "Cryptographic protocol specification and formal verification for inter-agent identity exchange and delegated authority.",
+    "status": "Active",
+    "project_type": "Security Research",
+    "owning_team_id": "TEAM-RND-SEC",
+    "contributing_team_ids": [
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-3005",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5004"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Cryptography",
+      "PKI",
+      "Zero Trust",
+      "Security Verification"
+    ],
+    "objectives": [
+      "Specify mathematical proofs and protocols for delegated agent credentials"
+    ],
+    "responsibilities": [
+      "Author security specifications and verify resistance to man-in-the-middle attacks"
+    ],
+    "start_date": "2025-08-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-SEC-NONCE",
+    "name": "Nonce/Replay Protection",
+    "aliases": [
+      "Nonce Protection",
+      "Replay Protection"
+    ],
+    "description": "Design and implementation of single-use cryptographic nonces and time-bounded hashes to prevent replay attacks.",
+    "status": "Active",
+    "project_type": "Security Research",
+    "owning_team_id": "TEAM-RND-SEC",
+    "contributing_team_ids": [
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-3005",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5004"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Nonces",
+      "HMAC",
+      "SHA-256",
+      "Distributed Cache"
+    ],
+    "objectives": [
+      "Guarantee 100% rejection of intercepted audio replay attacks",
+      "Maintain sub-millisecond nonce verification latency"
+    ],
+    "responsibilities": [
+      "Design cryptographic nonce lifecycle and validate replay rejection tests"
+    ],
+    "start_date": "2025-09-01",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-SEC-ENVELOPE",
+    "name": "Signed Action Envelope",
+    "aliases": [
+      "Action Envelope",
+      "Cryptographic Envelope"
+    ],
+    "description": "Cryptographically signed envelope format binding verified voice evidence, user identity, action parameters, and target resource version.",
+    "status": "Active",
+    "project_type": "Security Research",
+    "owning_team_id": "TEAM-RND-SEC",
+    "contributing_team_ids": [
+      "TEAM-RND-SEC",
+      "TEAM-ENG-APP"
+    ],
+    "project_manager_id": "EMP-3005",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5004"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "JSON Web Signatures (JWS)",
+      "SHA-256 Manifests",
+      "Cryptography"
+    ],
+    "objectives": [
+      "Ensure tamper-proof integrity for protected employee and ticket modifications"
+    ],
+    "responsibilities": [
+      "Formulate canonical manifest serialization and cryptographic signature schemas"
+    ],
+    "start_date": "2025-10-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND",
+      "DEPT-ENG"
+    ]
+  },
+  {
+    "project_id": "PRJ-SEC-THREAT",
+    "name": "Protected Executor Threat Model",
+    "aliases": [
+      "Protected Executor Threat Model.",
+      "Threat Modeling"
+    ],
+    "description": "Comprehensive threat modeling of the IntentLock protected action executor, covering privilege escalation, prompt injection, and audio synthesis.",
+    "status": "Active",
+    "project_type": "Security Research",
+    "owning_team_id": "TEAM-RND-SEC",
+    "contributing_team_ids": [
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-3005",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5004"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Threat Modeling",
+      "STRIDE",
+      "Security Assurance",
+      "Zero Trust"
+    ],
+    "objectives": [
+      "Publish comprehensive threat model identifying all potential execution attack vectors"
+    ],
+    "responsibilities": [
+      "Execute threat modeling workshops and verify security control mitigations"
+    ],
+    "start_date": "2026-01-01",
+    "target_end_date": "2026-10-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-HCAI-EXPL",
+    "name": "IntentLock Decision Explanation Study",
+    "aliases": [
+      "Decision Explanation Study"
+    ],
+    "description": "Human factors study evaluating user trust, comprehension, and task completion when receiving AI system decision rationales.",
+    "status": "Active",
+    "project_type": "UX Research",
+    "owning_team_id": "TEAM-RND-HCAI",
+    "contributing_team_ids": [
+      "TEAM-RND-HCAI"
+    ],
+    "project_manager_id": "RND-5001",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5005"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "HCI Methodology",
+      "Qualitative User Testing",
+      "Survey Design"
+    ],
+    "objectives": [
+      "Measure user trust calibration when AI explains policy constraints transparently"
+    ],
+    "responsibilities": [
+      "Conduct structured user studies and analyze qualitative feedback"
+    ],
+    "start_date": "2025-08-01",
+    "target_end_date": "2026-11-30",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-HCAI-BADGE",
+    "name": "Verified-Agent Badge UX",
+    "aliases": [
+      "Badge UX",
+      "Verified Agent Interface"
+    ],
+    "description": "User interface design study assessing visual trust indicators, verification badges, and session freshness status displays.",
+    "status": "Active",
+    "project_type": "UX Research",
+    "owning_team_id": "TEAM-RND-HCAI",
+    "contributing_team_ids": [
+      "TEAM-RND-HCAI",
+      "TEAM-DESIGN"
+    ],
+    "project_manager_id": "RND-5001",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5005"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "UI Evaluation",
+      "Eye Tracking",
+      "User Research",
+      "Figma"
+    ],
+    "objectives": [
+      "Determine optimal visual indicators for communicating verified biometric trust states"
+    ],
+    "responsibilities": [
+      "Design badge mockups and evaluate user comprehension during usability testing"
+    ],
+    "start_date": "2025-09-01",
+    "target_end_date": "2026-10-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND",
+      "DEPT-DESIGN"
+    ]
+  },
+  {
+    "project_id": "PRJ-HCAI-CONFIRM",
+    "name": "Voice Confirmation Research",
+    "aliases": [
+      "Voice Confirmation Usability"
+    ],
+    "description": "Research on speech readback phrasing, confirmation cognitive load, and error recovery in voice-driven kiosks.",
+    "status": "Active",
+    "project_type": "UX Research",
+    "owning_team_id": "TEAM-RND-HCAI",
+    "contributing_team_ids": [
+      "TEAM-RND-HCAI",
+      "TEAM-ENG-APP"
+    ],
+    "project_manager_id": "RND-5001",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5005"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Speech Interaction",
+      "Usability Testing",
+      "Audio Ergonomics"
+    ],
+    "objectives": [
+      "Identify confirmation phrasing that minimizes verbal errors while preventing accidental commits"
+    ],
+    "responsibilities": [
+      "Evaluate acoustic readback variants across participant cohorts"
+    ],
+    "start_date": "2025-10-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND",
+      "DEPT-ENG"
+    ]
+  },
+  {
+    "project_id": "PRJ-HCAI-DENIAL",
+    "name": "Denial Message Comprehension",
+    "aliases": [
+      "Denial Message Comprehension.",
+      "Denial UX"
+    ],
+    "description": "Usability evaluation of security denial messages to ensure callers understand why an action was blocked without disclosing confidential data.",
+    "status": "Active",
+    "project_type": "UX Research",
+    "owning_team_id": "TEAM-RND-HCAI",
+    "contributing_team_ids": [
+      "TEAM-RND-HCAI"
+    ],
+    "project_manager_id": "RND-5001",
+    "project_lead_id": null,
+    "member_ids": [
+      "RND-5005"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "UX Copywriting",
+      "User Testing",
+      "Cognitive Walkthrough"
+    ],
+    "objectives": [
+      "Ensure security denials provide clear next steps without leaking internal policies"
+    ],
+    "responsibilities": [
+      "Test denial phrasing with non-technical users and refine error clarity"
+    ],
+    "start_date": "2026-01-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-IDENTITY",
+    "name": "Verified Agent Identity Framework",
+    "aliases": [
+      "Agent Identity Framework"
+    ],
+    "description": "Foundational research framework establishing multi-modal identity verification standards for enterprise AI agents.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-AGENT",
+    "contributing_team_ids": [
+      "TEAM-RND-AGENT",
+      "TEAM-RND-SPEECH"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5001"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Biometric Verification",
+      "Zero Trust",
+      "AI Governance"
+    ],
+    "objectives": [
+      "Establish unified identity models linking voice biometrics to agent capability grants"
+    ],
+    "responsibilities": [
+      "Direct research vision and author architectural whitepapers on agent identity"
+    ],
+    "start_date": "2025-06-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-VOICESEC",
+    "name": "Voice-Agent Security Evaluation",
+    "aliases": [
+      "Voice Agent Security"
+    ],
+    "description": "Comprehensive security testing methodology for voice-operated conversational agents and kiosk hardware.",
+    "status": "Active",
+    "project_type": "Security Research",
+    "owning_team_id": "TEAM-RND-SPEECH",
+    "contributing_team_ids": [
+      "TEAM-RND-SPEECH",
+      "TEAM-RND-SEC"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5001"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Security Evaluation",
+      "Red Teaming",
+      "Voice Biometrics"
+    ],
+    "objectives": [
+      "Establish automated red-teaming benchmarks against voice prompt injection"
+    ],
+    "responsibilities": [
+      "Oversee security evaluation methodologies and publish risk assessments"
+    ],
+    "start_date": "2025-07-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-ACTIONAUTH",
+    "name": "Action-Bound Authorization Research",
+    "aliases": [
+      "Action-Bound Auth"
+    ],
+    "description": "Research into fine-grained capability tokens that bind authorization strictly to verified intent manifests.",
+    "status": "Active",
+    "project_type": "Security Research",
+    "owning_team_id": "TEAM-RND-SEC",
+    "contributing_team_ids": [
+      "TEAM-RND-SEC",
+      "TEAM-RND-AGENT"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5001"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Capability Security",
+      "Manifest Hashing",
+      "Zero Trust"
+    ],
+    "objectives": [
+      "Formulate mathematical models ensuring single-use action grant durability"
+    ],
+    "responsibilities": [
+      "Lead research on action-bound capability verification"
+    ],
+    "start_date": "2025-08-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  },
+  {
+    "project_id": "PRJ-RND-AIASSURE",
+    "name": "AI Assurance Benchmark",
+    "aliases": [
+      "AI Assurance Benchmark.",
+      "AI Assurance"
+    ],
+    "description": "Benchmarking suite measuring hallucinations, grounding fidelity, and safety boundaries in agentic LLM outputs.",
+    "status": "Active",
+    "project_type": "Research",
+    "owning_team_id": "TEAM-RND-AGENT",
+    "contributing_team_ids": [
+      "TEAM-RND-AGENT"
+    ],
+    "project_manager_id": "EMP-4002",
+    "project_lead_id": "RND-5001",
+    "member_ids": [
+      "RND-5001"
+    ],
+    "department": "Research & Development",
+    "technologies": [
+      "Grounding Evaluation",
+      "LLM Benchmarking",
+      "Python",
+      "Statistical Testing"
+    ],
+    "objectives": [
+      "Quantify grounding accuracy on private enterprise knowledge retrieval"
+    ],
+    "responsibilities": [
+      "Direct AI assurance methodologies and publish reliability metrics"
+    ],
+    "start_date": "2025-09-01",
+    "target_end_date": "2026-12-31",
+    "owning_department_id": "DEPT-RND",
+    "contributing_department_ids": [
+      "DEPT-RND"
+    ]
+  }
+]

@@ -16,7 +16,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2025-07-15"
+      "date_of_joining": "2025-07-15",
+      "team_id": "TEAM-ENG-APP",
+      "department_id": "DEPT-ENG"
     },
     "reporting": {
       "manager_id": "EMP-2001",
@@ -74,30 +76,35 @@
           "name": "Customer Support Portal",
           "role": "Backend Developer",
           "status": "Active",
-          "allocation_percent": 60
+          "allocation_percent": 60,
+          "project_id": "PRJ-ENG-CSP"
         },
         {
           "name": "Internal Analytics Dashboard",
           "role": "Frontend Developer",
           "status": "Active",
-          "allocation_percent": 40
+          "allocation_percent": 40,
+          "project_id": "PRJ-ENG-IAD"
         }
       ],
       "previous": [
         {
           "name": "Campus Service Portal",
           "role": "Student Developer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Internal Ticketing Prototype",
           "role": "Intern Developer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "REST API Test Automation",
           "role": "Intern Contributor.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -251,7 +258,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2025-01-20"
+      "date_of_joining": "2025-01-20",
+      "team_id": "TEAM-DESIGN",
+      "department_id": "DEPT-DESIGN"
     },
     "reporting": {
       "manager_id": "EMP-1502",
@@ -305,29 +314,34 @@
         {
           "name": "Mobile App Redesign",
           "role": "Product Designer (65%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DES-MOB"
         },
         {
           "name": "Unified Design System",
           "role": "Component Designer (35%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DES-UDS"
         }
       ],
       "previous": [
         {
           "name": "Student Learning App",
           "role": "UX Designer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "E-commerce Checkout Redesign",
           "role": "Design Intern",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Mobile Onboarding Prototype",
           "role": "Freelance Designer.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -474,7 +488,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2024-09-02"
+      "date_of_joining": "2024-09-02",
+      "team_id": "TEAM-QA",
+      "department_id": "DEPT-QA"
     },
     "reporting": {
       "manager_id": "EMP-1503",
@@ -529,29 +545,34 @@
         {
           "name": "Authentication Modernization",
           "role": "QA Engineer (55%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-AUTH"
         },
         {
           "name": "Regression Automation Program",
           "role": "Automation Contributor (45%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-QA-REG"
         }
       ],
       "previous": [
         {
           "name": "Retail Web QA",
           "role": "Junior QA",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "API Regression Suite",
           "role": "QA Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Authentication Test Pack",
           "role": "Current QA Engineer.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -697,7 +718,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2025-03-11"
+      "date_of_joining": "2025-03-11",
+      "team_id": "TEAM-DATA",
+      "department_id": "DEPT-DATA"
     },
     "reporting": {
       "manager_id": "EMP-1504",
@@ -751,29 +774,34 @@
         {
           "name": "Customer Analytics",
           "role": "Data Analyst (70%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-CUST"
         },
         {
           "name": "Operations Dashboard",
           "role": "Reporting Analyst (30%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-OPS"
         }
       ],
       "previous": [
         {
           "name": "Sales Dashboard Prototype",
           "role": "Intern Analyst",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Operations KPI Reporting",
           "role": "Reporting Associate",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Customer Analytics",
           "role": "Current Analyst.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": "PRJ-DATA-CUST"
         }
       ]
     },
@@ -916,7 +944,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2024-11-18"
+      "date_of_joining": "2024-11-18",
+      "team_id": "TEAM-CLOUD",
+      "department_id": "DEPT-CLOUD"
     },
     "reporting": {
       "manager_id": "EMP-1505",
@@ -971,29 +1001,34 @@
         {
           "name": "CI/CD Modernization",
           "role": "DevOps Engineer (60%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-CLOUD-CICD"
         },
         {
           "name": "Monitoring Platform",
           "role": "Platform Contributor (40%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-CLOUD-MON"
         }
       ],
       "previous": [
         {
           "name": "Build Pipeline Standardization",
           "role": "Cloud Support",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Monitoring Alert Cleanup",
           "role": "Support Engineer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "CI/CD Modernization",
           "role": "Current DevOps Engineer.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": "PRJ-CLOUD-CICD"
         }
       ]
     },
@@ -1137,7 +1172,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2023-02-10"
+      "date_of_joining": "2023-02-10",
+      "team_id": "TEAM-ENG-APP",
+      "department_id": "DEPT-ENG"
     },
     "reporting": {
       "manager_id": "EMP-2001",
@@ -1227,34 +1264,40 @@
         {
           "name": "Customer Support Portal",
           "role": "Technical Lead (55%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-CSP"
         },
         {
           "name": "Authentication Modernization",
           "role": "Senior Technical Contributor (25%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-AUTH"
         },
         {
           "name": "Engineering Quality Initiative",
           "role": "Lead Coordinator (20%).",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-EQI"
         }
       ],
       "previous": [
         {
           "name": "Customer Ticketing Revamp",
           "role": "Backend Engineer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Internal Notification Service",
           "role": "Full-Stack Engineer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "API Reliability Initiative",
           "role": "Senior Engineer.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -1409,7 +1452,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2022-06-06"
+      "date_of_joining": "2022-06-06",
+      "team_id": "TEAM-DESIGN",
+      "department_id": "DEPT-DESIGN"
     },
     "reporting": {
       "manager_id": "EMP-2002",
@@ -1496,34 +1541,40 @@
         {
           "name": "Mobile App Redesign",
           "role": "Design Lead (60%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DES-MOB"
         },
         {
           "name": "Unified Design System",
           "role": "Lead Reviewer (30%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DES-UDS"
         },
         {
           "name": "Accessibility Improvement Program",
           "role": "Design Coordinator (10%).",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DES-ACC"
         }
       ],
       "previous": [
         {
           "name": "Fintech Onboarding Redesign",
           "role": "Product Designer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Commerce Checkout Optimization",
           "role": "UX Designer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Design System Migration",
           "role": "Senior Designer.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -1671,7 +1722,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2021-08-23"
+      "date_of_joining": "2021-08-23",
+      "team_id": "TEAM-QA",
+      "department_id": "DEPT-QA"
     },
     "reporting": {
       "manager_id": "EMP-2003",
@@ -1757,36 +1810,42 @@
     "projects": {
       "current": [
         {
-          "name": "Authentication Modernization QA",
+          "name": "Authentication Modernization",
           "role": "QA Lead (50%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-AUTH"
         },
         {
-          "name": "Regression Automation",
+          "name": "Regression Automation Program",
           "role": "Lead (35%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-QA-REG"
         },
         {
           "name": "Release Quality Program",
           "role": "Coordinator (15%).",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-QA-REL"
         }
       ],
       "previous": [
         {
           "name": "Retail Platform QA",
           "role": "QA Engineer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Payment Workflow Regression",
           "role": "QA Engineer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "API Automation Framework",
           "role": "Senior QA Engineer.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -1932,7 +1991,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2022-04-18"
+      "date_of_joining": "2022-04-18",
+      "team_id": "TEAM-DATA",
+      "department_id": "DEPT-DATA"
     },
     "reporting": {
       "manager_id": "EMP-2004",
@@ -2019,34 +2080,40 @@
         {
           "name": "Customer Analytics",
           "role": "Analytics Lead (55%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-CUST"
         },
         {
           "name": "Operations Dashboard",
           "role": "Lead Reviewer (30%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-OPS"
         },
         {
           "name": "KPI Governance",
           "role": "Coordinator (15%).",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-KPI"
         }
       ],
       "previous": [
         {
           "name": "Sales KPI Dashboard",
           "role": "Analyst",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Customer Segmentation",
           "role": "Analyst",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Executive Metrics Standardization",
           "role": "Senior Analyst.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -2189,7 +2256,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2021-12-13"
+      "date_of_joining": "2021-12-13",
+      "team_id": "TEAM-CLOUD",
+      "department_id": "DEPT-CLOUD"
     },
     "reporting": {
       "manager_id": "EMP-2005",
@@ -2278,34 +2347,40 @@
         {
           "name": "CI/CD Modernization",
           "role": "Platform Lead (50%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-CLOUD-CICD"
         },
         {
           "name": "Monitoring Platform",
           "role": "Technical Lead (35%)",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-CLOUD-MON"
         },
         {
           "name": "Developer Environment Reliability",
           "role": "Coordinator (15%).",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-CLOUD-DEVENV"
         }
       ],
       "previous": [
         {
           "name": "CI Pipeline Consolidation",
           "role": "DevOps Engineer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Monitoring Migration",
           "role": "DevOps Engineer",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Developer Environment Standardization",
           "role": "Senior DevOps Engineer.",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -2452,7 +2527,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2020-08-18"
+      "date_of_joining": "2020-08-18",
+      "team_id": null,
+      "department_id": "DEPT-ENG"
     },
     "reporting": {
       "manager_id": "EMP-3001",
@@ -2467,31 +2544,31 @@
       "professional_summary": "Engineering manager accountable for delivery, staffing, technical quality and coordination across multiple engineering squads. Converts department goals into team plans while retaining hands-on architecture and delivery oversight.",
       "career_history": [
         {
-          "organization": "Engineer 2017",
-          "role": "19",
+          "organization": "IntentLock Demo Company",
+          "role": "Engineer",
           "start_date": "2017",
-          "end_date": null,
+          "end_date": "2019",
           "responsibilities": []
         },
         {
-          "organization": "Senior Engineer 2019",
-          "role": "20",
+          "organization": "IntentLock Demo Company",
+          "role": "Senior Engineer",
           "start_date": "2019",
-          "end_date": null,
+          "end_date": "2020",
           "responsibilities": []
         },
         {
-          "organization": "Team Lead 2020",
-          "role": "22",
+          "organization": "IntentLock Demo Company",
+          "role": "Team Lead",
           "start_date": "2020",
-          "end_date": null,
+          "end_date": "2022",
           "responsibilities": []
         },
         {
-          "organization": "Engineering Manager 2022",
-          "role": "present",
+          "organization": "IntentLock Demo Company",
+          "role": "Engineering Manager",
           "start_date": "2022",
-          "end_date": null,
+          "end_date": "Present",
           "responsibilities": []
         }
       ]
@@ -2533,39 +2610,46 @@
         {
           "name": "Platform Modernization",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-PLAT"
         },
         {
           "name": "Authentication Modernization",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-AUTH"
         },
         {
           "name": "Customer Support Portal",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-ENG-CSP"
         }
       ],
       "previous": [
         {
           "name": "Core API Replatforming",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Customer Identity Service",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Developer Productivity Initiative",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Service Reliability Improvement.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -2735,7 +2819,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2019-05-12"
+      "date_of_joining": "2019-05-12",
+      "team_id": null,
+      "department_id": "DEPT-DESIGN"
     },
     "reporting": {
       "manager_id": "EMP-3002",
@@ -2813,39 +2899,46 @@
         {
           "name": "Mobile App Redesign",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DES-MOB"
         },
         {
           "name": "Product Roadmap",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
-          "name": "Customer Insights",
+          "name": "Customer Analytics",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-CUST"
         }
       ],
       "previous": [
         {
           "name": "Self-Service Onboarding",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Subscription Experience",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Product Analytics Instrumentation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Customer Feedback Program.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -2995,7 +3088,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2019-03-08"
+      "date_of_joining": "2019-03-08",
+      "team_id": null,
+      "department_id": "DEPT-QA"
     },
     "reporting": {
       "manager_id": "EMP-3001",
@@ -3072,41 +3167,48 @@
     "projects": {
       "current": [
         {
-          "name": "Release Certification",
+          "name": "Release Quality Program",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-QA-REL"
         },
         {
-          "name": "Regression Automation",
+          "name": "Regression Automation Program",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-QA-REG"
         },
         {
-          "name": "Quality Strategy",
+          "name": "Release Quality Program",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-QA-REL"
         }
       ],
       "previous": [
         {
           "name": "Payments Regression Program",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "API Test Framework",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Mobile Release Quality",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Defect Triage Standardization.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -3265,7 +3367,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2018-10-22"
+      "date_of_joining": "2018-10-22",
+      "team_id": null,
+      "department_id": "DEPT-DATA"
     },
     "reporting": {
       "manager_id": "EMP-3002",
@@ -3343,41 +3447,48 @@
     "projects": {
       "current": [
         {
-          "name": "Business Intelligence",
+          "name": "Operations Dashboard",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-OPS"
         },
         {
           "name": "Customer Analytics",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-CUST"
         },
         {
           "name": "KPI Governance",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-DATA-KPI"
         }
       ],
       "previous": [
         {
           "name": "Executive KPI Dashboard",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Customer Segmentation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Operations Reporting Automation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Data Quality Scorecard.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -3536,7 +3647,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2018-01-15"
+      "date_of_joining": "2018-01-15",
+      "team_id": null,
+      "department_id": "DEPT-CLOUD"
     },
     "reporting": {
       "manager_id": "EMP-3001",
@@ -3615,39 +3728,46 @@
         {
           "name": "Cloud Operations",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
-          "name": "Infrastructure Reliability",
+          "name": "Monitoring Platform",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-CLOUD-MON"
         },
         {
           "name": "CI/CD Modernization",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-CLOUD-CICD"
         }
       ],
       "previous": [
         {
           "name": "Cloud Migration",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "CI/CD Standardization",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Monitoring Consolidation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Disaster-Recovery Readiness.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -3806,7 +3926,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2017-03-05"
+      "date_of_joining": "2017-03-05",
+      "team_id": null,
+      "department_id": "DEPT-ENG"
     },
     "reporting": {
       "manager_id": "EMP-4001",
@@ -3866,27 +3988,32 @@
         {
           "name": "API Replatforming",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Cloud Migration",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Developer Productivity",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Reliability Improvement",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Engineering Hiring Scale-up.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -4049,7 +4176,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2016-07-14"
+      "date_of_joining": "2016-07-14",
+      "team_id": null,
+      "department_id": "DEPT-DATA"
     },
     "reporting": {
       "manager_id": "EMP-4001",
@@ -4106,22 +4235,26 @@
         {
           "name": "Digital Onboarding",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Subscription Modernization",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Customer Insights Platform",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Product Metrics Standardization.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -4275,7 +4408,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2016-02-08"
+      "date_of_joining": "2016-02-08",
+      "team_id": null,
+      "department_id": "DEPT-HR"
     },
     "reporting": {
       "manager_id": "EMP-4001",
@@ -4328,22 +4463,26 @@
         {
           "name": "Performance Framework Redesign",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Workforce Planning",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Manager Capability Program",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Employee Experience Modernization.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -4494,7 +4633,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2015-09-21"
+      "date_of_joining": "2015-09-21",
+      "team_id": null,
+      "department_id": "DEPT-OPS"
     },
     "reporting": {
       "manager_id": "EMP-4001",
@@ -4548,22 +4689,26 @@
         {
           "name": "Service Delivery Redesign",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Operations Automation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Vendor Governance",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Business Continuity Improvement.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -4720,7 +4865,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2016-04-11"
+      "date_of_joining": "2016-04-11",
+      "team_id": null,
+      "department_id": "DEPT-SEC"
     },
     "reporting": {
       "manager_id": "EMP-4001",
@@ -4777,27 +4924,32 @@
         {
           "name": "IAM Modernization",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Security Monitoring Upgrade",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Vulnerability Governance",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Incident Response Maturity",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Zero-Trust Pilot.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -4954,7 +5106,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid / Executive",
-      "date_of_joining": "2015-01-12"
+      "date_of_joining": "2015-01-12",
+      "team_id": null,
+      "department_id": "DEPT-EXEC"
     },
     "reporting": {
       "manager_id": "EXE-0001",
@@ -5010,27 +5164,32 @@
         {
           "name": "Enterprise Process Redesign",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Shared Services Transformation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Business Continuity Modernization",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Operations Automation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Leadership Operating Cadence.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -5199,7 +5358,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Executive Hybrid",
-      "date_of_joining": "2019-05-15"
+      "date_of_joining": "2019-05-15",
+      "team_id": null,
+      "department_id": "DEPT-EXEC"
     },
     "reporting": {
       "manager_id": "EXE-0001",
@@ -5213,10 +5374,24 @@
       "professional_summary": "Chief technology executive responsible for technology vision, engineering strategy, architecture, R&D direction, AI/agent governance and strategic technology investment.",
       "career_history": [
         {
-          "organization": "Software Engineer",
-          "role": "> Principal Engineer",
-          "start_date": null,
-          "end_date": null,
+          "organization": "Enterprise Technology Systems",
+          "role": "Software Engineer to Principal Engineer",
+          "start_date": "2004",
+          "end_date": "2014",
+          "responsibilities": []
+        },
+        {
+          "organization": "Enterprise Technology Systems",
+          "role": "Chief Architect & Technology Executive",
+          "start_date": "2014",
+          "end_date": "2019",
+          "responsibilities": []
+        },
+        {
+          "organization": "IntentLock Demo Company",
+          "role": "Chief Technology Officer (CTO)",
+          "start_date": "2019",
+          "end_date": "Present",
           "responsibilities": []
         }
       ]
@@ -5262,69 +5437,94 @@
         {
           "name": "Secure AI agents",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "platform reliability",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "architecture simplification",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "developer productivity",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "R&D acceleration",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "responsible AI governance.",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         }
       ],
       "previous": [
         {
           "name": "Cloud Migration",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Platform Rearchitecture",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
-          "name": "Developer Platform",
+          "name": "Developer Environment Reliability",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": "PRJ-CLOUD-DEVENV"
         },
         {
           "name": "Data/AI Foundation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Engineering Scale Program",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Secure SDLC Modernization.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
-    "responsibilities": [],
-    "achievements": [],
+    "responsibilities": [
+      "Technology strategy",
+      "engineering investment",
+      "architecture principles",
+      "AI/agent governance",
+      "senior technical appointments",
+      "technical risk",
+      "executive technology reporting."
+    ],
+    "achievements": [
+      "Led cloud modernization",
+      "established architecture council",
+      "improved engineering investment governance",
+      "sponsored secure AI/agent standards."
+    ],
     "permissions": {
       "leave_approval": {
         "effect": "ALLOW",
@@ -5474,7 +5674,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid / Executive",
-      "date_of_joining": "2013-08-09"
+      "date_of_joining": "2013-08-09",
+      "team_id": null,
+      "department_id": "DEPT-EXEC"
     },
     "reporting": {
       "manager_id": "EXE-0001",
@@ -5523,27 +5725,32 @@
         {
           "name": "Compensation Framework Redesign",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Executive Succession",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Workforce Analytics",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Performance Modernization",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Leadership Academy.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -5707,7 +5914,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid / Executive",
-      "date_of_joining": "2014-03-17"
+      "date_of_joining": "2014-03-17",
+      "team_id": null,
+      "department_id": "DEPT-EXEC"
     },
     "reporting": {
       "manager_id": "EXE-0001",
@@ -5757,27 +5966,32 @@
         {
           "name": "ERP Modernization",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Identity Platform Renewal",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "IT Service Transformation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Disaster Recovery",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Information Governance.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -5941,7 +6155,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid / Executive",
-      "date_of_joining": "2015-11-24"
+      "date_of_joining": "2015-11-24",
+      "team_id": null,
+      "department_id": "DEPT-EXEC"
     },
     "reporting": {
       "manager_id": "EXE-0001",
@@ -5991,27 +6207,32 @@
         {
           "name": "Three-Year Growth Strategy",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Operating Model Transformation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Market Expansion",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Strategic Portfolio Review",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Investment Governance.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -6174,7 +6395,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Executive Hybrid",
-      "date_of_joining": "2018-04-01"
+      "date_of_joining": "2018-04-01",
+      "team_id": null,
+      "department_id": "DEPT-EXEC"
     },
     "reporting": {
       "manager_id": null,
@@ -6233,59 +6456,70 @@
         {
           "name": "Secure AI-agent strategy",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "sustainable growth",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "operational resilience",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "talent development",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "customer trust",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         },
         {
           "name": "governance maturity.",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": null
         }
       ],
       "previous": [
         {
           "name": "Enterprise Scale-Up",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Cloud/Product Transformation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "International Market Study",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Operating Model Redesign",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Governance Modernization.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -6436,7 +6670,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid / Research Lab",
-      "date_of_joining": "2023-02-03"
+      "date_of_joining": "2023-02-03",
+      "team_id": null,
+      "department_id": "DEPT-RND"
     },
     "reporting": {
       "manager_id": "EMP-4002",
@@ -6524,44 +6760,52 @@
         {
           "name": "Verified Agent Identity Framework",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-IDENTITY"
         },
         {
           "name": "Voice-Agent Security Evaluation",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-VOICESEC"
         },
         {
           "name": "Action-Bound Authorization Research",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-ACTIONAUTH"
         },
         {
-          "name": "AI Assurance Benchmark.",
+          "name": "AI Assurance Benchmark",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-AIASSURE"
         }
       ],
       "previous": [
         {
           "name": "Adversarial Robustness Benchmark",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Explainable Risk Classifier",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Secure Model Serving Study",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Agent Authorization Prototype.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -6747,7 +6991,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid / Research Lab",
-      "date_of_joining": "2023-09-18"
+      "date_of_joining": "2023-09-18",
+      "team_id": "TEAM-RND-SPEECH",
+      "department_id": "DEPT-RND"
     },
     "reporting": {
       "manager_id": "RND-5001",
@@ -6829,44 +7075,52 @@
         {
           "name": "Voice Authenticity Benchmark",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-VOICEAUTH"
         },
         {
           "name": "Speaker Verification Evaluation",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-SPEAKER"
         },
         {
           "name": "Replay Attack Test Harness",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-REPLAY"
         },
         {
-          "name": "Browser Voice Capture Quality Study.",
+          "name": "Browser Voice Capture Quality Study",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-BROWSER"
         }
       ],
       "previous": [
         {
           "name": "Speaker Embedding Benchmark",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Synthetic Speech Detection Study",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Noise Robustness Evaluation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "ASR Error Analysis.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -7047,7 +7301,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2025-01-08"
+      "date_of_joining": "2025-01-08",
+      "team_id": "TEAM-RND-AGENT",
+      "department_id": "DEPT-RND"
     },
     "reporting": {
       "manager_id": "RND-5001",
@@ -7125,44 +7381,52 @@
         {
           "name": "Intent Extraction Benchmark",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-INTENT"
         },
         {
           "name": "Protected Tool-Use Agent",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-TOOLAGENT"
         },
         {
           "name": "Agent-to-Agent Handshake Prototype",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-HANDSHAKE"
         },
         {
-          "name": "Authorization Explanation Layer.",
+          "name": "Authorization Explanation Layer",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-RND-AUTHEXPLAIN"
         }
       ],
       "previous": [
         {
           "name": "Tool-Calling Reliability Benchmark",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "RAG Grounding Study",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Prompt Injection Evaluation",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Structured Extraction Prototype.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -7347,7 +7611,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid / Security Lab",
-      "date_of_joining": "2024-07-22"
+      "date_of_joining": "2024-07-22",
+      "team_id": "TEAM-RND-SEC",
+      "department_id": "DEPT-RND"
     },
     "reporting": {
       "manager_id": "EMP-3005",
@@ -7424,44 +7690,52 @@
         {
           "name": "Agent-to-Agent Authentication",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-SEC-A2AAUTH"
         },
         {
           "name": "Nonce/Replay Protection",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-SEC-NONCE"
         },
         {
           "name": "Signed Action Envelope",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-SEC-ENVELOPE"
         },
         {
-          "name": "Protected Executor Threat Model.",
+          "name": "Protected Executor Threat Model",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-SEC-THREAT"
         }
       ],
       "previous": [
         {
           "name": "API Replay Study",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "OAuth Misconfiguration Benchmark",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Audit Integrity Prototype",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Secure Webhook Validation.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },
@@ -7643,7 +7917,9 @@
       "status": "Active",
       "location": "Bengaluru",
       "work_mode": "Hybrid",
-      "date_of_joining": "2025-03-17"
+      "date_of_joining": "2025-03-17",
+      "team_id": "TEAM-RND-HCAI",
+      "department_id": "DEPT-RND"
     },
     "reporting": {
       "manager_id": null,
@@ -7723,44 +7999,52 @@
         {
           "name": "IntentLock Decision Explanation Study",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-HCAI-EXPL"
         },
         {
           "name": "Verified-Agent Badge UX",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-HCAI-BADGE"
         },
         {
           "name": "Voice Confirmation Research",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-HCAI-CONFIRM"
         },
         {
-          "name": "Denial Message Comprehension.",
+          "name": "Denial Message Comprehension",
           "role": "Contributor",
-          "status": "Active"
+          "status": "Active",
+          "project_id": "PRJ-HCAI-DENIAL"
         }
       ],
       "previous": [
         {
           "name": "Explainable Permissions Study",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Security Warning Comprehension",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Voice UX Accessibility",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         },
         {
           "name": "Consent Flow Evaluation.",
           "role": "Contributor",
-          "status": "Completed"
+          "status": "Completed",
+          "project_id": null
         }
       ]
     },

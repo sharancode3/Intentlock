@@ -1,0 +1,414 @@
+[
+  {
+    "team_id": "TEAM-ENG-APP",
+    "name": "Application Engineering",
+    "description": "Responsible for customer-facing web applications, frontend portals, API integration, and user-facing backend service delivery.",
+    "department": "Engineering",
+    "team_lead_id": "EMP-1501",
+    "manager_id": "EMP-2001",
+    "member_ids": [
+      "EMP-1001",
+      "EMP-1501"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Backend REST API development and data layer integration",
+      "Customer Support Portal feature implementation and maintenance",
+      "Internal Analytics Dashboard frontend interface engineering",
+      "Automated API testing, code quality, and defect remediation"
+    ],
+    "technologies": [
+      "Python",
+      "FastAPI",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "PostgreSQL",
+      "REST APIs",
+      "Git",
+      "PyTest",
+      "Docker"
+    ],
+    "project_names": [
+      "Customer Support Portal",
+      "Internal Analytics Dashboard",
+      "Authentication Modernization",
+      "Engineering Quality Initiative",
+      "Platform Modernization",
+      "IntentLock Platform",
+      "Core Database Sharding",
+      "Session Security Modernization",
+      "Identity & Security Architecture",
+      "Unified Design System",
+      "Developer Environment Reliability",
+      "Signed Action Envelope",
+      "Voice Confirmation Research"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-ENG-CSP",
+      "PRJ-ENG-IAD",
+      "PRJ-ENG-AUTH",
+      "PRJ-ENG-EQI",
+      "PRJ-ENG-PLAT",
+      "PRJ-INTENTLOCK",
+      "PRJ-DATA-SHARD",
+      "PRJ-SEC-SESSION",
+      "PRJ-SEC-IDARCH",
+      "PRJ-DES-UDS",
+      "PRJ-CLOUD-DEVENV",
+      "PRJ-SEC-ENVELOPE",
+      "PRJ-HCAI-CONFIRM"
+    ],
+    "department_id": "DEPT-ENG"
+  },
+  {
+    "team_id": "TEAM-DESIGN",
+    "name": "Experience Design",
+    "description": "Designs accessible, cohesive user experiences, interface design systems, and client interaction workflows.",
+    "department": "Product Design",
+    "team_lead_id": "EMP-1502",
+    "manager_id": "EMP-2002",
+    "member_ids": [
+      "EMP-1002",
+      "EMP-1502"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "UI/UX wireframing, high-fidelity prototypes, and user flows",
+      "Unified design system components and accessibility standards",
+      "Mobile product redesign and responsive interaction patterns"
+    ],
+    "technologies": [
+      "Figma",
+      "Design Systems",
+      "Prototyping",
+      "User Research",
+      "Accessibility (a11y)"
+    ],
+    "project_names": [
+      "Customer Support Portal",
+      "Mobile App Redesign",
+      "Unified Design System",
+      "Accessibility Improvement Program",
+      "Verified-Agent Badge UX"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-ENG-CSP",
+      "PRJ-DES-MOB",
+      "PRJ-DES-UDS",
+      "PRJ-DES-ACC",
+      "PRJ-HCAI-BADGE"
+    ],
+    "department_id": "DEPT-DESIGN"
+  },
+  {
+    "team_id": "TEAM-QA",
+    "name": "Product Quality Engineering",
+    "description": "Ensures end-to-end software quality, regression automation, test harness reliability, and release certification.",
+    "department": "Quality Assurance",
+    "team_lead_id": "EMP-1503",
+    "manager_id": "EMP-2003",
+    "member_ids": [
+      "EMP-1003",
+      "EMP-1503"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Automated integration and end-to-end regression testing",
+      "Authentication modernization quality verification",
+      "Defect tracking, test case management, and release qualification"
+    ],
+    "technologies": [
+      "Selenium",
+      "Cypress",
+      "PyTest",
+      "API Testing",
+      "Test Automation",
+      "CI Testing"
+    ],
+    "project_names": [
+      "Customer Support Portal",
+      "Authentication Modernization",
+      "Engineering Quality Initiative",
+      "Regression Automation Program",
+      "Release Quality Program"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-ENG-CSP",
+      "PRJ-ENG-AUTH",
+      "PRJ-ENG-EQI",
+      "PRJ-QA-REG",
+      "PRJ-QA-REL"
+    ],
+    "department_id": "DEPT-QA"
+  },
+  {
+    "team_id": "TEAM-DATA",
+    "name": "Business Analytics",
+    "description": "Delivers data pipelines, business intelligence dashboards, KPI metrics, and operational performance reporting.",
+    "department": "Data & Analytics",
+    "team_lead_id": "EMP-1504",
+    "manager_id": "EMP-2004",
+    "member_ids": [
+      "EMP-1004",
+      "EMP-1504"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Data modeling, SQL analytics, and data pipeline maintenance",
+      "Executive KPI reporting and operational metrics governance",
+      "Customer analytics dashboards and automated reporting jobs"
+    ],
+    "technologies": [
+      "SQL",
+      "Python",
+      "Power BI",
+      "Data Warehousing",
+      "ETL Pipelines",
+      "Pandas"
+    ],
+    "project_names": [
+      "Internal Analytics Dashboard",
+      "Customer Analytics",
+      "Operations Dashboard",
+      "KPI Governance"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-ENG-IAD",
+      "PRJ-DATA-CUST",
+      "PRJ-DATA-OPS",
+      "PRJ-DATA-KPI"
+    ],
+    "department_id": "DEPT-DATA"
+  },
+  {
+    "team_id": "TEAM-CLOUD",
+    "name": "Platform Operations",
+    "description": "Manages cloud infrastructure, container orchestration, CI/CD pipelines, and systems observability.",
+    "department": "Cloud Engineering",
+    "team_lead_id": "EMP-1505",
+    "manager_id": "EMP-2005",
+    "member_ids": [
+      "EMP-1005",
+      "EMP-1505"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Cloud environment provisioning, Linux systems administration, and monitoring",
+      "CI/CD pipeline automation and build optimization",
+      "Platform reliability, observability alerting, and incident support"
+    ],
+    "technologies": [
+      "Docker",
+      "Kubernetes",
+      "Linux",
+      "Terraform",
+      "CI/CD",
+      "Prometheus",
+      "Grafana"
+    ],
+    "project_names": [
+      "Platform Modernization",
+      "IntentLock Platform",
+      "Core Database Sharding",
+      "Cloud Infrastructure Modernization",
+      "Release Quality Program",
+      "CI/CD Modernization",
+      "Monitoring Platform",
+      "Developer Environment Reliability"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-ENG-PLAT",
+      "PRJ-INTENTLOCK",
+      "PRJ-DATA-SHARD",
+      "PRJ-CLOUD-INFRA",
+      "PRJ-QA-REL",
+      "PRJ-CLOUD-CICD",
+      "PRJ-CLOUD-MON",
+      "PRJ-CLOUD-DEVENV"
+    ],
+    "department_id": "DEPT-CLOUD"
+  },
+  {
+    "team_id": "TEAM-RND-SPEECH",
+    "name": "Speech Intelligence & Voice Security",
+    "description": "Researches audio authentication, biometric speaker verification, voice anti-spoofing, and synthetic speech detection.",
+    "department": "Research & Development",
+    "team_lead_id": "RND-5001",
+    "manager_id": "EMP-4002",
+    "member_ids": [
+      "RND-5002"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Voice authenticity benchmarking and deepfake detection modeling",
+      "Biometric speaker verification evaluation and threshold calibration",
+      "Replay attack evaluation and streaming audio feature extraction"
+    ],
+    "technologies": [
+      "PyTorch",
+      "Speech Processing",
+      "Biometric Verification",
+      "VAD",
+      "Audio DSP"
+    ],
+    "project_names": [
+      "IntentLock Platform",
+      "Voice Authenticity Benchmark",
+      "Speaker Verification Evaluation",
+      "Replay Attack Test Harness",
+      "Browser Voice Capture Quality Study",
+      "Verified Agent Identity Framework",
+      "Voice-Agent Security Evaluation"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-INTENTLOCK",
+      "PRJ-RND-VOICEAUTH",
+      "PRJ-RND-SPEAKER",
+      "PRJ-RND-REPLAY",
+      "PRJ-RND-BROWSER",
+      "PRJ-RND-IDENTITY",
+      "PRJ-RND-VOICESEC"
+    ],
+    "department_id": "DEPT-RND"
+  },
+  {
+    "team_id": "TEAM-RND-AGENT",
+    "name": "Agent Intelligence & Evaluation",
+    "description": "Investigates autonomous agent workflows, task execution security, intent planning, and agent verification boundaries.",
+    "department": "Research & Development",
+    "team_lead_id": "RND-5001",
+    "manager_id": "EMP-4002",
+    "member_ids": [
+      "RND-5003"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Structured intent planning and semantic evaluation benchmark research",
+      "Protected tool execution sandboxing and verification guardrails",
+      "Agent-to-agent handshake protocols and decision explanation studies"
+    ],
+    "technologies": [
+      "LLM Evaluation",
+      "Python",
+      "NLP",
+      "Agent Frameworks",
+      "Prompt Engineering"
+    ],
+    "project_names": [
+      "IntentLock Platform",
+      "Intent Extraction Benchmark",
+      "Protected Tool-Use Agent",
+      "Agent-to-Agent Handshake Prototype",
+      "Authorization Explanation Layer",
+      "Verified Agent Identity Framework",
+      "Action-Bound Authorization Research",
+      "AI Assurance Benchmark"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-INTENTLOCK",
+      "PRJ-RND-INTENT",
+      "PRJ-RND-TOOLAGENT",
+      "PRJ-RND-HANDSHAKE",
+      "PRJ-RND-AUTHEXPLAIN",
+      "PRJ-RND-IDENTITY",
+      "PRJ-RND-ACTIONAUTH",
+      "PRJ-RND-AIASSURE"
+    ],
+    "department_id": "DEPT-RND"
+  },
+  {
+    "team_id": "TEAM-RND-SEC",
+    "name": "Applied Security Research",
+    "description": "Focuses on cryptographic token verification, protected execution threat modeling, and tamper-resistant envelopes.",
+    "department": "Research & Development",
+    "team_lead_id": null,
+    "manager_id": "EMP-3005",
+    "member_ids": [
+      "RND-5004"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Cryptographic signed action envelope design and nonce replay protection",
+      "Threat modeling for voice-authenticated protected actions",
+      "Agent credential isolation and runtime integrity assurance"
+    ],
+    "technologies": [
+      "Cryptography",
+      "Threat Modeling",
+      "Python",
+      "Application Security",
+      "Zero Trust"
+    ],
+    "project_names": [
+      "Session Security Modernization",
+      "Identity & Security Architecture",
+      "Protected Tool-Use Agent",
+      "Agent-to-Agent Handshake Prototype",
+      "Agent-to-Agent Authentication",
+      "Nonce/Replay Protection",
+      "Signed Action Envelope",
+      "Protected Executor Threat Model",
+      "Voice-Agent Security Evaluation",
+      "Action-Bound Authorization Research"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-SEC-SESSION",
+      "PRJ-SEC-IDARCH",
+      "PRJ-RND-TOOLAGENT",
+      "PRJ-RND-HANDSHAKE",
+      "PRJ-SEC-A2AAUTH",
+      "PRJ-SEC-NONCE",
+      "PRJ-SEC-ENVELOPE",
+      "PRJ-SEC-THREAT",
+      "PRJ-RND-VOICESEC",
+      "PRJ-RND-ACTIONAUTH"
+    ],
+    "department_id": "DEPT-RND"
+  },
+  {
+    "team_id": "TEAM-RND-HCAI",
+    "name": "Human-Centered AI & Responsible Governance",
+    "description": "Researches verified-agent user experience, denial comprehension, voice confirmation usability, and ethical AI transparency.",
+    "department": "Research & Development",
+    "team_lead_id": null,
+    "manager_id": "RND-5001",
+    "member_ids": [
+      "RND-5005"
+    ],
+    "location": "Bengaluru",
+    "responsibilities": [
+      "Human-AI trust interfaces and verified biometric session user feedback",
+      "Spoken readback confirmation usability and denial message clarity",
+      "Responsible AI governance frameworks and ethical agent deployment"
+    ],
+    "technologies": [
+      "Human-Computer Interaction (HCI)",
+      "AI Ethics",
+      "User Research",
+      "Qualitative Studies"
+    ],
+    "project_names": [
+      "IntentLock Decision Explanation Study",
+      "Verified-Agent Badge UX",
+      "Voice Confirmation Research",
+      "Denial Message Comprehension"
+    ],
+    "status": "Active",
+    "project_ids": [
+      "PRJ-HCAI-EXPL",
+      "PRJ-HCAI-BADGE",
+      "PRJ-HCAI-CONFIRM",
+      "PRJ-HCAI-DENIAL"
+    ],
+    "department_id": "DEPT-RND"
+  }
+]

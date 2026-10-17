@@ -1,0 +1,222 @@
+"""
+IntentLock — Enterprise Data Repository
+Centralized, read-only service responsible for loading canonical organizational data:
+all_employees.json, all_tickets.json, teams.json, projects.json, departments.json.
+
+Loads data ONCE into memory at startup and builds fast normalized lookup indexes.
+"""
+
+import json
+import logging
+import os
+import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+logger = logging.getLogger("enterprise_data_repository")
+
+
+def normalize_text(val: Optional[str]) -> str:
+    """Strip whitespace, collapse repeated spaces, and lowercase."""
+    if not val:
+        return ""
+    cleaned = re.sub(r"\s+", " ", val.strip().lower())
+    # strip trailing punctuation safely
+    cleaned = re.sub(r"[\.\,\;\:\!\?]+$", "", cleaned).strip()
+    return cleaned
+
+
+class EnterpriseDataRepository:
+    _instance: Optional["EnterpriseDataRepository"] = None
+
+    def __init__(self, data_dir: Optional[str] = None):
+        if data_dir:
+            self.data_dir = Path(data_dir)
+        else:
+            base_dir = Path(__file__).resolve().parent.parent
+            self.data_dir = base_dir / "data"
+
+        self.is_loaded: bool = False
+
+        # Raw containers
+        self.employees: List[Dict[str, Any]] = []
+        self.tickets: List[Dict[str, Any]] = []
+        self.teams: List[Dict[str, Any]] = []
+        self.projects: List[Dict[str, Any]] = []
+        self.departments: List[Dict[str, Any]] = []
+
+        # Employee Indexes
+        self.employees_by_id: Dict[str, Dict[str, Any]] = {}
+        self.employees_by_name: Dict[str, Dict[str, Any]] = {}
+        self.employees_by_normalized_name: Dict[str, List[Dict[str, Any]]] = {}
+        self.employees_by_department: Dict[str, List[Dict[str, Any]]] = {}
+        self.employees_by_team: Dict[str, List[Dict[str, Any]]] = {}
+        self.employees_by_manager: Dict[str, List[Dict[str, Any]]] = {}
+
+        # Team Indexes
+        self.teams_by_id: Dict[str, Dict[str, Any]] = {}
+        self.teams_by_name: Dict[str, Dict[str, Any]] = {}
+        self.teams_by_department: Dict[str, List[Dict[str, Any]]] = {}
+
+        # Project Indexes
+        self.projects_by_id: Dict[str, Dict[str, Any]] = {}
+        self.projects_by_name: Dict[str, Dict[str, Any]] = {}
+        self.projects_by_alias: Dict[str, Dict[str, Any]] = {}
+        self.projects_by_team: Dict[str, List[Dict[str, Any]]] = {}
+        self.projects_by_department: Dict[str, List[Dict[str, Any]]] = {}
+
+        # Ticket Indexes
+        self.tickets_by_id: Dict[str, Dict[str, Any]] = {}
+        self.tickets_by_project: Dict[str, List[Dict[str, Any]]] = {}
+        self.tickets_by_department: Dict[str, List[Dict[str, Any]]] = {}
+        self.tickets_by_assignee: Dict[str, List[Dict[str, Any]]] = {}
+
+        # Department Indexes
+        self.departments_by_id: Dict[str, Dict[str, Any]] = {}
+        self.departments_by_name: Dict[str, Dict[str, Any]] = {}
+        self.department_aliases: Dict[str, str] = {}
+
+        self.load_data()
+
+    @classmethod
+    def get_instance(cls, data_dir: Optional[str] = None) -> "EnterpriseDataRepository":
+        if cls._instance is None:
+            cls._instance = cls(data_dir=data_dir)
+        return cls._instance
+
+    def load_data(self) -> None:
+        if self.is_loaded:
+            return
+
+        emp_path = self.data_dir / "all_employees.json"
+        tkt_path = self.data_dir / "all_tickets.json"
+        team_path = self.data_dir / "teams.json"
+        prj_path = self.data_dir / "projects.json"
+        dept_path = self.data_dir / "departments.json"
+
+        with open(emp_path, "r", encoding="utf-8") as f:
+            self.employees = json.load(f)
+        with open(tkt_path, "r", encoding="utf-8") as f:
+            self.tickets = json.load(f)
+        with open(team_path, "r", encoding="utf-8") as f:
+            self.teams = json.load(f)
+        with open(prj_path, "r", encoding="utf-8") as f:
+            self.projects = json.load(f)
+        with open(dept_path, "r", encoding="utf-8") as f:
+            self.departments = json.load(f)
+
+        self._build_indexes()
+        self.is_loaded = True
+        logger.info(
+            "EnterpriseDataRepository loaded: %d employees, %d tickets, %d teams, %d projects, %d departments.",
+            len(self.employees), len(self.tickets), len(self.teams), len(self.projects), len(self.departments)
+        )
+
+    def _build_indexes(self) -> None:
+        # Clear existing
+        self.employees_by_id.clear()
+        self.employees_by_name.clear()
+        self.employees_by_normalized_name.clear()
+        self.employees_by_department.clear()
+        self.employees_by_team.clear()
+        self.employees_by_manager.clear()
+
+        self.teams_by_id.clear()
+        self.teams_by_name.clear()
+        self.teams_by_department.clear()
+
+        self.projects_by_id.clear()
+        self.projects_by_name.clear()
+        self.projects_by_alias.clear()
+        self.projects_by_team.clear()
+        self.projects_by_department.clear()
+
+        self.tickets_by_id.clear()
+        self.tickets_by_project.clear()
+        self.tickets_by_department.clear()
+        self.tickets_by_assignee.clear()
+
+        self.departments_by_id.clear()
+        self.departments_by_name.clear()
+        self.department_aliases.clear()
+
+        # 1. Departments
+        for d in self.departments:
+            did = d["department_id"]
+            self.departments_by_id[did] = d
+            self.departments_by_name[normalize_text(d["name"])] = d
+            self.department_aliases[normalize_text(d["name"])] = did
+            for alias in d.get("aliases", []):
+                self.department_aliases[normalize_text(alias)] = did
+
+        # 2. Teams
+        for t in self.teams:
+            tid = t["team_id"]
+            self.teams_by_id[tid] = t
+            self.teams_by_name[normalize_text(t["name"])] = t
+            did = t.get("department_id")
+            if did:
+                self.teams_by_department.setdefault(did, []).append(t)
+
+        # 3. Projects
+        for p in self.projects:
+            pid = p["project_id"]
+            self.projects_by_id[pid] = p
+            self.projects_by_name[normalize_text(p["name"])] = p
+            for alias in p.get("aliases", []):
+                self.projects_by_alias[normalize_text(alias)] = p
+            tid = p.get("owning_team_id")
+            if tid:
+                self.projects_by_team.setdefault(tid, []).append(p)
+            did = p.get("owning_department_id")
+            if did:
+                self.projects_by_department.setdefault(did, []).append(p)
+
+        # 4. Employees
+        for e in self.employees:
+            eid = e["employee_id"]
+            self.employees_by_id[eid] = e
+            full_name = e.get("identity", {}).get("full_name", "")
+            pref_name = e.get("identity", {}).get("preferred_name", "")
+
+            norm_full = normalize_text(full_name)
+            self.employees_by_name[norm_full] = e
+            self.employees_by_normalized_name.setdefault(norm_full, []).append(e)
+
+            if pref_name:
+                norm_pref = normalize_text(pref_name)
+                self.employees_by_normalized_name.setdefault(norm_pref, []).append(e)
+
+            # index first and last names for partial search
+            parts = norm_full.split()
+            if len(parts) > 1:
+                first, last = parts[0], parts[-1]
+                self.employees_by_normalized_name.setdefault(first, []).append(e)
+                self.employees_by_normalized_name.setdefault(last, []).append(e)
+
+            did = e.get("employment", {}).get("department_id")
+            if did:
+                self.employees_by_department.setdefault(did, []).append(e)
+            tid = e.get("employment", {}).get("team_id")
+            if tid:
+                self.employees_by_team.setdefault(tid, []).append(e)
+            mid = e.get("reporting", {}).get("manager_id")
+            if mid:
+                self.employees_by_manager.setdefault(mid, []).append(e)
+
+        # 5. Tickets
+        for t in self.tickets:
+            tkt_id = t["ticket_id"]
+            self.tickets_by_id[tkt_id] = t
+            pid = t.get("project_id")
+            if pid:
+                self.tickets_by_project.setdefault(pid, []).append(t)
+            did = t.get("department_id")
+            if did:
+                self.tickets_by_department.setdefault(did, []).append(t)
+            aid = t.get("assignee_id")
+            if aid:
+                self.tickets_by_assignee.setdefault(aid, []).append(t)
+
+
+enterprise_repo = EnterpriseDataRepository.get_instance()
