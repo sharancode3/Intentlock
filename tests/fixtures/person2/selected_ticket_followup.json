@@ -1,0 +1,25 @@
+{
+  "contract_status": "Existing contract",
+  "category": "context",
+  "description": "Voice follow-up referring to clicked ticket row",
+  "input": {
+    "utterance": "Show details for this ticket",
+    "actor_id": "EMP-1001",
+    "session_state": "VERIFIED",
+    "context": {
+      "has_active_result": true,
+      "source_kind": "tickets",
+      "selected_ticket_id": "TKT-2026-001"
+    }
+  },
+  "plan": {
+    "operation": "ticket_list",
+    "ticket_id": "TKT-2026-001"
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "TICKET_LIST",
+    "ticket_id": "TKT-2026-001",
+    "spoken_summary": "Showing 1 authorized tickets."
+  }
+}

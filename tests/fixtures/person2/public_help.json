@@ -1,0 +1,21 @@
+{
+  "contract_status": "Existing contract",
+  "category": "public",
+  "description": "Public help request without authentication or Detectif call",
+  "input": {
+    "utterance": "What can you do?",
+    "session_state": "ANONYMOUS"
+  },
+  "plan": {
+    "operation": "help",
+    "entity": null,
+    "ticket_id": null
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "PUBLIC_FAQ",
+    "title": "Supported requests",
+    "is_sensitive": false,
+    "spoken_summary": "I can help you review your profile, explore your reporting line, and inspect support tickets within your permitted scope."
+  }
+}

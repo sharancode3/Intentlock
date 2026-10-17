@@ -1,0 +1,20 @@
+{
+  "contract_status": "Existing contract",
+  "category": "failure",
+  "description": "Graceful fallback when model planner or upstream repository is unavailable",
+  "input": {
+    "utterance": "Could you please give me a breakdown of open tasks across all systems?",
+    "actor_id": "EMP-1001",
+    "session_state": "VERIFIED",
+    "simulated_failure": "PLANNER_TIMEOUT"
+  },
+  "plan": {
+    "operation": "clarify"
+  },
+  "expected_output": {
+    "status": "clarification",
+    "clarification_reason": "UNRECOGNIZED_REQUEST",
+    "result_block": null,
+    "spoken_summary": "Please ask for a profile, direct reports, reporting tree, tickets, or headcount."
+  }
+}

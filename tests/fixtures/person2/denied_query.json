@@ -1,0 +1,20 @@
+{
+  "contract_status": "Existing contract",
+  "category": "queries",
+  "description": "Unauthorized access query correctly blocked by policy",
+  "input": {
+    "utterance": "Show total company headcount",
+    "actor_id": "EMP-1001",
+    "session_state": "VERIFIED"
+  },
+  "plan": {
+    "operation": "headcount",
+    "scope": "company"
+  },
+  "expected_output": {
+    "status": "denied",
+    "block_type": "DENIAL_BANNER",
+    "reason": "ACCESS_DENIED",
+    "spoken_summary": "Access denied. Organization-wide headcount is restricted to executive leadership."
+  }
+}

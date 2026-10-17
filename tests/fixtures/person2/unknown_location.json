@@ -1,0 +1,22 @@
+{
+  "contract_status": "Existing contract",
+  "category": "queries",
+  "description": "Headcount query with unrecorded/out-of-scope location returns honest clarification",
+  "input": {
+    "utterance": "How many employees are in Tulum?",
+    "actor_id": "EMP-4002",
+    "session_state": "VERIFIED"
+  },
+  "plan": {
+    "operation": "headcount",
+    "scope": "location",
+    "location": "Tulum",
+    "unresolved_location": "Tulum"
+  },
+  "expected_output": {
+    "status": "clarification",
+    "clarification_reason": "UNRESOLVED_LOCATION",
+    "result_block": null,
+    "spoken_summary": "I heard 'Tulum' as the location. Our demo directory only covers Bengaluru. Would you like the headcount for Bengaluru?"
+  }
+}

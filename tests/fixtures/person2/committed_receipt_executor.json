@@ -1,0 +1,27 @@
+{
+  "contract_status": "Existing contract",
+  "category": "actions",
+  "description": "Committed action receipt supplied strictly by Person 1's executor after fresh confirmation",
+  "input": {
+    "utterance": "I confirm update contact for EMP-1001: phone to +91 98765 43210",
+    "actor_id": "EMP-1001",
+    "session_state": "VERIFIED",
+    "draft_id": "draft_contact_1001"
+  },
+  "plan": {
+    "operation": "confirm"
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "ACTION_RECEIPT",
+    "receipt": {
+      "action": "update_contact",
+      "resource_id": "EMP-1001",
+      "field": "phone",
+      "new_value": "+91 98765 43210",
+      "storage": "Postgres",
+      "committed_at": "2026-10-17T09:30:00Z"
+    },
+    "spoken_summary": "The change to EMP-1001 was committed as event evt_12345."
+  }
+}

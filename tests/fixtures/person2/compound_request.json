@@ -1,0 +1,24 @@
+{
+  "contract_status": "Existing contract",
+  "category": "queries",
+  "description": "Multi-intent request returning multiple result blocks with primary selection",
+  "input": {
+    "utterance": "Show my profile and my tickets",
+    "actor_id": "EMP-1001",
+    "session_state": "VERIFIED"
+  },
+  "plan": {
+    "operation": "compound",
+    "compound_plans": [
+      { "operation": "profile", "entity": "Show my profile" },
+      { "operation": "ticket_list" }
+    ]
+  },
+  "expected_output": {
+    "status": "success",
+    "primary_block_type": "EMPLOYEE_PROFILE",
+    "total_result_blocks": 2,
+    "block_types": ["EMPLOYEE_PROFILE", "TICKET_LIST"],
+    "spoken_summary": "Showing profile for Aarav Mehta. Also, Showing 16 authorized tickets."
+  }
+}

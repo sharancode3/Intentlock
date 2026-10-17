@@ -1,0 +1,26 @@
+{
+  "contract_status": "Agreed extension",
+  "category": "context",
+  "description": "Voice follow-up referring to clicked employee node in org tree",
+  "input": {
+    "utterance": "Show their tickets",
+    "actor_id": "EMP-2001",
+    "session_state": "VERIFIED",
+    "context": {
+      "has_active_result": true,
+      "source_kind": "tree",
+      "selected_employee_id": "EMP-1001"
+    }
+  },
+  "plan": {
+    "operation": "ticket_list",
+    "selected_id": "EMP-1001",
+    "person_filter": "EMP-1001"
+  },
+  "expected_output": {
+    "status": "success",
+    "block_type": "TICKET_LIST",
+    "person_filter": "EMP-1001",
+    "spoken_summary": "Showing 16 authorized tickets for Aarav Mehta."
+  }
+}

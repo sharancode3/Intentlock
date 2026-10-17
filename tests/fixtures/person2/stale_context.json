@@ -1,0 +1,22 @@
+{
+  "contract_status": "Existing contract",
+  "category": "failure",
+  "description": "Attempt to return to earlier result when no valid previous snapshot exists",
+  "input": {
+    "utterance": "Go back",
+    "actor_id": "EMP-1001",
+    "session_state": "VERIFIED",
+    "context": {
+      "has_active_result": false,
+      "previous_id": null
+    }
+  },
+  "plan": {
+    "operation": "back"
+  },
+  "expected_output": {
+    "status": "denied",
+    "block_type": "DENIAL_BANNER",
+    "spoken_summary": "There is no earlier authorized result to return to."
+  }
+}
