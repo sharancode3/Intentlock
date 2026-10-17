@@ -73,6 +73,7 @@ from backend.services.claim_extractor import extract_actor_claim
 from backend.services.semantic_orchestrator import interpret_request
 from backend.services.employee_visibility_service import EmployeeVisibilityService
 from backend.services.ollama_knowledge_service import OllamaKnowledgeService
+from backend.services.operation_registry import OperationRegistry
 from backend.services.evidence_policy_service import (
     EvidencePolicyService,
     EvidencePolicyContext,
@@ -88,6 +89,7 @@ from backend.models.knowledge import (
     EmployeeSummaryItem,
 )
 from backend.models.turn import (
+    GenericResultBlock,
     VoiceTurnResponse,
     TurnSessionInfo,
     SessionActor,
@@ -115,6 +117,7 @@ policy_port = FailClosedPolicyAdapter()
 # In-flight duplicate turn coalescing
 _in_flight_turns: Dict[str, asyncio.Event] = {}
 _in_flight_results: Dict[str, JSONResponse] = {}
+_in_flight_digests: Dict[str, str] = {}
 _in_flight_lock = asyncio.Lock()
 
 
@@ -122,9 +125,12 @@ async def _release_in_flight(key: str, res: Optional[JSONResponse] = None) -> No
     async with _in_flight_lock:
         if res is not None:
             _in_flight_results[key] = res
+            while len(_in_flight_results) > 128:
+                _in_flight_results.pop(next(iter(_in_flight_results)))
         if key in _in_flight_turns:
             _in_flight_turns[key].set()
             _in_flight_turns.pop(key, None)
+            _in_flight_digests.pop(key, None)
 
 
 def get_speech_input_port() -> SpeechInputPort:
@@ -286,7 +292,13 @@ class RequestCorrelationMiddleware(BaseHTTPMiddleware):
 
         request.state.request_id = request_id
 
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        finally:
+            # Validation/provider exceptions must not leave duplicate callers waiting forever.
+            replay_key = getattr(request.state, "voice_replay_key", None)
+            if replay_key:
+                await _release_in_flight(replay_key)
         response.headers["X-Request-Id"] = request_id
 
         # Attach no-store cache control for sensitive, turn, or private routes
@@ -488,7 +500,12 @@ def health_live():
 
 @app.get("/health/ready", tags=["Health"])
 @app.get(f"{settings.API_V1_PREFIX}/health/ready", tags=["Health"])
-def health_ready(response: Response):
+def health_ready(
+    response: Response,
+    speech_in: SpeechInputPort = Depends(get_speech_input_port),
+    speech_out: SpeechOutputPort = Depends(get_speech_output_port),
+    voice_ev: VoiceEvidencePort = Depends(get_voice_evidence_port),
+):
     """
     Truthful Readiness Endpoint.
     In Stage 1, returns HTTP 503 because the voice processing pipeline (Detectif & Speech)
@@ -505,11 +522,11 @@ def health_ready(response: Response):
     except Exception:
         ollama_ready = False
 
-    stt_ready = getattr(speech_input_port, "is_ready", lambda: False)()
-    tts_ready = getattr(speech_output_port, "is_ready", lambda: False)()
+    stt_ready = getattr(speech_in, "is_ready", lambda: False)()
+    tts_ready = getattr(speech_out, "is_ready", lambda: False)()
     speech_ready = stt_ready and tts_ready
 
-    evidence_ready = getattr(voice_evidence_port, "is_configured", lambda: False)()
+    evidence_ready = getattr(voice_ev, "is_configured", lambda: False)()
     components = {
         "dataset": "ready" if dataset_ready else "not_ready",
         "speech_service": "ready" if speech_ready else "unavailable",
@@ -541,7 +558,11 @@ def health_ready(response: Response):
 
 
 @app.get(f"{settings.API_V1_PREFIX}/health", response_model=HealthResponse, tags=["Health"])
-def health_check():
+def health_check(
+    speech_in: SpeechInputPort = Depends(get_speech_input_port),
+    speech_out: SpeechOutputPort = Depends(get_speech_output_port),
+    voice_ev: VoiceEvidencePort = Depends(get_voice_evidence_port),
+):
     """
     Legacy Health Check Endpoint.
     Reports indexed employee count, LLM reachability, and explicit voice pipeline readiness.
@@ -562,9 +583,9 @@ def health_check():
             ollama_online = False
         llm_model = settings.OLLAMA_MODEL
 
-    stt_ready = getattr(speech_input_port, "is_ready", lambda: False)()
-    tts_ready = getattr(speech_output_port, "is_ready", lambda: False)()
-    evidence_ready = getattr(voice_evidence_port, "is_configured", lambda: False)()
+    stt_ready = getattr(speech_in, "is_ready", lambda: False)()
+    tts_ready = getattr(speech_out, "is_ready", lambda: False)()
+    evidence_ready = getattr(voice_ev, "is_configured", lambda: False)()
     speech_ready = stt_ready and tts_ready
     voice_pipeline_ready = speech_ready and evidence_ready
 
@@ -704,17 +725,31 @@ async def process_voice_turn(
     # Finding 5: Coalesce concurrent in-flight duplicate requests
     async with _in_flight_lock:
         if replay_key in _in_flight_turns:
+            if _in_flight_digests.get(replay_key) != sha256_digest:
+                raise HTTPException(status_code=409, detail="This logical turn ID is already processing different audio.")
             in_flight_ev = _in_flight_turns[replay_key]
         else:
             in_flight_ev = None
+            _in_flight_results.pop(replay_key, None)
             _in_flight_turns[replay_key] = asyncio.Event()
+            _in_flight_digests[replay_key] = sha256_digest
+            request.state.voice_replay_key = replay_key
 
     if in_flight_ev is not None:
-        await in_flight_ev.wait()
+        try:
+            await asyncio.wait_for(in_flight_ev.wait(), timeout=90)
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=503, detail="The original voice turn is still processing. No duplicate was submitted.")
         async with _in_flight_lock:
             cached_res = _in_flight_results.get(replay_key)
         if cached_res:
+            cached_session = (json.loads(cached_res.body).get("session") or {}).get("sessionId")
+            if cached_session:
+                valid_session = replay_store.get_session(cached_session)
+                if not valid_session or not valid_session.is_valid:
+                    raise HTTPException(status_code=401, detail="The original verified session is no longer valid for this turn.")
             return cached_res
+        raise HTTPException(status_code=503, detail="The original voice turn did not complete. Please start a new request.")
 
     logger.info(
         f"Audio turn received [{request_id}]: turn_id={clean_turn_id} bytes={total_bytes} "
@@ -854,7 +889,9 @@ async def process_voice_turn(
         return resp
     reusing_result = bool((plan_state and plan_state.active_id and intent_plan.operation in ("rechart", "back")) or
                           (existing_for_plan and existing_for_plan.is_valid and intent_plan.operation == "cancel"))
-    if not reusing_result and stt_result.speech_duration_s is not None and stt_result.speech_duration_s < 4.2:
+    if (not reusing_result and not (existing_for_plan and existing_for_plan.is_valid)
+            and intent_plan.operation not in ("speaker_check", "authenticity_check")
+            and stt_result.speech_duration_s is not None and stt_result.speech_duration_s <= 4.0):
         guidance = "Please speak a full request for at least five seconds so I can verify the voice evidence."
         tts_result = await tts_port.synthesize(guidance, clean_turn_id)
         audio_payload = None
@@ -928,8 +965,18 @@ async def process_voice_turn(
     result_block = None
     scoped_res: Optional[ScopedProfileResult] = None
     trust_evidence = None
+    turn_error = None
+    voice_res = None
+    verification_attempted = False
     voice_timings_ms: Dict[str, float] = {}
     reuse_snapshot: bool = False
+
+    explicit_mode = None
+    if intent_plan:
+        if intent_plan.operation == "authenticity_check":
+            explicit_mode = "deepfake"
+        elif intent_plan.operation == "speaker_check":
+            explicit_mode = "speaker"
 
     policy_svc = EvidencePolicyService.get_instance()
     policy_ctx = EvidencePolicyContext(
@@ -941,12 +988,87 @@ async def process_voice_turn(
         session_age_s=existing_sess.age_seconds if existing_sess else 0.0,
         session_actor_id=existing_sess.employee_id if existing_sess else None,
         operation=intent_plan.operation if intent_plan else "query",
-        is_mutation=bool(intent_plan and intent_plan.operation in ("confirm", "update_contact", "create_ticket", "update_ticket_status", "close_ticket")),
+        is_mutation=OperationRegistry.is_mutation(intent_plan.operation) if intent_plan else False,
+        has_mutation_recursively=OperationRegistry.has_mutation_recursively(intent_plan) if intent_plan else False,
         has_audio=bool(audio_buffer and len(audio_buffer) > 0),
+        audio_duration_s=stt_result.speech_duration_s,
+        explicit_mode_requested=explicit_mode,
     )
     policy_decision = policy_svc.evaluate_turn_requirements(policy_ctx, enrollment_mapping=mapping)
 
-    if claimed_id and mapping and mapping.enrollment_status == "ENROLLED":
+    # Standalone diagnostics can retain an existing session, but cannot create one.
+    if existing_sess and existing_sess.is_valid:
+        turn_session = TurnSessionInfo(state="VERIFIED", sessionId=existing_sess.session_id,
+            actor=SessionActor(employeeId=existing_sess.employee_id, fullName=existing_sess.full_name,
+                role=existing_sess.role, department=existing_sess.department,
+                teamId=existing_sess.team_id, expiresInSeconds=existing_sess.seconds_remaining))
+        session_expires_at = existing_sess.expires_at
+
+    if policy_decision.mode == EvidenceCheckMode.DEEPFAKE_ONLY:
+        verification_attempted = True
+        voice_res = await voice_port.verify_evidence(
+            audio_metadata=audio_metadata,
+            audio_bytes=bytes(audio_buffer),
+            candidate_speaker_id=None,
+            correlation_id=clean_turn_id,
+            mode="deepfake",
+        )
+        if voice_res.latency_ms:
+            voice_timings_ms["detectif_ms"] = voice_res.latency_ms
+
+        score_text = f" (synthetic score: {voice_res.deepfake_score:.2f})" if voice_res.deepfake_score is not None else ""
+        if voice_res.error_code or voice_res.deepfake_error or not voice_res.is_available:
+            verdict_text = f"Authenticity check unavailable: {voice_res.error_message or 'The provider did not return complete evidence.'}"
+            turn_status = "denied"
+            turn_error = SafeErrorDetail(code="DETECTIF_UNAVAILABLE", message=verdict_text)
+        elif voice_res.deepfake_verdict == "real":
+            verdict_text = f"The provider classified this audio as real{score_text}."
+            turn_status = "success"
+        elif voice_res.deepfake_verdict == "fake":
+            verdict_text = f"The provider classified this audio as synthetic{score_text}."
+            turn_status = "denied"
+        else:
+            verdict_text = "Audio authenticity was inconclusive. Please speak a clear audio sample."
+            turn_status = "clarification"
+
+        result_block = GenericResultBlock(
+            id=f"blk_{uuid.uuid4().hex}",
+            type="TEAM_METRIC_CHART",
+            title="Acoustic Authenticity Assessment",
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            isSensitive=False,
+            payload={
+                "chart_type": "BAR",
+                "title": "Voice Authenticity Diagnostic",
+                "category": "Biometrics",
+                "unit": "synthetic score (0–1)",
+                "data": [{"label": "Synthetic score", "count": voice_res.deepfake_score}]
+                    if voice_res.deepfake_score is not None else [],
+                "kpis": {
+                    "items": [
+                        {"label": "Verdict", "value": (voice_res.deepfake_verdict or "unknown").upper()},
+                        {"label": "Synthetic Score", "value": f"{voice_res.deepfake_score:.3f}" if voice_res.deepfake_score is not None else "N/A"},
+                        {"label": "Threshold", "value": f"{voice_res.deepfake_threshold:.2f}" if voice_res.deepfake_threshold is not None else "N/A"},
+                        {"label": "Mode", "value": "deepfake-only"},
+                    ]
+                },
+            },
+        )
+        spoken_summary = verdict_text
+        safe_reply = verdict_text
+        trust_evidence = TrustEvidence(
+            freshness="fresh_this_turn",
+            reason="standalone_authenticity_check",
+            speaker_decision=None,
+            authenticity_verdict=voice_res.deepfake_verdict,
+            deepfake_score=voice_res.deepfake_score,
+            deepfake_threshold=voice_res.deepfake_threshold,
+            speaker_id=None,
+            is_dual_verified=False,
+            timestamp=datetime.now(timezone.utc).isoformat(),
+        )
+
+    elif claimed_id and mapping and mapping.enrollment_status == "ENROLLED":
         reuse_snapshot = (
             policy_decision.mode in (EvidenceCheckMode.REUSE, EvidenceCheckMode.NO_CHECK)
             and bool(existing_sess and existing_sess.is_valid)
@@ -971,7 +1093,14 @@ async def process_voice_turn(
             sig = inspect.signature(voice_port.verify_evidence)
             accepts_mode = "mode" in sig.parameters or any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
 
-            if accepts_mode:
+            voice_res = None
+            if isinstance(voice_port, DetectifVoiceEvidenceAdapter):
+                voice_res = await voice_port.preflight_speaker(
+                    mapping.provider_speaker_id, verify_mode, mapping.account_alias)
+            if voice_res is not None:
+                pass  # Definite account/enrollment failure: zero paid verification POSTs.
+            elif accepts_mode:
+                verification_attempted = True
                 voice_res = await voice_port.verify_evidence(
                     audio_metadata=audio_metadata,
                     audio_bytes=bytes(audio_buffer),
@@ -980,6 +1109,7 @@ async def process_voice_turn(
                     mode=verify_mode,
                 )
             else:
+                verification_attempted = True
                 voice_res = await voice_port.verify_evidence(
                     audio_metadata=audio_metadata,
                     audio_bytes=bytes(audio_buffer),
@@ -1009,8 +1139,32 @@ async def process_voice_turn(
             "operation": intent_plan.operation,
             "policy_mode": policy_decision.mode.value,
             "policy_reason": policy_decision.reason_code,
+            "credential_role": voice_res.credential_role,
+            "mode_executed": voice_res.mode_executed,
+            "credits_charged": voice_res.credits_charged,
         }, sort_keys=True))
-        if reuse_snapshot or (voice_res.is_dual_verified and provider_identity_ok):
+        if policy_decision.mode == EvidenceCheckMode.SPEAKER_ONLY:
+            matched = voice_res.is_available and not voice_res.error_code and voice_res.decision == "match" and provider_identity_ok
+            turn_status = "success" if matched else "denied"
+            safe_reply = ("Speaker check matched the claimed enrollment. Audio authenticity was not checked; "
+                "this check does not grant private workspace access.") if matched else (
+                voice_res.error_message or "Speaker check did not match the claimed enrollment.")
+            spoken_summary = safe_reply
+            result_block = GenericResultBlock(id=f"blk_{uuid.uuid4().hex}", type="TEAM_METRIC_CHART",
+                title="Speaker Verification Diagnostic", timestamp=datetime.now(timezone.utc).isoformat(),
+                isSensitive=False, payload={"chart_type": "BAR", "title": "Speaker Verification Diagnostic",
+                    "category": "Biometrics", "unit": "speaker similarity (−1–1)", "data": [],
+                    "kpis": {"items": [{"label": "Decision", "value": voice_res.decision or "unavailable"},
+                        {"label": "Similarity", "value": f"{voice_res.similarity_score:.3f}" if voice_res.similarity_score is not None else "N/A"},
+                        {"label": "Mode", "value": "speaker-only"},
+                        {"label": "Authenticity", "value": "Not checked"}]} })
+            trust_evidence = TrustEvidence(freshness="fresh_this_turn", reason="standalone_speaker_check",
+                speaker_decision=voice_res.decision, speaker_id=voice_res.speaker_id,
+                similarity_score=voice_res.similarity_score, similarity_threshold=voice_res.similarity_threshold,
+                authenticity_verdict=None, is_dual_verified=False, timestamp=datetime.now(timezone.utc).isoformat())
+            if voice_res.error_code:
+                turn_error = SafeErrorDetail(code="DETECTIF_UNAVAILABLE", message=safe_reply)
+        elif reuse_snapshot or (voice_res.is_dual_verified and provider_identity_ok):
             # Dual verification succeeded: MATCH + REAL
             know_svc = knowledge_service or EmployeeKnowledgeService.get_instance()
             emp_data = know_svc.get_employee_by_id(claimed_id) if know_svc else None
@@ -1086,27 +1240,39 @@ async def process_voice_turn(
             safe_reply = scoped_res.spoken_summary
 
             # Finding 5 & Requirement 8: Grounded factual narration from authorized payload when generative model is active
+            # 0 narration calls when deterministic summary is sufficient (proposals, receipts, denials, FAQs, exact queries)
+            # At most 1 narration call for flexible complex/compound explanations with compact context
+            is_deterministic_result = (
+                not scoped_res.is_authorized
+                or scoped_res.clarification_reason is not None
+                or (result_block and result_block.type in ("READBACK_CONFIRMATION", "ACTION_RECEIPT", "DENIAL_BANNER", "PUBLIC_FAQ"))
+                or (intent_plan and intent_plan.operation in ("profile", "help", "cancel", "confirm", "update_contact", "clarify", "back", "rechart", "team_count", "org_tree", "team_table"))
+            )
             if (
                 scoped_res.is_authorized
-                and not scoped_res.clarification_reason
+                and not is_deterministic_result
+                and (intent_plan and intent_plan.operation in ("compound", "ticket_chart", "headcount"))
                 and result_block
-                and result_block.type not in ("READBACK_CONFIRMATION", "ACTION_RECEIPT", "DENIAL_BANNER")
                 and ans_port
                 and not isinstance(ans_port, UnavailableAnswerAdapter)
                 and os.getenv("INTENTLOCK_OFFLINE_TESTS") != "1"
             ):
                 try:
+                    payload_summary = result_block.payload
+                    if isinstance(payload_summary, dict) and "rows" in payload_summary:
+                        # Limit to first 5 rows for compact narration context
+                        payload_summary = {**payload_summary, "rows": payload_summary["rows"][:5]}
                     grounded_context = {
                         "type": result_block.type,
                         "title": result_block.title,
-                        "payload": result_block.payload,
+                        "payload": payload_summary,
                     }
                     ans = await ans_port.generate_answer(
                         question=transcript_text,
                         authorized_context=grounded_context,
                         correlation_id=clean_turn_id,
                     )
-                    if ans and ans.is_available and ans.answer_text and len(ans.answer_text.strip()) > 5:
+                    if ans and ans.is_available and ans.grounded and ans.answer_text and len(ans.answer_text.strip()) > 5:
                         safe_reply = ans.answer_text.strip()
                         spoken_summary = ans.answer_text.strip()
                 except Exception as ex:
@@ -1144,6 +1310,7 @@ async def process_voice_turn(
                 denial_reason = f"Voice authentication denied: speaker does not match enrolled profile for {claimed_id}."
             elif voice_res.error_code:
                 denial_reason = f"Voice authentication service unavailable: {voice_res.error_message}"
+                turn_error = SafeErrorDetail(code="DETECTIF_UNAVAILABLE", message=denial_reason)
             else:
                 denial_reason = "Voice verification failed dual biometric authenticity requirements."
 
@@ -1225,9 +1392,12 @@ async def process_voice_turn(
         "scope": getattr(intent_plan, "scope", None),
         "unresolved_constraints": [intent_plan.unresolved_location] if getattr(intent_plan, "unresolved_location", None) else [],
         "clarification_reason": getattr(scoped_res, "clarification_reason", None) if scoped_res else None,
-        "evidence_required": bool(claimed_id and not reuse_snapshot) if claimed_id else False,
-        "evidence_reason": "new_private_read_or_action" if (claimed_id and not reuse_snapshot) else "public_or_session_reuse",
-        "verification_attempted": bool(claimed_id and mapping and mapping.enrollment_status == "ENROLLED" and not reuse_snapshot),
+        "evidence_required": policy_decision.requires_provider_call,
+        "evidence_reason": policy_decision.reason_code,
+        "verification_attempted": verification_attempted,
+        "policy_mode": policy_decision.mode.value,
+        "credential_role": voice_res.credential_role if voice_res else None,
+        "credits_charged": voice_res.credits_charged if voice_res else None,
         "authorization_outcome": "authorized" if (scoped_res and scoped_res.is_authorized and not getattr(scoped_res, "clarification_reason", None)) else ("clarification" if (scoped_res and getattr(scoped_res, "clarification_reason", None)) else ("denied" if turn_status == "denied" else "unverified")),
         "result_type": result_block.type if result_block else None,
         "status": turn_status,
@@ -1249,7 +1419,7 @@ async def process_voice_turn(
         result_blocks=scoped_res.result_blocks if (scoped_res and scoped_res.result_blocks) else ([result_block] if result_block else []),
         primary_result_id=result_block.id if result_block else None,
         trust_evidence=trust_evidence,
-        error=None,
+        error=turn_error,
     )
 
     replay_store.save_idempotency_record(replay_key, sha256_digest, claimed_id or "", turn_response.model_dump())

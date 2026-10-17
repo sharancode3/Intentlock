@@ -174,6 +174,29 @@ _SUPPORTED_OPERATIONS: Dict[str, OperationMetadata] = {
         compatible_result_blocks=["READBACK_CONFIRMATION", "DENIAL_BANNER"],
         notes="Policy restricts updates to self only.",
     ),
+    "authenticity_check": OperationMetadata(
+        name="authenticity_check",
+        semantic_purpose="Standalone acoustic authenticity and synthetic deepfake assessment",
+        category="read",
+        compatible_result_blocks=["PUBLIC_FAQ", "TEAM_METRIC_CHART", "DENIAL_BANNER"],
+        notes="Evaluates audio authenticity via deepfake-only mode without establishing an employee session.",
+    ),
+    "speaker_check": OperationMetadata(
+        name="speaker_check",
+        semantic_purpose="Standalone speaker match diagnostic; does not create a verified employee session",
+        category="read",
+        optional_args=["actor_claim"],
+        compatible_result_blocks=["TEAM_METRIC_CHART", "DENIAL_BANNER"],
+        notes="Speaker-only evidence, never substitutes for combined private-entry verification.",
+    ),
+}
+
+MUTATION_OPERATIONS: Set[str] = {
+    "create_ticket",
+    "update_ticket",
+    "comment_ticket",
+    "update_contact",
+    "confirm",
 }
 
 
@@ -195,3 +218,40 @@ class OperationRegistry:
     @classmethod
     def get_by_category(cls, category: OperationCategory) -> List[OperationMetadata]:
         return [op for op in _SUPPORTED_OPERATIONS.values() if op.category == category]
+
+    @classmethod
+    def is_mutation(cls, op_name: str) -> bool:
+        """True if the operation proposes or commits a persistent mutation."""
+        return (op_name or "").lower().strip() in MUTATION_OPERATIONS
+
+    @classmethod
+    def is_proposal(cls, op_name: str) -> bool:
+        """True if the operation creates an uncommitted mutation draft/proposal."""
+        meta = cls.get(op_name)
+        return meta.category == "proposal" if meta else False
+
+    @classmethod
+    def is_confirmation(cls, op_name: str) -> bool:
+        """True if the operation commits an active pending proposal."""
+        meta = cls.get(op_name)
+        return meta.category == "confirmation" if meta else (op_name or "").lower().strip() == "confirm"
+
+    @classmethod
+    def has_mutation_recursively(cls, plan: Any) -> bool:
+        """Recursively inspect an IntentPlan or dict to detect any mutation in root or compound children."""
+        if plan is None:
+            return False
+        op = getattr(plan, "operation", None) or (plan.get("operation") if isinstance(plan, dict) else None)
+        if op and cls.is_mutation(op):
+            return True
+        subs = (
+            getattr(plan, "compound_plans", None)
+            or getattr(plan, "subplans", None)
+            or (plan.get("compound_plans") if isinstance(plan, dict) else None)
+            or (plan.get("subplans") if isinstance(plan, dict) else None)
+        )
+        if subs and isinstance(subs, list):
+            for sub in subs:
+                if cls.has_mutation_recursively(sub):
+                    return True
+        return False

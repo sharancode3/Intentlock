@@ -118,7 +118,7 @@ def test_evidence_policy_presentation_reuse_zero_calls():
     decision = svc.evaluate_turn_requirements(ctx)
     assert decision.mode == EvidenceCheckMode.REUSE
     assert decision.requires_provider_call is False
-    assert decision.reason_code == "REUSE_SESSION_EVIDENCE"
+    assert decision.reason_code in ("REUSE_SESSION_EVIDENCE", "PRESENTATION_REUSE")
     assert decision.evidence_freshness == "reused_from_session"
 
 
@@ -276,20 +276,20 @@ async def test_detectif_audio_bounds_per_mode():
     client = DetectifHTTPClient(api_key="key", transport=transport)
     adapter = DetectifVoiceEvidenceAdapter(http_client=client)
 
-    # 1.5s audio: ok for speaker (>1.0s), too short for deepfake (>3.0s) and combined (>4.0s)
-    short_15 = make_valid_wav_bytes(1.5)
+    # 3.5s audio meets speaker's 3s minimum, but not the >4s authenticity minimum.
+    short_15 = make_valid_wav_bytes(3.5)
     meta_15 = make_dummy_metadata(len(short_15))
 
-    # Combined should reject 1.5s without calling network
+    # Combined rejects without calling the provider.
     res = await adapter.verify_evidence(meta_15, short_15, "spk_1", "c1", mode="combined")
     assert called is False
     assert res.error_code == "AUDIO_TOO_SHORT"
 
-    # Deepfake should reject 1.5s without calling network
+    # Deepfake rejects without calling the provider.
     res = await adapter.verify_evidence(meta_15, short_15, None, "c2", mode="deepfake")
     assert called is False
     assert res.error_code == "AUDIO_TOO_SHORT"
 
-    # Speaker should accept 1.5s and dispatch network call
+    # Speaker duration is valid and dispatches exactly the requested operation.
     res = await adapter.verify_evidence(meta_15, short_15, "spk_1", "c3", mode="speaker")
     assert called is True

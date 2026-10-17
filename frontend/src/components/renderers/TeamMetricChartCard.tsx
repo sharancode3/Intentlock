@@ -73,7 +73,7 @@ export const TeamMetricChartCard: React.FC<ResultRendererProps> = ({ block }) =>
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
               <ShieldCheck className="w-3 h-3 text-emerald-500" aria-hidden="true" />
-              Authorized Scope
+              {payload.category === 'Biometrics' ? 'Standalone diagnostic' : 'Authorized Scope'}
             </span>
           </div>
 
@@ -121,7 +121,9 @@ export const TeamMetricChartCard: React.FC<ResultRendererProps> = ({ block }) =>
       {/* Security & Data Integrity Footer */}
       <div className="pt-2 border-t border-surface-border/40 dark:border-surface-darkBorder/40 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
         <span>
-          {unit === 'employees'
+          {payload.category === 'Biometrics'
+            ? 'Provider evidence only. This diagnostic does not grant private workspace access.'
+            : unit === 'employees'
             ? 'Aggregate workforce metrics computed server-side under executive RBAC.'
             : 'Aggregate metrics computed server-side under manager RBAC.'}
         </span>

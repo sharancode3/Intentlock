@@ -47,6 +47,9 @@ class VoiceEvidenceResult(BaseModel):
     latency_ms: Optional[float] = None
     error_code: Optional[str] = None
     error_message: Optional[str] = None
+    credential_role: Optional[str] = None  # "speaker" | "deepfake" | "combined" | "legacy"
+    credits_charged: Optional[float] = None
+    mode_executed: Optional[str] = None
 
     @property
     def is_dual_verified(self) -> bool:

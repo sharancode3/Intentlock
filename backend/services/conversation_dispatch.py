@@ -36,7 +36,7 @@ Operation = Literal[
     "help", "profile", "team_table", "team_count", "org_tree",
     "ticket_list", "ticket_chart", "rechart", "back", "clarify",
     "create_ticket", "update_ticket", "comment_ticket", "confirm", "cancel",
-    "compound", "headcount", "update_contact",
+    "compound", "headcount", "update_contact", "authenticity_check", "speaker_check",
 ]
 
 
@@ -105,6 +105,20 @@ class ResultSnapshot:
 
 
 @dataclass
+class PendingClarification:
+    target_operation: str  # e.g. "update_contact", "update_ticket", "create_ticket"
+    missing_slot: str  # e.g. "phone", "status", "value"
+    prompt: str  # e.g. "What new work phone number should I use?"
+    partial_plan_data: Dict[str, Any] = field(default_factory=dict)
+    created_at: float = field(default_factory=time.time)
+    ttl_seconds: float = 120.0
+
+    @property
+    def is_expired(self) -> bool:
+        return (time.time() - self.created_at) > self.ttl_seconds
+
+
+@dataclass
 class ConversationState:
     actor_id: str
     snapshots: Dict[str, ResultSnapshot] = field(default_factory=dict)
@@ -115,8 +129,35 @@ class ConversationState:
     selected_ticket: Optional[SelectionReference] = None
     selected_employee: Optional[SelectionReference] = None
     navigation_history: List[str] = field(default_factory=list)
+    pending_clarification: Optional[PendingClarification] = None
     context_version: int = 1
     last_accessed: float = field(default_factory=time.time)
+
+    def set_clarification(
+        self,
+        target_op: str,
+        slot: str,
+        prompt: str,
+        partial_data: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        self.pending_clarification = PendingClarification(
+            target_operation=target_op,
+            missing_slot=slot,
+            prompt=prompt,
+            partial_plan_data=partial_data or {},
+        )
+        self.context_version += 1
+        self.last_accessed = time.time()
+
+    def clear_clarification(self) -> None:
+        self.pending_clarification = None
+        self.context_version += 1
+
+    def get_active_clarification(self) -> Optional[PendingClarification]:
+        if self.pending_clarification and not self.pending_clarification.is_expired:
+            return self.pending_clarification
+        self.pending_clarification = None
+        return None
 
     @property
     def active_snapshot(self) -> Optional[ResultSnapshot]:
@@ -235,6 +276,57 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
     if not q:
         return IntentPlan(operation="clarify")
 
+    # Step 0: Handle active slot clarification (e.g. phone number, ticket field)
+    if state:
+        active_clar = state.get_active_clarification()
+        if active_clar:
+            # If user explicitly cancels
+            if re.search(r"\b(?:cancel|abort|nevermind|discard)\b", q):
+                state.clear_clarification()
+                return IntentPlan(operation="cancel")
+            if active_clar.missing_slot == "phone":
+                phone_candidates = re.findall(r"(\+?[0-9][0-9\s\-\(\)\.]{5,25}[0-9])", text)
+                for cand in phone_candidates:
+                    clean_digits = re.sub(r"[^\d]", "", cand)
+                    if len(clean_digits) >= 7:
+                        target_eid = active_clar.partial_plan_data.get("entity")
+                        state.clear_clarification()
+                        return IntentPlan(
+                            operation=active_clar.target_operation,
+                            entity=target_eid,
+                            field="phone",
+                            value=cand.strip(),
+                        )
+            elif active_clar.missing_slot == "ticket_status":
+                st_match = re.search(r"\b(resolved|closed|in\s+progress|open|blocked)\b", text, re.I)
+                if st_match:
+                    tid = active_clar.partial_plan_data.get("ticket_id")
+                    state.clear_clarification()
+                    return IntentPlan(
+                        operation=active_clar.target_operation,
+                        ticket_id=tid,
+                        field="status",
+                        value=st_match.group(1).title(),
+                    )
+            elif active_clar.missing_slot in ("value", "title", "description"):
+                if not re.search(r"\b(help|back)\b", q):
+                    tid = active_clar.partial_plan_data.get("ticket_id")
+                    field_name = active_clar.partial_plan_data.get("field", "title")
+                    state.clear_clarification()
+                    return IntentPlan(
+                        operation=active_clar.target_operation,
+                        ticket_id=tid,
+                        field=field_name,
+                        value=text.strip(),
+                    )
+
+    # Conservative outage fallback: quoted ticket text / negated checks are not diagnostics.
+    diagnostic_text = re.sub(r"['\"][^'\"]*['\"]", "", q).strip()
+    if re.search(r"^(?:(?:please|can you|could you)\s+)?(?:check|test|verify|detect)\b.*\b(?:authenticity|deepfake|synthetic|real\s+voice|fake\s+voice)\b", diagnostic_text) or re.search(r"^(?:is\s+my\s+audio|is\s+this)\s+(?:real|fake|synthetic|authentic)\b", diagnostic_text):
+        return IntentPlan(operation="authenticity_check")
+    if re.search(r"^(?:(?:please|can you|could you)\s+)?(?:check|test|verify)\s+(?:only\s+)?(?:my\s+)?(?:speaker|voice\s+match)\b", diagnostic_text):
+        return IntentPlan(operation="speaker_check")
+
     context_ticket = None
     if state:
         if state.selected_ticket_id:
@@ -322,6 +414,8 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
                 break
 
         if not phone_val:
+            if state:
+                state.set_clarification("update_contact", "phone", "Please provide the phone number to update.", {"entity": target_eid})
             return IntentPlan(operation="clarify", entity=target_eid, field="phone", value="Please provide the phone number to update.")
         return IntentPlan(operation="update_contact", entity=target_eid, field="phone", value=phone_val)
 
@@ -424,8 +518,18 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
         if from_date and to_date and from_date > to_date:
             return IntentPlan(operation="clarify")
         return IntentPlan(operation="rechart", view=view, group_by=group, status_filter=status, priority_filter=priority, from_date=from_date, to_date=to_date)
-    if re.search(r"\b(reporting tree|org chart|organization chart|team tree|reporting hierarchy|everyone reporting|all my reports)\b", q):
-        return IntentPlan(operation="org_tree", descendants=bool(re.search(r"\b(all|everyone|indirect|descendant|entire)\b", q)))
+    # Detailed tree / reporting hierarchy recognition
+    if (
+        re.search(r"\b(reporting tree|org chart|organization chart|team tree|reporting hierarchy|everyone reporting|all my reports)\b", q)
+        or re.search(r"\b(?:with (?:the )?manager and under (?:him|them|her) who are the employees|who (?:are the employees|reports) under (?:the )?manager)\b", q)
+        or re.search(r"\b(?:more detailed|detailed ways|detailed view).*\b(?:manager|employees?|tree|hierarchy)\b", q)
+        or (
+            state and state.active_snapshot and state.active_snapshot.block.type == "ORG_TREE"
+            and re.search(r"\b(?:more detailed|expand|deep(?:er)?|full hierarchy|entire tree)\b", q)
+            and not re.search(r"\b(?:table|grid|list|open|profile|person|details?|emp-\d+)\b", q)
+        )
+    ):
+        return IntentPlan(operation="org_tree", descendants=True)
     if re.search(r"\b(how many|count|number of)\b.*\b(direct reports|people reporting|team members)\b", q):
         return IntentPlan(operation="team_count")
 
@@ -477,9 +581,24 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
             unresolved_location=unresolved_location,
         )
 
-    if re.search(r"\b(team|direct reports|people reporting)\b", q) and re.search(r"\b(list|table|show|who|members)\b", q) and not re.search(r"\b(tickets?|issues?)\b", q):
-        return IntentPlan(operation="team_table")
-    profile_requested = bool(re.search(r"\b(profile|details|skills|projects|manager|about me|who am i)\b", q))
+    # Table of employees, team, and reporting structure
+    if (
+        (re.search(r"\b(team|direct reports|people reporting)\b", q) and re.search(r"\b(list|table|show|who|members)\b", q) and not is_ticket_word)
+        or (
+            re.search(r"\b(?:table|grid|list)\b", q)
+            and re.search(r"\b(?:manager|managers|employees?|subordinates|people|reports)\b", q)
+            and not is_ticket_word
+        )
+        or re.search(r"\b(?:manager and (?:the )?employees under (?:their|the|his|her)?\s*manager)\b", q)
+    ):
+        has_desc = bool(re.search(r"\b(all|everyone|indirect|descendant|entire|under|hierarchy|structure|details)\b", q))
+        return IntentPlan(operation="team_table", descendants=has_desc)
+
+    profile_requested = bool(
+        re.search(r"\b(profile|details|skills|projects|about me|who am i)\b", q)
+        or re.search(r"\bwho is my manager\b", q)
+        or re.search(r"\b(?:open|view|show)\s+(?:the\s+)?(?:first|second|third|last)\s+person\b", q)
+    )
     ticket_requested = bool(re.search(r"\b(ticket|tickets|tkt|issue|issues|incident|incidents|workload|overdue|sla)\b", q))
     if re.search(r"\b(not|no) (tickets|issues)\b", q):
         ticket_requested = False
@@ -845,34 +964,59 @@ class ConversationDispatcher:
             return self._result(state, self.scoped.evaluate_and_get_profile(actor_id, target), op, [target])
         if op in ("team_table", "team_count", "org_tree"):
             root = self.scoped.knowledge.get_employee_by_id(actor_id)
-            people = self._team(actor_id, plan.descendants)
+            is_exec = actor_id in ("EMP-4002", "EXE-0001")
+            use_descendants = plan.descendants or (is_exec and op == "org_tree")
+            people = self._team(actor_id, use_descendants)
             if not root or not people:
                 return self._deny("No permitted direct-report view is available for this account.")
             name = root["identity"]["full_name"]
             if op == "team_count":
+                count_val = len(people) if plan.descendants else len(self._team(actor_id, False))
                 visual = block("TEAM_METRIC_CHART", "Direct reports", {
                     "chart_type": "BAR", "title": "Direct reports", "unit": "people",
-                    "data": [{"label": "Direct reports", "count": len(self._team(actor_id, False))}],
-                    "kpis": {"items": [{"label": "Direct reports", "value": len(self._team(actor_id, False))}]},
+                    "data": [{"label": "Direct reports", "count": count_val}],
+                    "kpis": {"items": [{"label": "Direct reports", "value": count_val}]},
                 })
-                spoken = f"{name} has {len(self._team(actor_id, False))} direct reports."
+                spoken = f"{name} has {count_val} direct reports."
             elif op == "team_table":
-                rows = [{"id": p["employee_id"], "name": p["identity"]["full_name"],
-                         "title": p["employment"]["designation"], "department": p["employment"]["department"]} for p in people]
-                visual = block("DATA_TABLE", "Direct reports", {"columns": [
-                    {"key": "name", "label": "Name"}, {"key": "title", "label": "Title"},
-                    {"key": "department", "label": "Department"}], "rows": rows, "total_count": len(rows)})
-                spoken = f"Showing {len(rows)} permitted direct reports."
+                rows = []
+                for p in people:
+                    mgr_id = p.get("reporting", {}).get("manager_id")
+                    mgr_emp = self.scoped.knowledge.get_employee_by_id(mgr_id) if mgr_id else None
+                    mgr_name = mgr_emp["identity"]["full_name"] if mgr_emp else ("Executive" if not mgr_id else mgr_id)
+                    dept_val = p.get("employment", {}).get("department", "Engineering")
+                    rows.append({
+                        "id": p["employee_id"],
+                        "name": p["identity"]["full_name"],
+                        "title": p["employment"]["designation"],
+                        "manager": f"{mgr_name} ({mgr_id})" if mgr_id else mgr_name,
+                        "department": dept_val,
+                    })
+                columns = [
+                    {"key": "name", "label": "Name"},
+                    {"key": "title", "label": "Title"},
+                    {"key": "manager", "label": "Manager"},
+                    {"key": "department", "label": "Department"},
+                ]
+                title = "Employees and reporting structure" if use_descendants else "Direct reports"
+                visual = block("DATA_TABLE", title, {"columns": columns, "rows": rows, "total_count": len(rows)})
+                spoken = f"Showing {len(rows)} permitted {'employees across reporting structure' if use_descendants else 'direct reports'}."
             else:
                 nodes = [{"id": actor_id, "name": name, "title": root["employment"]["designation"], "direct_count": len(self._team(actor_id, False))}]
+                all_node_ids = {actor_id} | {p["employee_id"] for p in people}
+                for p in people:
+                    pid = p["employee_id"]
+                    nodes.append({
+                        "id": pid,
+                        "name": p["identity"]["full_name"],
+                        "title": p["employment"]["designation"],
+                        "direct_count": len(self.scoped.knowledge.get_direct_reports(pid)),
+                    })
                 edges = []
                 for p in people:
                     pid = p["employee_id"]
-                    nodes.append({"id": pid, "name": p["identity"]["full_name"],
-                                  "title": p["employment"]["designation"],
-                                  "direct_count": len(self.scoped.knowledge.get_direct_reports(pid)) if pid == "RND-5001" else 0})
                     parent = p.get("reporting", {}).get("manager_id")
-                    if parent in {node["id"] for node in nodes}:
+                    if parent in all_node_ids:
                         edges.append({"source": parent, "target": pid})
                 visual = block("ORG_TREE", "Reporting tree", {"root_id": actor_id, "nodes": nodes, "edges": edges,
                                                                "direct_count": len(self._team(actor_id, False)),
@@ -1097,9 +1241,18 @@ class ConversationDispatcher:
             return self._result(state, ScopedProfileResult(is_authorized=True, spoken_summary=spoken, result_block=visual),
                                 op, [r["ticket_id"] for r in rows], rows, "tickets", filter_state=new_filter_state, base_rows=candidate_rows)
         if op == "headcount":
-            if plan.unresolved_location:
-                loc = plan.unresolved_location
-                msg = f"I heard '{loc}' as the location. Our demo directory only covers Bengaluru. Would you like the headcount for Bengaluru?"
+            unresolved = plan.unresolved_location
+            recognized_sites = {
+                "bengaluru", "bangalore",
+                "london", "new york", "san francisco", "singapore", "mumbai",
+                "tokyo", "berlin", "paris", "sydney", "dubai", "toronto", "seattle",
+                "hyderabad", "delhi", "chennai", "pune", "boston", "austin", "chicago"
+            }
+            if not unresolved and plan.location and plan.location.lower() not in recognized_sites:
+                unresolved = plan.location
+
+            if unresolved:
+                msg = f"I heard '{unresolved}' as the location. Our demo directory only covers Bengaluru. Would you like the headcount for Bengaluru?"
                 return ScopedProfileResult(
                     is_authorized=True,
                     status_code=200,
@@ -1213,13 +1366,13 @@ class ConversationDispatcher:
                 )
 
         if op == "clarify":
-            msg = "Please ask for a profile, direct reports, reporting tree, tickets, or headcount."
+            msg = plan.value or "Please ask for a profile, direct reports, reporting tree, tickets, or headcount."
             return ScopedProfileResult(
                 is_authorized=True,
                 status_code=200,
                 spoken_summary=msg,
                 result_block=None,
-                clarification_reason="UNRECOGNIZED_REQUEST",
+                clarification_reason="MISSING_PARAMETER" if plan.value else "UNRECOGNIZED_REQUEST",
             )
 
         return self._deny("I can help with profiles, direct reports, reporting trees, and scoped tickets. Please specify one of those requests.")

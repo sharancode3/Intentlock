@@ -129,6 +129,12 @@ async def interpret_request(
     if is_exact_back(clean_text):
         return IntentPlan(operation="back")
 
+    # Fast-path for active slot clarification (0 model calls)
+    if state and hasattr(state, "get_active_clarification") and state.get_active_clarification():
+        local_plan = parse_local(clean_text, state=state)
+        if local_plan and local_plan.operation != "clarify":
+            return local_plan
+
     # Step D: Route flexible requests through model planner or local parser
     plan: Optional[IntentPlan] = None
     if planner_adapter and hasattr(planner_adapter, "plan_request"):
@@ -142,6 +148,10 @@ async def interpret_request(
         plan = parse_local(clean_text, state=state)
 
     # Step E: Validate semantic consistency & boundaries
+    # Normalize team_count with non-direct scope to headcount
+    if plan.operation == "team_count" and getattr(plan, "scope", None) in ("company", "location", "department"):
+        plan.operation = "headcount"
+
     # 1. Operation must be supported in the OperationRegistry
     if not OperationRegistry.is_supported(plan.operation):
         return IntentPlan(operation="clarify")
@@ -159,16 +169,15 @@ async def interpret_request(
 
     # 3. Compound request boundaries (examining both root and child plans)
     if plan.operation == "compound":
-        # Disallow compound mutations (e.g. create_ticket in compound)
-        # Person 2 compound queries are strictly read-only
+        # Disallow compound mutations recursively (e.g. create_ticket in compound)
+        if OperationRegistry.has_mutation_recursively(plan):
+            return IntentPlan(operation="clarify", value="Mutations cannot be executed inside compound requests.")
         if plan.field or plan.value or plan.ticket_id:
             return IntentPlan(operation="clarify")
         if plan.compound_plans:
+            if any(child.operation in ("speaker_check", "authenticity_check") for child in plan.compound_plans):
+                return IntentPlan(operation="clarify", value="Please request a standalone audio diagnostic separately from private data queries.")
             if len(plan.compound_plans) > 3:
                 return IntentPlan(operation="clarify")
-            for sub in plan.compound_plans:
-                meta = OperationRegistry.get(sub.operation)
-                if meta and meta.category in ("proposal", "confirmation", "cancellation"):
-                    return IntentPlan(operation="clarify")
 
     return plan

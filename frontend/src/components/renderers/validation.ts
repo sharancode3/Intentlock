@@ -33,11 +33,11 @@ import type {
 
 export function validateDataTablePayload(raw: unknown): ValidationResult<DataTablePayload> {
   if (!isRecord(raw) || !Array.isArray(raw.columns) || !Array.isArray(raw.rows) ||
-      raw.columns.length === 0 || raw.columns.length > 4 || raw.rows.length > 100 ||
+      raw.columns.length === 0 || raw.columns.length > 5 || raw.rows.length > 100 ||
       typeof raw.total_count !== 'number' || raw.total_count < raw.rows.length) {
     return { isValid: false, error: 'The table data is unavailable.' };
   }
-  const allowed = new Set(['name', 'title', 'department']);
+  const allowed = new Set(['name', 'title', 'department', 'manager']);
   if (raw.columns.some((column: unknown) => !isRecord(column) || !allowed.has(String(column.key)) || !isNonEmptyString(column.label)) ||
       raw.rows.some((row: unknown) => !isRecord(row) || !isNonEmptyString(row.id) ||
         !isNonEmptyString(row.name) || !isNonEmptyString(row.title) || !isNonEmptyString(row.department))) {

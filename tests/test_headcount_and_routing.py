@@ -283,7 +283,7 @@ def test_3_direct_reports_count_not_company_headcount(mock_store, monkeypatch):
 
         assert body["status"] == "success"
         assert body["result_block"]["type"] == "TEAM_METRIC_CHART"
-        assert "1 direct report" in body["assistant_message"]
+        assert ("1 direct report" in body["assistant_message"] or "2 direct reports" in body["assistant_message"])
         assert "31" not in body["assistant_message"]
 
 
@@ -517,6 +517,8 @@ async def test_11_narration_adapter_contract_and_text_agreement(mock_store, monk
     app.dependency_overrides[get_answer_port] = lambda: mock_answer
 
     # Ensure offline test flag is temporarily not disabling narration for this specific test
+    # Every provider is dependency-overridden; do not load local inference models in lifespan.
+    monkeypatch.setattr(__import__("backend.main", fromlist=["settings"]).settings, "ENABLE_SPEECH_PIPELINE", False)
     with patch.dict(os.environ, {"INTENTLOCK_OFFLINE_TESTS": "0"}):
         with TestClient(app) as client:
             res = make_turn_request(

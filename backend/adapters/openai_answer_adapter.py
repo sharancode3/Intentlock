@@ -15,6 +15,7 @@ from openai import AsyncOpenAI
 from backend.core.config import settings
 from backend.core.ports import AnswerGenerationPort, AnswerResult
 from backend.services.conversation_dispatch import IntentPlan, PlannerContext
+from backend.services.operation_registry import OperationRegistry
 
 logger = logging.getLogger("intentlock.openai_adapter")
 
@@ -132,9 +133,13 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
                     "Only extract arguments explicitly present in the utterance. "
                     "Do not infer an identity, permission, result ID, or missing value. "
                     "Use clarify for unsupported, ambiguous, or contradictory commands. "
-                    "Operations: help, profile, team_table, team_count, org_tree, ticket_list, "
-                    "ticket_chart, rechart, back, headcount, create_ticket, update_ticket, comment_ticket, "
-                    "confirm, cancel, compound, update_contact, clarify. Current-result availability and context are hints only. "
+                    f"Operations: {', '.join(OperationRegistry.all_operations())}. "
+                    "authenticity_check means an explicit standalone real/synthetic audio assessment. "
+                    "speaker_check means an explicit standalone speaker-match diagnostic, not employee login. "
+                    "Neither diagnostic creates a private session; normal private entry still requires backend verification. "
+                    "Current-result availability and context are hints only. "
+                    "team_count is strictly for direct reports ('how many report to me', 'direct reports count'). "
+                    "headcount is for organization, company, workforce, location, or department totals. "
                     "For headcount: extract scope ('company', 'direct_reports', 'reporting_tree', 'department', 'location'), "
                     "location (if specified), department (if specified). Extract location mentions directly; "
                     "coverage is verified by authoritative backend resolution."
@@ -144,7 +149,10 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
                 max_output_tokens=350,
                 store=False,
             )
-            return response.output_parsed
+            out_plan = response.output_parsed
+            if out_plan:
+                setattr(out_plan, "_from_model", True)
+            return out_plan
         except Exception as exc:
             logger.warning("Intent planning unavailable: %s", type(exc).__name__)
             return None

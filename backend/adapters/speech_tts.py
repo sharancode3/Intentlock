@@ -10,10 +10,7 @@ import pathlib
 import logging
 from typing import Optional
 import numpy as np
-try:
-    from kokoro import KPipeline
-except ImportError:
-    KPipeline = None
+KPipeline = None  # Cloud TTS must not import local Torch/Kokoro runtimes.
 
 from backend.core.ports import SpeechOutputPort, SpeechOutputResult
 from backend.adapters.audio_decoder import AudioDecoder
@@ -31,8 +28,9 @@ class KokoroTTSAdapter(SpeechOutputPort):
         speed: float = 1.0,
         device: str = "cpu",
     ):
+        global KPipeline
         if KPipeline is None:
-            raise RuntimeError("The 'kokoro' package is not installed. KokoroTTSAdapter cannot initialize.")
+            from kokoro import KPipeline
         self.lang_code = lang_code
         self.voice = voice
         self.speed = speed
@@ -163,7 +161,9 @@ class OpenAISpeechOutputAdapter(SpeechOutputPort):
     def _get_client(self):
         if self._client is None and self.api_key:
             from openai import AsyncOpenAI
-            self._client = AsyncOpenAI(api_key=self.api_key)
+            from backend.core.config import settings
+            self._client = AsyncOpenAI(api_key=self.api_key,
+                timeout=settings.OPENAI_TIMEOUT_SECONDS, max_retries=settings.OPENAI_MAX_RETRIES)
         return self._client
 
     async def synthesize(

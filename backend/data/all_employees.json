@@ -3931,8 +3931,8 @@
       "department_id": "DEPT-ENG"
     },
     "reporting": {
-      "manager_id": "EMP-4001",
-      "manager_name": "Ananya Iyer",
+      "manager_id": "EMP-4002",
+      "manager_name": "Arvind Rao",
       "direct_report_ids": [
         "EMP-2001",
         "EMP-2003",
@@ -5114,7 +5114,6 @@
       "manager_id": "EXE-0001",
       "manager_name": "Ishaan Mehta",
       "direct_report_ids": [
-        "EMP-3001",
         "EMP-3002",
         "EMP-3003",
         "EMP-3004",
@@ -5366,7 +5365,8 @@
       "manager_id": "EXE-0001",
       "manager_name": "Ishaan Mehta",
       "direct_report_ids": [
-        "RND-5001"
+        "RND-5001",
+        "EMP-3001"
       ]
     },
     "experience": {

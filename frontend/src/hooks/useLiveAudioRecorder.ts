@@ -3,6 +3,7 @@ import { previewUrl } from '../utils/voiceClient';
 import type { LiveTranscript } from '../utils/voiceClient';
 import type { PermissionState } from './useAudioRecorder';
 import type { SpeechTimingMetrics } from '../types';
+import { TurnDetector } from '../utils/turnDetector';
 
 export const PAUSE_TO_SUBMIT_MS = 1400; // Natural post-speech pause threshold before finalization
 export const IDLE_TIMEOUT_MS = 20000;    // Timeout when no speech is detected at all
@@ -38,6 +39,8 @@ export function useLiveAudioRecorder(options: Options) {
 
   const armed = useRef(false);
   const starting = useRef(false);
+  const submitting = useRef(false);
+  const generation = useRef(0);
   const currentTurnId = useRef<string | null>(null);
   const submittedTurns = useRef<Set<string>>(new Set());
   const finalized = useRef(false);
@@ -68,7 +71,11 @@ export function useLiveAudioRecorder(options: Options) {
       socket.current.close();
       socket.current = null;
     }
-    worklet.current?.disconnect();
+    if (worklet.current) {
+      worklet.current.port.onmessage = null;
+      worklet.current.port.close();
+      worklet.current.disconnect();
+    }
     worklet.current = null;
     void context.current?.close().catch(() => {});
     context.current = null;
@@ -82,7 +89,15 @@ export function useLiveAudioRecorder(options: Options) {
   }, []);
 
   const finish = useCallback((keepListening: boolean, discard = false) => {
-    if (finalized.current) return;
+    if (finalized.current) {
+      // Stop Listening must also work while waiting for a response or acquiring the mic.
+      if (!keepListening) {
+        armed.current = false;
+        setArmed(false);
+        if (restartTimer.current) clearTimeout(restartTimer.current);
+      }
+      return;
+    }
     finalized.current = true;
     finalizeStartTime.current = performance.now();
     if (speechEndTime.current && !timingMetrics.current.speechEndToFinalizeMs) {
@@ -113,8 +128,9 @@ export function useLiveAudioRecorder(options: Options) {
   }, []);
 
   const start = useCallback(async () => {
-    if (starting.current || recorder.current?.state === 'recording' || latest.current.disabled) return;
+    if (starting.current || submitting.current || recorder.current?.state === 'recording' || latest.current.disabled) return;
     starting.current = true;
+    const captureGeneration = ++generation.current;
     armed.current = true;
     setArmed(true);
     setError(null);
@@ -136,9 +152,13 @@ export function useLiveAudioRecorder(options: Options) {
     speechEndTime.current = null;
     finalizeStartTime.current = null;
     let began = 0;
-    let lastSpeech = Date.now();
-    let heardSpeech = false;
-    let vadAvailable = false;
+    let detector: TurnDetector;
+    let activityAvailable = false;
+    const markSpeech = () => {
+      detector.markSpeech(Date.now());
+      speechStartTime.current ??= performance.now();
+      speechEndTime.current = performance.now();
+    };
 
     try {
       const media = await navigator.mediaDevices.getUserMedia({
@@ -150,7 +170,7 @@ export function useLiveAudioRecorder(options: Options) {
         },
       });
 
-      if (!armed.current || latest.current.disabled) {
+      if (!armed.current || latest.current.disabled || captureGeneration !== generation.current) {
         media.getTracks().forEach(track => track.stop());
         return;
       }
@@ -170,12 +190,16 @@ export function useLiveAudioRecorder(options: Options) {
       const capture = new MediaRecorder(media, mime ? { mimeType: mime } : undefined);
       recorder.current = capture;
       const chunks: Blob[] = [];
+      let stopHandled = false;
 
       capture.ondataavailable = event => {
         if (event.data && event.data.size > 0) chunks.push(event.data);
       };
 
       capture.onstop = async () => {
+        if (stopHandled || captureGeneration !== generation.current) return;
+        stopHandled = true;
+        submitting.current = true;
         const elapsed = Date.now() - began;
         const discard = cancelled.current;
         if (finalizeStartTime.current) {
@@ -186,7 +210,8 @@ export function useLiveAudioRecorder(options: Options) {
         setRecording(false);
         setDuration(0);
 
-        if (discard || !chunks.length || (vadAvailable && !heardSpeech) || elapsed < MIN_SPEECH_DURATION_MS) {
+        try {
+        if (discard || !chunks.length || (activityAvailable && !detector.heardSpeech) || elapsed < MIN_SPEECH_DURATION_MS) {
           latest.current.onLiveTranscript?.({ turnId, text: '', cancelled: true });
         } else {
           if (!submittedTurns.current.has(turnId)) {
@@ -204,20 +229,69 @@ export function useLiveAudioRecorder(options: Options) {
             await latest.current.onAudioCaptured(finalBlob, elapsed, turnId);
           }
         }
+        } catch {
+          // Do not resubmit an uncertain HTTP result: its turn ID remains consumed.
+          setError('The voice turn could not finish. Please try a new request.');
+          armed.current = false;
+          setArmed(false);
+        } finally {
+          submitting.current = false;
+        }
         if (armed.current && !latest.current.disabled) scheduleRestart();
       };
 
       capture.start(250);
       timingMetrics.current.micActivationMs = Math.round(performance.now() - micActivationStart);
       began = Date.now();
-      lastSpeech = began;
+      detector = new TurnDetector(began);
       setRecording(true);
       latest.current.onLiveTranscript?.({ turnId, text: '', isFinal: false });
-      setPreviewStatus(latest.current.previewEnabled === false ? 'Record, then submit' : 'Connecting live local transcription…');
+      setPreviewStatus('Listening · pause to send · connecting transcript…');
+
+      let clientAnalyser: AnalyserNode | null = null;
+      let clientDataArray: Float32Array<ArrayBuffer> | null = null;
+
+      try {
+        const audioCtx = context.current || new AudioContext();
+        context.current = audioCtx;
+        const source = audioCtx.createMediaStreamSource(media);
+        clientAnalyser = audioCtx.createAnalyser();
+        clientAnalyser.fftSize = 2048;
+        source.connect(clientAnalyser);
+        clientDataArray = new Float32Array(clientAnalyser.fftSize);
+        await audioCtx.resume();
+        activityAvailable = true;
+      } catch {
+        // Fallback gracefully if Web Audio Analyser cannot be created
+      }
+
+      if (capture.state !== 'recording' || captureGeneration !== generation.current) return;
+
+      // Start timing before any network/worklet setup. Preview outages cannot disable VAD.
+      timer.current = setInterval(() => {
+        if (finalized.current) return;
+        const now = Date.now();
+        setDuration(Math.floor((now - began) / 1000));
+        if (clientAnalyser && clientDataArray) {
+          clientAnalyser.getFloatTimeDomainData(clientDataArray);
+          let sum = 0;
+          for (const sample of clientDataArray) sum += sample * sample;
+          if (detector.sample(Math.sqrt(sum / clientDataArray.length), now)) markSpeech();
+        }
+        const decision = detector.decision(now);
+        if (decision === 'idle') {
+          setPreviewStatus('Microphone stopped after silence');
+          finish(false, true);
+        } else if (decision === 'submit') {
+          finish(true);
+        } else if (decision === 'limit') {
+          finish(true, activityAvailable && !detector.heardSpeech);
+        }
+      }, 50);
 
       if (latest.current.previewEnabled !== false) {
         try {
-          const audioContext = new AudioContext();
+          const audioContext = context.current || new AudioContext();
           context.current = audioContext;
           await audioContext.audioWorklet.addModule('/pcm-capture.worklet.js');
           if (capture.state !== 'recording') return;
@@ -230,9 +304,33 @@ export function useLiveAudioRecorder(options: Options) {
 
           const ws = new WebSocket(previewUrl());
           socket.current = ws;
+          const pending: ArrayBuffer[] = [];
+          let ready = false;
+          const flushPreview = () => {
+            if (!ready || ws.readyState !== WebSocket.OPEN) return;
+            for (const frame of pending.splice(0)) {
+              if (ws.bufferedAmount >= 262144) { ws.close(); return; }
+              ws.send(frame);
+            }
+          };
+          const previewTimeout = setTimeout(() => {
+            if (!ready) ws.close();
+          }, 8000);
+          ws.addEventListener('close', () => clearTimeout(previewTimeout), { once: true });
 
           node.port.onmessage = event => {
-            if (ws.readyState === WebSocket.OPEN && ws.bufferedAmount < 65536) {
+            if (activityAvailable && !detector.heardSpeech) {
+              // Keep only half a second of pre-roll; do not send idle silence to cloud ASR.
+              pending.push(event.data);
+              if (pending.length > 8) pending.shift();
+              return;
+            }
+            if (!ready && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
+              // Preserve the beginning while the provider connects; bound to eight seconds.
+              if (pending.length < 125) pending.push(event.data);
+              else ws.close();
+            } else if (ready && ws.readyState === WebSocket.OPEN && ws.bufferedAmount < 65536) {
+              flushPreview();
               ws.send(event.data);
             } else if (ws.bufferedAmount >= 65536) {
               setPreviewStatus('Preview is behind; final transcript will follow submission');
@@ -245,15 +343,13 @@ export function useLiveAudioRecorder(options: Options) {
             try {
               const data = JSON.parse(event.data);
               if (data.type === 'ready') {
-                vadAvailable = true;
-                setPreviewStatus('Live local transcription · pause to send');
+                ready = true;
+                clearTimeout(previewTimeout);
+                if (detector.heardSpeech || !activityAvailable) flushPreview();
+                setPreviewStatus('Live transcription · pause to send');
               } else if (data.type === 'vad' && data.speech) {
-                heardSpeech = true;
-                lastSpeech = Date.now();
-                if (!speechStartTime.current) {
-                  speechStartTime.current = performance.now();
-                }
-                speechEndTime.current = performance.now();
+                activityAvailable = true;
+                markSpeech();
               } else if (data.type === 'transcript.partial') {
                 if (speechStartTime.current && !timingMetrics.current.speechStartToPreviewMs) {
                   timingMetrics.current.speechStartToPreviewMs = Math.round(performance.now() - speechStartTime.current);
@@ -261,7 +357,7 @@ export function useLiveAudioRecorder(options: Options) {
                 lastTranscriptText.current = data.text;
                 latest.current.onLiveTranscript?.({ turnId, text: data.text, isFinal: false });
               } else if (data.type === 'limit') {
-                finish(false);
+                finish(true);
               } else if (data.type === 'unavailable') {
                 setPreviewStatus(data.message);
               }
@@ -271,27 +367,14 @@ export function useLiveAudioRecorder(options: Options) {
           };
 
           ws.onclose = () => {
-            vadAvailable = false;
-            setPreviewStatus('Preview offline · use Done to submit for transcription');
+            pending.length = 0;
+            if (!finalized.current) setPreviewStatus('Listening · pause to send · final transcript after submission');
           };
-          ws.onerror = () => setPreviewStatus('Preview offline · use Done to submit');
+          ws.onerror = () => setPreviewStatus('Listening · pause to send · live transcript unavailable');
         } catch {
-          setPreviewStatus('Live preview unavailable · use Done to submit');
+          setPreviewStatus('Listening · pause to send · live transcript unavailable');
         }
       }
-
-      timer.current = setInterval(() => {
-        const now = Date.now();
-        setDuration(Math.floor((now - began) / 1000));
-        if (vadAvailable && now - lastSpeech >= IDLE_TIMEOUT_MS) {
-          setPreviewStatus('Microphone stopped after silence');
-          finish(false, !heardSpeech);
-        } else if (vadAvailable && heardSpeech && now - lastSpeech >= PAUSE_TO_SUBMIT_MS) {
-          finish(false);
-        } else if (now - began >= MAX_RECORDING_DURATION_MS) {
-          finish(false);
-        }
-      }, 200);
 
     } catch (error) {
       cleanup();
@@ -325,13 +408,14 @@ export function useLiveAudioRecorder(options: Options) {
 
   useEffect(() => {
     if (options.disabled && recorder.current?.state === 'recording') {
-      finish(false, true);
+      finish(armed.current, true);
     } else if (!options.disabled && armed.current) {
       scheduleRestart();
     }
   }, [options.disabled, finish, scheduleRestart]);
 
   useEffect(() => () => {
+    generation.current += 1;
     armed.current = false;
     cancelled.current = true;
     if (restartTimer.current) clearTimeout(restartTimer.current);

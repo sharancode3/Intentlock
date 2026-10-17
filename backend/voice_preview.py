@@ -1,4 +1,4 @@
-"""Bounded local speech preview. Never authenticates, retrieves records or calls providers.
+"""Bounded speech preview. Never authenticates or retrieves private records.
 
 The browser sends 16 kHz mono signed little-endian PCM for local VAD/ASR only.
 The separate final HTTP turn still verifies the original MediaRecorder container.
@@ -7,6 +7,7 @@ import asyncio
 import contextlib
 import hashlib
 import time
+from collections import deque
 import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
 from backend.adapters.audio_decoder import AudioDecoder
@@ -15,6 +16,7 @@ from backend.models.turn import OriginalAudioMetadata
 
 def register_voice_preview(app, settings, get_stt, get_vad):
     active_connections = 0
+    cloud_starts = deque(maxlen=30)
 
     @app.websocket(f"{settings.API_V1_PREFIX}/voice/preview")
     async def preview(ws: WebSocket):
@@ -28,8 +30,27 @@ def register_voice_preview(app, settings, get_stt, get_vad):
             return
         await ws.accept()
         stt, vad = get_stt(), get_vad()
+        if (getattr(stt, "supports_streaming_preview", False)
+                and getattr(settings, "ENABLE_CLOUD_PREVIEW", False)):
+            now = time.monotonic()
+            while cloud_starts and now - cloud_starts[0] >= 60:
+                cloud_starts.popleft()
+            if len(cloud_starts) >= 30:
+                await ws.send_json({"type": "unavailable", "message": "Live transcript is busy · pause still sends your request."})
+                await ws.close(code=1013)
+                return
+            cloud_starts.append(now)
+            from backend.adapters.cloud_speech_preview import relay_cloud_preview
+            active_connections += 1
+            try:
+                await relay_cloud_preview(ws, stt, settings)
+            finally:
+                active_connections -= 1
+                with contextlib.suppress(RuntimeError, WebSocketDisconnect):
+                    await ws.close()
+            return
         if vad is None or not getattr(stt, "is_ready", lambda: False)():
-            await ws.send_json({"type": "unavailable", "message": "Live speech preview is unavailable. You can still record and submit manually."})
+            await ws.send_json({"type": "unavailable", "message": "Live transcript unavailable · pause still sends your recording for final transcription."})
             await ws.close(code=1013)
             return
         active_connections += 1

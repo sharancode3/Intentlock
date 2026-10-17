@@ -21,22 +21,31 @@ from backend.services.semantic_orchestrator import (
 
 
 def test_operation_registry_schema_parity():
-    """Verify that all 18 supported operations exist in OperationRegistry, IntentPlan, and Dispatcher."""
+    """Verify that all supported operations exist in OperationRegistry, IntentPlan, and Dispatcher."""
     all_ops = OperationRegistry.all_operations()
-    assert len(all_ops) == 18
+    from typing import get_args
+    assert set(all_ops) == set(get_args(Operation))
 
     # Check key expected operations
     expected = [
         "help", "profile", "team_table", "team_count", "org_tree",
         "ticket_list", "ticket_chart", "rechart", "back", "clarify",
         "create_ticket", "update_ticket", "comment_ticket", "confirm", "cancel",
-        "compound", "headcount", "update_contact",
+        "compound", "headcount", "update_contact", "authenticity_check", "speaker_check",
     ]
     for op in expected:
         assert OperationRegistry.is_supported(op), f"Missing {op} in registry"
         # Verify valid in IntentPlan
         plan = IntentPlan(operation=op)
         assert plan.operation == op
+
+
+def test_explicit_diagnostics_and_quoted_ticket_text_stay_separate():
+    from backend.services.conversation_dispatch import parse_local
+    assert parse_local("Please check my speaker match").operation == "speaker_check"
+    assert parse_local("Check this recording for deepfake audio").operation == "authenticity_check"
+    assert parse_local("Do not check this recording for deepfake audio").operation != "authenticity_check"
+    assert parse_local('Create a ticket titled "check deepfake detection"').operation == "create_ticket"
 
 
 def test_exact_public_help_versus_private_query():

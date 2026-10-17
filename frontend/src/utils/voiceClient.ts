@@ -1,4 +1,10 @@
-export const API_BASE = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_API_BASE_URL) || '';
+export function normalizeApiBase(value: string) {
+  const base = value.trim().replace(/\/+$/, '');
+  // Render's fromService host property is a hostname, rather than a full URL.
+  return base && !base.startsWith('/') && !/^https?:\/\//i.test(base) ? `https://${base}` : base;
+}
+
+export const API_BASE = normalizeApiBase((typeof import.meta !== 'undefined' && import.meta?.env?.VITE_API_BASE_URL) || '');
 
 export function previewUrl() {
   const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:5173';

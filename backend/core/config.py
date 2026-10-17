@@ -64,6 +64,8 @@ class Settings(BaseSettings):
     SPEECH_TTS_SPEED: float = float(os.getenv("SPEECH_TTS_SPEED", "1.0"))
     SPEECH_VAD_THRESHOLD: float = float(os.getenv("SPEECH_VAD_THRESHOLD", "0.5"))
     OPENAI_TTS_VOICE: str = os.getenv("OPENAI_TTS_VOICE", "alloy")
+    ENABLE_CLOUD_PREVIEW: bool = True
+    OPENAI_PREVIEW_MODEL: str = "gpt-live-transcribe"
 
     # DetectifAI Biometric Settings (Stage 2)
     DETECTIF_BASE_URL: str = os.getenv("DETECTIF_BASE_URL", "https://platform.detectif.ai/v1")
@@ -72,6 +74,7 @@ class Settings(BaseSettings):
     DETECTIF_DEEPFAKE_API_KEY: Optional[str] = os.getenv("DETECTIF_DEEPFAKE_API_KEY", None)
     DETECTIF_COMBINED_API_KEY: Optional[str] = os.getenv("DETECTIF_COMBINED_API_KEY", None)
     DETECTIF_ACCOUNT_ALIAS: str = os.getenv("DETECTIF_ACCOUNT_ALIAS", "primary_account")
+    DETECTIF_LEGACY_KEY_FALLBACK: bool = bool(os.getenv("DETECTIF_LEGACY_KEY_FALLBACK", "1") == "1")
     DETECTIF_TIMEOUT_SECONDS: float = float(os.getenv("DETECTIF_TIMEOUT_SECONDS", "15.0"))
     DETECTIF_MAX_RETRIES: int = int(os.getenv("DETECTIF_MAX_RETRIES", "2"))
     SPEECH_SERVICE_URL: Optional[str] = None
@@ -79,7 +82,7 @@ class Settings(BaseSettings):
     # LLM & Knowledge Generation Settings (Stage 3)
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai")
     OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY", None)
-    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-5.4-mini")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     OPENAI_TIMEOUT_SECONDS: float = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "20.0"))
     OPENAI_MAX_OUTPUT_TOKENS: int = int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "1024"))
     OPENAI_MAX_RETRIES: int = int(os.getenv("OPENAI_MAX_RETRIES", "1"))
@@ -143,9 +146,14 @@ class Settings(BaseSettings):
                 or self.DETECTIF_DEEPFAKE_API_KEY
                 or self.DETECTIF_COMBINED_API_KEY
             ),
-            "detectif_speaker_configured": bool(self.DETECTIF_SPEAKER_API_KEY or self.DETECTIF_API_KEY),
-            "detectif_deepfake_configured": bool(self.DETECTIF_DEEPFAKE_API_KEY or self.DETECTIF_API_KEY),
-            "detectif_combined_configured": bool(self.DETECTIF_COMBINED_API_KEY or self.DETECTIF_API_KEY),
+            "detectif_speaker_configured": bool(self.DETECTIF_SPEAKER_API_KEY or (self.DETECTIF_LEGACY_KEY_FALLBACK and self.DETECTIF_API_KEY)),
+            "detectif_deepfake_configured": bool(self.DETECTIF_DEEPFAKE_API_KEY or (self.DETECTIF_LEGACY_KEY_FALLBACK and self.DETECTIF_API_KEY)),
+            "detectif_combined_configured": bool(self.DETECTIF_COMBINED_API_KEY or (self.DETECTIF_LEGACY_KEY_FALLBACK and self.DETECTIF_API_KEY)),
+            "detectif_legacy_fallback_active": bool(
+                self.DETECTIF_LEGACY_KEY_FALLBACK
+                and self.DETECTIF_API_KEY
+                and not (self.DETECTIF_SPEAKER_API_KEY and self.DETECTIF_DEEPFAKE_API_KEY and self.DETECTIF_COMBINED_API_KEY)
+            ),
             "detectif_base_url": self.DETECTIF_BASE_URL,
             "detectif_account_alias": self.DETECTIF_ACCOUNT_ALIAS,
             "llm_provider": self.LLM_PROVIDER,

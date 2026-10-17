@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 from backend.core.config import settings
+from backend.services.operation_registry import OperationRegistry
 
 logger = logging.getLogger("intentlock.evidence_policy")
 
@@ -50,6 +51,7 @@ class EvidencePolicyContext(BaseModel):
     session_actor_id: Optional[str] = None
     operation: str = "query"
     is_mutation: bool = False
+    has_mutation_recursively: bool = False
     has_audio: bool = True
     audio_duration_s: Optional[float] = None
     explicit_mode_requested: Optional[str] = None
@@ -83,7 +85,76 @@ class EvidencePolicyService:
         """
         op = (context.operation or "query").lower().strip()
 
-        # 1. Public Help / FAQ / Capabilities
+        # 1. Standalone Authenticity Assessment (Deepfake-Only)
+        if op == "authenticity_check" or context.explicit_mode_requested == "deepfake":
+            if not context.has_audio:
+                return EvidencePolicyDecision(
+                    mode=EvidenceCheckMode.UNAVAILABLE,
+                    requires_provider_call=False,
+                    reason_code="NO_AUDIO_FOR_DEEPFAKE",
+                    reason_description="Audio is required for deepfake detection.",
+                    evidence_freshness="none",
+                )
+            if context.audio_duration_s is not None and context.audio_duration_s <= 4.0:
+                return EvidencePolicyDecision(
+                    mode=EvidenceCheckMode.UNAVAILABLE,
+                    requires_provider_call=False,
+                    reason_code="AUDIO_TOO_SHORT",
+                    reason_description=f"Deepfake detection requires audio longer than 4.0s (received {context.audio_duration_s:.1f}s).",
+                    audio_min_duration_s=4.0,
+                    evidence_freshness="none",
+                )
+            return EvidencePolicyDecision(
+                mode=EvidenceCheckMode.DEEPFAKE_ONLY,
+                requires_provider_call=True,
+                reason_code="DEEPFAKE_DETECTION_REQUESTED",
+                reason_description="Standalone audio authenticity assessment requested.",
+                candidate_id=None,
+                audio_min_duration_s=4.0,
+                evidence_freshness="fresh_this_turn",
+            )
+
+        # 2. Standalone Speaker Verification Preflight (Speaker-Only)
+        if op == "speaker_check" or context.explicit_mode_requested == "speaker":
+            target_candidate = context.candidate_employee_id or context.spoken_claim_id or context.session_actor_id
+            if not target_candidate:
+                return EvidencePolicyDecision(
+                    mode=EvidenceCheckMode.DENIED,
+                    requires_provider_call=False,
+                    reason_code="NO_CANDIDATE_SPEAKER",
+                    reason_description="Speaker verification requires a candidate speaker ID.",
+                    evidence_freshness="none",
+                )
+            if not context.has_audio:
+                return EvidencePolicyDecision(
+                    mode=EvidenceCheckMode.UNAVAILABLE,
+                    requires_provider_call=False,
+                    reason_code="NO_AUDIO_FOR_SPEAKER",
+                    reason_description="Audio is required for speaker verification.",
+                    candidate_id=target_candidate,
+                    evidence_freshness="none",
+                )
+            if context.audio_duration_s is not None and context.audio_duration_s < 3.0:
+                return EvidencePolicyDecision(
+                    mode=EvidenceCheckMode.UNAVAILABLE,
+                    requires_provider_call=False,
+                    reason_code="AUDIO_TOO_SHORT",
+                    reason_description=f"Speaker verification requires at least 3.0s of audio with 2s of speech (received {context.audio_duration_s:.1f}s).",
+                    candidate_id=target_candidate,
+                    audio_min_duration_s=3.0,
+                    evidence_freshness="none",
+                )
+            return EvidencePolicyDecision(
+                mode=EvidenceCheckMode.SPEAKER_ONLY,
+                requires_provider_call=True,
+                reason_code="SPEAKER_VERIFICATION_REQUESTED",
+                reason_description="Speaker-only verification requested.",
+                candidate_id=target_candidate,
+                audio_min_duration_s=3.0,
+                evidence_freshness="fresh_this_turn",
+            )
+
+        # 3. Public Help / FAQ / Capabilities
         if op in ("help", "faq", "public_info", "list_capabilities", "greeting", "none") and not context.candidate_employee_id and not context.spoken_claim_id:
             return EvidencePolicyDecision(
                 mode=EvidenceCheckMode.NO_CHECK,
@@ -93,7 +164,7 @@ class EvidencePolicyService:
                 evidence_freshness="none",
             )
 
-        # 2. Navigation / Back / Cancel
+        # 4. Navigation / Back / Cancel
         if op in ("cancel", "back", "reset"):
             return EvidencePolicyDecision(
                 mode=EvidenceCheckMode.NO_CHECK,
@@ -103,7 +174,7 @@ class EvidencePolicyService:
                 evidence_freshness="none" if not context.session_valid else "reused_from_session",
             )
 
-        # 3. Detect Claim Conflicts
+        # 5. Detect Claim Conflicts
         if context.session_valid and context.session_actor_id:
             if context.candidate_employee_id and context.candidate_employee_id.strip().upper() != context.session_actor_id.strip().upper():
                 logger.warning(
@@ -130,8 +201,19 @@ class EvidencePolicyService:
                     evidence_freshness="none",
                 )
 
-        # 4. Protected Action Confirmation (Strictly Fresh Biometrics Required)
-        if op == "confirm" or (context.is_mutation and op.startswith("confirm")):
+        # 6. Block Compound Mutations Recursively
+        if op == "compound" and (context.has_mutation_recursively or context.is_mutation):
+            return EvidencePolicyDecision(
+                mode=EvidenceCheckMode.DENIED,
+                requires_provider_call=False,
+                reason_code="COMPOUND_MUTATION_FORBIDDEN",
+                reason_description="Mutations inside compound operations are strictly forbidden.",
+                evidence_freshness="none",
+            )
+
+        # 7. Protected Action Confirmation (Strictly Fresh Biometrics Required)
+        is_mut = context.is_mutation or context.has_mutation_recursively or OperationRegistry.is_mutation(op)
+        if op == "confirm" or OperationRegistry.is_confirmation(op):
             target_candidate = context.session_actor_id or context.candidate_employee_id or context.spoken_claim_id
             if not target_candidate:
                 return EvidencePolicyDecision(
@@ -150,6 +232,16 @@ class EvidencePolicyService:
                     candidate_id=target_candidate,
                     evidence_freshness="none",
                 )
+            if context.audio_duration_s is not None and context.audio_duration_s < 4.0:
+                return EvidencePolicyDecision(
+                    mode=EvidenceCheckMode.UNAVAILABLE,
+                    requires_provider_call=False,
+                    reason_code="AUDIO_TOO_SHORT",
+                    reason_description=f"Mutation confirmation requires audio longer than 4.0s (received {context.audio_duration_s:.1f}s).",
+                    candidate_id=target_candidate,
+                    audio_min_duration_s=4.0,
+                    evidence_freshness="none",
+                )
             return EvidencePolicyDecision(
                 mode=EvidenceCheckMode.COMBINED,
                 requires_provider_call=True,
@@ -160,71 +252,43 @@ class EvidencePolicyService:
                 evidence_freshness="fresh_this_turn",
             )
 
-        # 5. Contextual Reuse (presentation / rechart / summarize / drilldown / details)
+        # 8. Mutation Proposal under Active Session
+        if is_mut and OperationRegistry.is_proposal(op):
+            if context.session_valid and context.session_actor_id and context.session_age_s <= settings.SESSION_TTL_SECONDS:
+                return EvidencePolicyDecision(
+                    mode=EvidenceCheckMode.REUSE,
+                    requires_provider_call=False,
+                    reason_code="ACTIVE_SESSION_PROPOSAL",
+                    reason_description="Proposing mutation under active verified session. Commitment will require fresh verification.",
+                    candidate_id=context.session_actor_id,
+                    evidence_freshness="reused_from_session",
+                )
+
+        # 9. Presentation Reuse vs Active Session Read
         if context.session_valid and context.session_actor_id:
             ttl = settings.SESSION_TTL_SECONDS
             if context.session_age_s <= ttl:
-                if op in ("rechart", "view_switch", "reformat", "summarize", "drilldown", "details") or (
-                    not context.is_mutation and not context.candidate_employee_id and not context.spoken_claim_id
-                ):
+                if op in ("rechart", "view_switch", "reformat", "drilldown", "details"):
                     return EvidencePolicyDecision(
                         mode=EvidenceCheckMode.REUSE,
                         requires_provider_call=False,
-                        reason_code="REUSE_SESSION_EVIDENCE",
+                        reason_code="PRESENTATION_REUSE",
                         reason_description="Reusing valid session evidence for presentation transformation.",
                         candidate_id=context.session_actor_id,
                         evidence_freshness="reused_from_session",
                     )
-
-        # 6. Explicit Deepfake-Only Request (Authenticity Check / Enrollment Preflight)
-        if context.explicit_mode_requested == "deepfake":
-            if not context.has_audio:
-                return EvidencePolicyDecision(
-                    mode=EvidenceCheckMode.UNAVAILABLE,
-                    requires_provider_call=False,
-                    reason_code="NO_AUDIO_FOR_DEEPFAKE",
-                    reason_description="Audio is required for deepfake detection.",
-                    evidence_freshness="none",
-                )
-            return EvidencePolicyDecision(
-                mode=EvidenceCheckMode.DEEPFAKE_ONLY,
-                requires_provider_call=True,
-                reason_code="DEEPFAKE_DETECTION_REQUESTED",
-                reason_description="Standalone audio authenticity assessment requested.",
-                candidate_id=None,
-                audio_min_duration_s=3.0,
-                evidence_freshness="fresh_this_turn",
-            )
-
-        # 7. Explicit Speaker-Only Request
-        if context.explicit_mode_requested == "speaker":
-            target_candidate = context.candidate_employee_id or context.spoken_claim_id or context.session_actor_id
-            if not target_candidate:
-                return EvidencePolicyDecision(
-                    mode=EvidenceCheckMode.DENIED,
-                    requires_provider_call=False,
-                    reason_code="NO_CANDIDATE_SPEAKER",
-                    reason_description="Speaker verification requires a candidate speaker ID.",
-                    evidence_freshness="none",
-                )
-            if not context.has_audio:
-                return EvidencePolicyDecision(
-                    mode=EvidenceCheckMode.UNAVAILABLE,
-                    requires_provider_call=False,
-                    reason_code="NO_AUDIO_FOR_SPEAKER",
-                    reason_description="Audio is required for speaker verification.",
-                    candidate_id=target_candidate,
-                    evidence_freshness="none",
-                )
-            return EvidencePolicyDecision(
-                mode=EvidenceCheckMode.SPEAKER_ONLY,
-                requires_provider_call=True,
-                reason_code="SPEAKER_VERIFICATION_REQUESTED",
-                reason_description="Speaker-only verification requested.",
-                candidate_id=target_candidate,
-                audio_min_duration_s=1.0,
-                evidence_freshness="fresh_this_turn",
-            )
+                elif (
+                    (not context.candidate_employee_id or context.candidate_employee_id.strip().upper() == context.session_actor_id.strip().upper())
+                    and (not context.spoken_claim_id or context.spoken_claim_id.strip().upper() == context.session_actor_id.strip().upper())
+                ):
+                    return EvidencePolicyDecision(
+                        mode=EvidenceCheckMode.REUSE,
+                        requires_provider_call=False,
+                        reason_code="ACTIVE_SESSION_READ",
+                        reason_description="Authorized query executed under active verified session within TTL.",
+                        candidate_id=context.session_actor_id,
+                        evidence_freshness="reused_from_session",
+                    )
 
         # 8. Initial Employee Entry / Login or New Private Read
         target_candidate = context.candidate_employee_id or context.spoken_claim_id

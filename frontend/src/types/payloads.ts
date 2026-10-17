@@ -69,8 +69,8 @@ export interface EmployeeRecord {
 }
 
 export interface DataTablePayload {
-  columns: Array<{ key: 'name' | 'title' | 'department'; label: string }>;
-  rows: Array<{ id: string; name: string; title: string; department: string }>;
+  columns: Array<{ key: 'name' | 'title' | 'department' | 'manager'; label: string }>;
+  rows: Array<{ id: string; name: string; title: string; department: string; manager?: string }>;
   total_count: number;
 }
 

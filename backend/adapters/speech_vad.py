@@ -12,7 +12,7 @@ import logging
 import threading
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
-import torch
+torch = None  # Local-only runtime; importing the cloud gateway must stay lightweight.
 import numpy as np
 
 # Ensure upstream speech_hf/src is on sys.path for direct component reuse
@@ -20,10 +20,7 @@ _UPSTREAM_SRC = pathlib.Path(__file__).resolve().parent.parent.parent / "speech_
 if _UPSTREAM_SRC.exists() and str(_UPSTREAM_SRC) not in sys.path:
     sys.path.insert(0, str(_UPSTREAM_SRC))
 
-try:
-    from speech_to_speech.VAD.vad_iterator import VADIterator
-except ImportError:
-    VADIterator = None
+VADIterator = None
 
 logger = logging.getLogger("intentlock.vad")
 
@@ -53,6 +50,12 @@ class SpeechVADService:
 
     def _load_model(self):
         """Loads and prepares Silero VAD model from PyTorch Hub cache."""
+        global torch, VADIterator
+        import torch
+        try:
+            from speech_to_speech.VAD.vad_iterator import VADIterator
+        except ImportError:
+            VADIterator = None
         try:
             logger.info("Loading Silero VAD model from PyTorch Hub cache...")
             self.model, self.utils = torch.hub.load(

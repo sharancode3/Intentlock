@@ -10,17 +10,15 @@ import time
 import pathlib
 import logging
 import threading
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 import numpy as np
-try:
-    from faster_whisper import WhisperModel
-except ImportError:
-    WhisperModel = None
+WhisperModel = None  # Load inference runtime only when local speech is selected.
 
 from backend.core.ports import SpeechInputPort, SpeechInputResult
 from backend.models.turn import OriginalAudioMetadata
 from backend.adapters.audio_decoder import AudioDecoder
-from backend.adapters.speech_vad import SpeechVADService, VADSpeechReport
+if TYPE_CHECKING:
+    from backend.adapters.speech_vad import SpeechVADService, VADSpeechReport
 
 logger = logging.getLogger("intentlock.stt")
 
@@ -33,10 +31,12 @@ class FasterWhisperSTTAdapter(SpeechInputPort):
         model_name: str = "tiny.en",
         device: str = "cpu",
         compute_type: str = "int8",
-        vad_service: Optional[SpeechVADService] = None,
+        vad_service: Optional["SpeechVADService"] = None,
     ):
+        global WhisperModel
         if WhisperModel is None:
-            raise RuntimeError("The 'faster-whisper' package is not installed. FasterWhisperSTTAdapter cannot initialize.")
+            from faster_whisper import WhisperModel
+        from backend.adapters.speech_vad import SpeechVADService
         self.model_name = model_name
         self.device = device
         self.compute_type = compute_type
@@ -155,6 +155,8 @@ class OpenAISpeechInputAdapter(SpeechInputPort):
     eliminating low-memory deployment OOM crashes on platforms like Render (512MB limit).
     """
 
+    supports_streaming_preview = True
+
     def __init__(self, api_key: Optional[str] = None, model: str = "whisper-1"):
         from backend.core.config import settings
         if api_key is not None:
@@ -168,7 +170,9 @@ class OpenAISpeechInputAdapter(SpeechInputPort):
     def _get_client(self):
         if self._client is None and self.api_key:
             from openai import AsyncOpenAI
-            self._client = AsyncOpenAI(api_key=self.api_key)
+            from backend.core.config import settings
+            self._client = AsyncOpenAI(api_key=self.api_key,
+                timeout=settings.OPENAI_TIMEOUT_SECONDS, max_retries=settings.OPENAI_MAX_RETRIES)
         return self._client
 
     async def transcribe(
@@ -209,7 +213,7 @@ class OpenAISpeechInputAdapter(SpeechInputPort):
             return SpeechInputResult(
                 is_available=True,
                 transcript=transcript,
-                confidence=0.98,
+                confidence=None,  # The API does not supply calibrated confidence here.
                 latency_ms=round(latency_ms, 2),
                 error_message=None,
                 speech_duration_s=speech_duration_s,

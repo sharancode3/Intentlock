@@ -8,10 +8,24 @@ Also serializes raw synthesized PCM samples to compliant 16-bit PCM WAV containe
 import io
 import wave
 import numpy as np
-try:
-    from faster_whisper.audio import decode_audio
-except ImportError:
-    decode_audio = None
+def decode_audio(source, sampling_rate):
+    # PyAV decoding needs no Whisper inference model or CTranslate2 runtime.
+    import av
+    resampler = av.AudioResampler(format="s16", layout="mono", rate=sampling_rate)
+    frames = []
+    samples = 0
+    with av.open(source, mode="r") as container:
+        for frame in container.decode(audio=0):
+            frame.pts = None  # Browser container timestamps need not be contiguous.
+            for converted in resampler.resample(frame):
+                chunk = converted.to_ndarray().reshape(-1)
+                samples += len(chunk)
+                if samples > 61 * sampling_rate:
+                    raise ValueError("Decoded audio exceeds maximum duration")
+                frames.append(chunk)
+        for converted in resampler.resample(None):
+            frames.append(converted.to_ndarray().reshape(-1))
+    return np.concatenate(frames).astype(np.float32) / 32768.0 if frames else np.empty(0, dtype=np.float32)
 
 
 class AudioDecoder:

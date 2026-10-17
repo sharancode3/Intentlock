@@ -51,7 +51,7 @@ async def test_openai_speech_input_transcribe_success(sample_audio_metadata):
     res = await adapter.transcribe(sample_audio_metadata, b"fake_wav", "turn-2")
     assert res.is_available
     assert res.transcript == "Show my open tickets"
-    assert res.confidence == 0.98
+    assert res.confidence is None  # Whisper did not return a calibrated confidence score.
     adapter.cleanup()
     assert adapter._client is None
 

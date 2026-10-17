@@ -14,10 +14,18 @@ services:
         value: production
       - key: DETECTIF_API_KEY
         sync: false
+      - key: DETECTIF_SPEAKER_API_KEY
+        sync: false
+      - key: DETECTIF_DEEPFAKE_API_KEY
+        sync: false
+      - key: DETECTIF_COMBINED_API_KEY
+        sync: false
       - key: DETECTIF_BASE_URL
         value: https://platform.detectif.ai/v1
       - key: DETECTIF_ACCOUNT_ALIAS
         value: primary_account
+      - key: DETECTIF_LEGACY_KEY_FALLBACK
+        value: "0"
       - key: SESSION_TTL_SECONDS
         value: "90"
       - key: LLM_PROVIDER
@@ -33,9 +41,13 @@ services:
       - key: OPENAI_MAX_RETRIES
         value: "1"
       - key: FRONTEND_ORIGINS
-        value: '["*"]'
+        value: '["https://intentlock-blue.vercel.app","https://intentlock-frontend.onrender.com","http://localhost:5173","http://127.0.0.1:5173"]'
       - key: SPEECH_PROVIDER
         value: openai
+      - key: ENABLE_CLOUD_PREVIEW
+        value: "true"
+      - key: OPENAI_PREVIEW_MODEL
+        value: gpt-live-transcribe
       - key: STORAGE_BACKEND
         value: postgres
       - key: SUPABASE_DATABASE_URL
