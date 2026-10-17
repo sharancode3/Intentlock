@@ -165,10 +165,30 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
 
         # Check payload metrics if available
         payload = context.get("payload") or {}
+        block_type = context.get("type") or ""
+
+        # Pending vs Committed check
+        if block_type == "READBACK_CONFIRMATION" or payload.get("status") == "PENDING":
+            if re.search(r"\b(?:has been committed|successfully updated|committed as event|was updated|has been closed|change was committed)\b", clean, re.I):
+                return False, "Status contradiction: pending action described as committed"
+
+        # Direct reports vs Company headcount scope check
+        payload_title = str(payload.get("title") or context.get("title") or "").lower()
+        if "direct report" in payload_title and not ("company" in payload_title or "organization" in payload_title):
+            if re.search(r"\b(?:company(-wide)?\s+headcount|entire\s+company|all\s+company\s+employees|total\s+employees\s+in\s+the\s+company)\b", clean, re.I):
+                return False, "Scope contradiction: direct reports described as company headcount"
+
         if isinstance(payload, dict):
             # Check total_count consistency if explicitly stated
             total_count = payload.get("total_count")
             if total_count is not None and isinstance(total_count, int):
+                # When total_count is 0, any claim of positive records is a contradiction
+                if total_count == 0:
+                    if re.search(r"\b(?:[1-9]\d*)\s+(?:authorized\s+)?(?:tickets|people|employees|records)\b", clean, re.I):
+                        return False, "Total count mismatch: actual count is 0 but narration claimed records exist"
+                    if re.search(r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:authorized\s+)?(?:tickets|people|employees|records)\b", clean, re.I):
+                        return False, "Total count mismatch: actual count is 0 but narration claimed records exist"
+
                 # Check digit counts
                 num_matches = re.findall(r"\b(\d+)\s+(?:authorized\s+)?(?:tickets|people|employees|records)\b", clean, re.I)
                 for num_str in num_matches:
@@ -187,6 +207,20 @@ class OpenAIAnswerAdapter(AnswerGenerationPort):
                     if re.search(rf"\b{word}\s+(?:authorized\s+)?(?:tickets|people|employees|records)\b", clean, re.I):
                         if val != total_count:
                             return False, f"Total count mismatch: claimed {val} ({word}), actual {total_count}"
+
+            # Check category breakdown if data points exist
+            chart_data = payload.get("data")
+            if isinstance(chart_data, list):
+                for item in chart_data:
+                    if isinstance(item, dict) and "label" in item and "count" in item:
+                        label = re.escape(str(item["label"]).lower())
+                        actual_c = item["count"]
+                        # match e.g. "5 critical" or "critical: 5"
+                        breakdown_matches = re.findall(rf"\b(\d+)\s+{label}\b|\b{label}\s*:\s*(\d+)\b", clean, re.I)
+                        for m_tuple in breakdown_matches:
+                            num_str = m_tuple[0] or m_tuple[1]
+                            if num_str and int(num_str) != actual_c:
+                                return False, f"Breakdown mismatch for '{item['label']}': claimed {num_str}, actual {actual_c}"
 
         return True, None
 

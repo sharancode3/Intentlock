@@ -218,5 +218,36 @@ class EnterpriseDataRepository:
             if aid:
                 self.tickets_by_assignee.setdefault(aid, []).append(t)
 
+    def update_employee_field(self, employee_id: str, field: str, new_value: Any) -> None:
+        """Update an employee field in-memory so enterprise query indexes reflect committed actions."""
+        emp = self.employees_by_id.get(employee_id)
+        if emp:
+            if field in ("work_phone", "phone"):
+                emp.setdefault("identity", {})["work_phone"] = new_value
+            elif field in emp.get("identity", {}):
+                emp["identity"][field] = new_value
+            elif field in emp.get("employment", {}):
+                emp["employment"][field] = new_value
+            # Also update raw list item
+            for idx, e in enumerate(self.employees):
+                if e.get("employee_id") == employee_id:
+                    self.employees[idx] = emp
+                    break
+
+    def update_ticket_field(self, ticket_id: str, field: str, new_value: Any) -> None:
+        """Update a ticket field in-memory so enterprise query indexes reflect committed actions."""
+        tkt = self.tickets_by_id.get(ticket_id)
+        if tkt:
+            tkt[field] = new_value
+            for idx, t in enumerate(self.tickets):
+                if t.get("ticket_id") == ticket_id:
+                    self.tickets[idx] = t
+                    break
+
+    def reload(self) -> None:
+        """Force re-reading of canonical JSON datasets and rebuilding indexes."""
+        self.is_loaded = False
+        self.load_data()
+
 
 enterprise_repo = EnterpriseDataRepository.get_instance()

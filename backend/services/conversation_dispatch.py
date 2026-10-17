@@ -444,7 +444,7 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
 
         location = None
         unresolved_location = None
-        loc_match = re.search(r"\bin\s+([a-zA-Z\s]+?)(?:\?|\.|$|\b(?:i am|as the|for|with|who|where)\b)", text, re.I)
+        loc_match = re.search(r"\b(?:in|for|at)\s+([a-zA-Z\s]+?)(?:\?|\.|$|\b(?:i am|as the|with|who|where)\b)", text, re.I)
         if loc_match:
             candidate_loc = loc_match.group(1).strip()
             nested_loc = re.search(r"\b(?:this |the |our )?company\s+in\s+([a-zA-Z\s]+)", candidate_loc, re.I)
@@ -452,7 +452,7 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
                 candidate_loc = nested_loc.group(1).strip()
             # Clean trailing company phrasing e.g. "Bengaluru in this company" -> "Bengaluru"
             candidate_loc = re.sub(r"\s+(?:in|across|at)\s+(?:this|the|our)?\s*(?:company|org|organization|firm).*$", "", candidate_loc, flags=re.I).strip()
-            if candidate_loc.lower() not in ("this company", "the company", "our company", "company", "the team", "my team"):
+            if candidate_loc.lower() not in ("this company", "the company", "our company", "company", "the team", "my team", "the organization", "our organization", "organization"):
                 candidate_loc_clean = re.sub(r"\b(?:this|the|our)\b", "", candidate_loc, flags=re.I).strip()
                 if candidate_loc_clean.lower() in ("bengaluru", "bangalore"):
                     location = "Bengaluru"
@@ -463,8 +463,8 @@ def _parse_single(text: str, state: Optional[ConversationState] = None) -> Inten
                 ):
                     location = candidate_loc_clean.title()
                 elif candidate_loc_clean:
-                    location = candidate_loc_clean
-                    unresolved_location = candidate_loc_clean
+                    location = candidate_loc_clean.title()
+                    unresolved_location = candidate_loc_clean.title()
 
         is_company = bool(re.search(r"\b(?:in (?:this |the |our )?company|company[- ]wide|organization|enterprise|firm|overall|across the company|total headcount)\b", q))
         scope = "company" if is_company else "location" if location else "department" if dept else "company"
@@ -769,6 +769,17 @@ class ConversationDispatcher:
                     self.scoped.knowledge.refresh_if_stale()
                     if receipt.get("action") == "update_contact" and receipt.get("new_value"):
                         self.scoped.knowledge.update_employee_phone_in_memory(actor_id, receipt["new_value"])
+                        try:
+                            from backend.services.enterprise_data import enterprise_repo
+                            enterprise_repo.update_employee_field(actor_id, "work_phone", receipt["new_value"])
+                        except Exception:
+                            pass
+                    elif receipt.get("action") in ("update_ticket_status", "close_ticket") and receipt.get("new_value"):
+                        try:
+                            from backend.services.enterprise_data import enterprise_repo
+                            enterprise_repo.update_ticket_field(receipt["resource_id"], "status", receipt["new_value"])
+                        except Exception:
+                            pass
                     state.snapshots.clear()
                     state.active_id = None
                     state.previous_id = None

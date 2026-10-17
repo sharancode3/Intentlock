@@ -80,8 +80,23 @@ class EnterpriseConversationDispatcher:
             if target_res.status == "resolved":
                 target_eid = target_res.entity_id
 
-            phone_match = re.search(r"(\+?[0-9][0-9\s\-\(\)\.]{5,25}[0-9])", raw_text)
-            new_val = phone_match.group(1).strip() if phone_match else "9999999999"
+            if not target_eid:
+                return {
+                    "status": "clarification_required",
+                    "result_type": "clarification",
+                    "message": "Please specify which employee's phone number to update.",
+                }
+
+            # Strip employee IDs before extracting phone numbers to prevent employee ID digits becoming a phone
+            clean_for_phone = re.sub(r"\b(?:EMP|RND|EXE)[-_]?\d{3,6}\b", "", raw_text, flags=re.I)
+            phone_match = re.search(r"(\+?[0-9][0-9\s\-\(\)\.]{5,25}[0-9])", clean_for_phone)
+            if not phone_match:
+                return {
+                    "status": "clarification_required",
+                    "result_type": "clarification",
+                    "message": "Please provide the phone number to update.",
+                }
+            new_val = phone_match.group(1).strip()
             return self.engine.create_write_proposal(
                 intent="update_employee_contact",
                 params={"employee_id": target_eid, "field": "work_phone", "new_value": new_val}
@@ -91,6 +106,12 @@ class EnterpriseConversationDispatcher:
         if re.search(r"\b(?:close|mark\s+as\s+closed)\b.*\b(?:ticket|tkt)?\b", q):
             tkt_res = self.resolver.resolve_ticket(raw_text)
             target_tid = tkt_res.entity_id if tkt_res.status == "resolved" else context.selected_ticket_id
+            if not target_tid:
+                return {
+                    "status": "clarification_required",
+                    "result_type": "clarification",
+                    "message": "Please specify the ticket ID to close.",
+                }
             return self.engine.create_write_proposal(
                 intent="update_ticket_status",
                 params={"action": "update_ticket_status", "ticket_id": target_tid, "new_status": "Closed"}

@@ -65,8 +65,10 @@ from backend.adapters.identity_mapping_store import IdentityMappingStore
 from backend.core.scoped_authorization import ScopedAuthorizationService
 from backend.services.employee_knowledge_service import EmployeeKnowledgeService
 from backend.services.ticket_knowledge_service import TicketKnowledgeService
-from backend.services.conversation_dispatch import ConversationDispatcher, parse_local, conversation_store, block
+from backend.services.conversation_dispatch import ConversationDispatcher, parse_local, conversation_store, block, PlannerContext
 from backend.services.conversation_dispatch import IntentPlan
+from backend.services.claim_extractor import extract_actor_claim
+from backend.services.semantic_orchestrator import interpret_request
 from backend.services.employee_visibility_service import EmployeeVisibilityService
 from backend.services.ollama_knowledge_service import OllamaKnowledgeService
 from backend.models.knowledge import (
@@ -569,6 +571,8 @@ async def process_voice_turn(
     client_turn_id: str = Form(..., description="Client correlation turn ID"),
     session_id: Optional[str] = Form(None, description="Optional opaque session identifier"),
     candidate_employee_id: Optional[str] = Form(None, description="Optional claimed employee ID (e.g. EMP-1001)"),
+    selected_employee_id: Optional[str] = Form(None, description="Optional UI selected employee ID context"),
+    selected_ticket_id: Optional[str] = Form(None, description="Optional UI selected ticket ID context"),
     client_timestamp: Optional[str] = Form(None, description="Client diagnostic timestamp"),
     stt_port: SpeechInputPort = Depends(get_speech_input_port),
     tts_port: SpeechOutputPort = Depends(get_speech_output_port),
@@ -749,21 +753,40 @@ async def process_voice_turn(
         store.revoke_session(existing_for_plan.session_id)
         conversation_store.clear(existing_for_plan.session_id)
         raise HTTPException(status_code=400, detail="Caller identity claim conflict: selected employee does not match the active session.")
-    explicit_self_claim = re.search(
-        r"\b(?:i am|i'm|my employee id is|my id is|log me in as)\b.{0,55}?\b((?:EMP|RND|EXE)[-_]?\d{4})\b",
-        transcript_text, re.I,
-    )
-    if explicit_self_claim and selected_claim and explicit_self_claim.group(1).upper().replace("_", "-") != selected_claim:
+    claim_extraction = extract_actor_claim(transcript_text)
+    spoken_claim_id = claim_extraction.normalized_id if (claim_extraction.disposition == "valid_claim" and claim_extraction.normalized_id) else None
+    if spoken_claim_id and selected_claim and spoken_claim_id != selected_claim:
         if existing_for_plan and existing_for_plan.is_valid:
             store.revoke_session(existing_for_plan.session_id)
             conversation_store.clear(existing_for_plan.session_id)
         raise HTTPException(status_code=400, detail="Spoken identity claim conflicts with the selected identity.")
+    elif claim_extraction.disposition == "conflict":
+        if existing_for_plan and existing_for_plan.is_valid:
+            store.revoke_session(existing_for_plan.session_id)
+            conversation_store.clear(existing_for_plan.session_id)
+        raise HTTPException(status_code=400, detail="Conflicting spoken identity claims detected.")
+
     plan_state = conversation_store.get(existing_for_plan.session_id, existing_for_plan.employee_id) if existing_for_plan and existing_for_plan.is_valid else None
-    intent_plan = parse_local(transcript_text, plan_state)
-    if intent_plan.operation == "clarify" and hasattr(ans_port, "plan_request"):
-        proposed = await ans_port.plan_request(transcript_text, bool(plan_state and plan_state.active_id))
-        if proposed:
-            intent_plan = proposed
+    if plan_state:
+        if selected_employee_id and selected_employee_id.strip():
+            plan_state.selected_employee_id = selected_employee_id.strip().upper()
+        if selected_ticket_id and selected_ticket_id.strip():
+            plan_state.selected_ticket_id = selected_ticket_id.strip().upper()
+
+    planner_context = PlannerContext(
+        has_active_result=bool(plan_state and plan_state.active_id),
+        source_kind=plan_state.snapshots.get(plan_state.active_id).source_kind if (plan_state and plan_state.active_id and plan_state.active_id in plan_state.snapshots) else None,
+        selected_ticket_id=plan_state.selected_ticket_id if plan_state else None,
+        selected_employee_id=plan_state.selected_employee_id if plan_state else None,
+        active_filters=plan_state.snapshots.get(plan_state.active_id).filter_state if (plan_state and plan_state.active_id and plan_state.active_id in plan_state.snapshots) else {},
+    ) if plan_state else None
+
+    intent_plan = await interpret_request(
+        transcript_text,
+        context=planner_context,
+        planner_adapter=ans_port if (ans_port and not isinstance(ans_port, UnavailableAnswerAdapter) and os.getenv("INTENTLOCK_OFFLINE_TESTS") != "1") else None,
+        state=plan_state,
+    )
     if intent_plan.operation == "help":
         public_text = (
             "I can show your profile, permitted direct reports, reporting tree, and scoped tickets. "
@@ -860,15 +883,13 @@ async def process_voice_turn(
         claimed_id = candidate_employee_id.strip().upper()
 
     # An employee ID mentioned as a requested target is not an actor claim.
-    self_claim = explicit_self_claim
-    if self_claim:
-        spoken_claim = self_claim.group(1).upper().replace("_", "-")
-        if claimed_id and spoken_claim != claimed_id:
+    if spoken_claim_id:
+        if claimed_id and spoken_claim_id != claimed_id:
             if existing_sess and existing_sess.is_valid:
                 store.revoke_session(existing_sess.session_id)
                 conversation_store.clear(existing_sess.session_id)
             raise HTTPException(status_code=400, detail="Spoken identity claim conflicts with the selected or active identity.")
-        claimed_id = spoken_claim
+        claimed_id = spoken_claim_id
 
     # 9. Voice Evidence & Scoped Authorization Orchestration
     scoped_auth = ScopedAuthorizationService.get_instance()
@@ -901,7 +922,7 @@ async def process_voice_turn(
         )
         logger.info("voice_trace %s", json.dumps({
             "turn_id": clean_turn_id, "request_id": request_id,
-            "selected_candidate": selected_claim, "spoken_self_claim": self_claim.group(1).upper() if self_claim else None,
+            "selected_candidate": selected_claim, "spoken_self_claim": spoken_claim_id,
             "session_actor": existing_sess.employee_id if existing_sess and existing_sess.is_valid else None,
             "mapped_speaker": mapping.provider_speaker_id, "mapped_account": mapping.account_alias,
             "audio_digest": sha256_digest, "provider_request_id": voice_res.request_id,

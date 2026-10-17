@@ -98,6 +98,7 @@ async def interpret_request(
     utterance: str,
     context: Optional[PlannerContext] = None,
     planner_adapter: Optional[Any] = None,
+    state: Optional[Any] = None,
 ) -> IntentPlan:
     """Orchestrate end-to-end semantic interpretation of an untrusted user command.
 
@@ -138,7 +139,7 @@ async def interpret_request(
 
     # Deterministic local fallback if model planner did not produce a valid plan
     if plan is None:
-        plan = parse_local(clean_text, state=None)
+        plan = parse_local(clean_text, state=state)
 
     # Step E: Validate semantic consistency & boundaries
     # 1. Operation must be supported in the OperationRegistry
